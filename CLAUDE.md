@@ -200,8 +200,10 @@ Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến đ
 
 - Link miễn phí: `https://<project-id>.web.app` (và `.firebaseapp.com`).
 - Lần đầu: `npx firebase-tools login` (người dùng tự chạy, cần trình duyệt), tạo `.firebaserc` với `{"projects":{"default":"<project-id>"}}`.
-- Deploy: `npx firebase-tools deploy --only hosting,firestore:rules`.
-- `firebase.json` deploy cả thư mục gốc, trừ `archive/`, `CLAUDE.md`, file ẩn và file cấu hình Firebase. HTML/JS/CSS gửi kèm `Cache-Control: no-cache` để người dùng luôn nhận bản mới.
+- **Tự động (GitHub Actions)**: push lên `main` → `.github/workflows/firebase-hosting-merge.yml` deploy **hosting** lên kênh live (~1 phút). Mở Pull Request → `firebase-hosting-pull-request.yml` tạo link xem trước tạm thời và comment vào PR. Dùng secret `FIREBASE_SERVICE_ACCOUNT_IELTS_VOCAB_B4905` trong repo GitHub. Không có bước build/`npm ci` (app không có `package.json`).
+- Workflow **không** deploy `firestore.rules`. Sửa rules thì chạy tay: `npx firebase-tools deploy --only firestore:rules`.
+- Deploy tay toàn bộ: `npx firebase-tools deploy --only hosting,firestore:rules`.
+- `firebase.json` deploy cả thư mục gốc, trừ `archive/`, `CLAUDE.md`, `skills-lock.json`, mọi file/thư mục bắt đầu bằng dấu chấm (`**/.*` và `**/.*/**` — cần cả hai, nếu không `.git/` sẽ bị tải lên) và file cấu hình Firebase. File mới không phải của web đặt ở gốc repo thì phải thêm vào `ignore`. HTML/JS/CSS gửi kèm `Cache-Control: no-cache` để người dùng luôn nhận bản mới.
 - Project: `ielts-vocab-b4905` → https://ielts-vocab-b4905.web.app
 
 ## Git
