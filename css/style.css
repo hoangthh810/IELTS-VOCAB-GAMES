@@ -193,3 +193,9 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:36px}
 .acct .btn{padding:9px 14px;font-size:14px;white-space:nowrap}
 .ava{flex:0 0 40px;width:40px;height:40px;border-radius:50%;object-fit:cover;display:grid;place-items:center;background:var(--accent-soft);font-size:22px}
 footer a{color:var(--accent)}
+/* ===== 2D battle scene ===== */
+#scene{display:none}
+/* pinned while the page scrolls to the answer, so the animation stays visible; HP bars are drawn on the canvas */
+.arena.scene{position:sticky;top:0;z-index:5;padding:6px 0;border:0;border-radius:0;background:var(--bg);overflow:visible}
+.arena.scene #scene{display:block;width:100%;max-width:600px;margin:0 auto;aspect-ratio:2/1;border-radius:16px;background:#f3dfc1;box-shadow:var(--shadow)}
+.arena.scene .bossrow,.arena.scene .merow{display:none}

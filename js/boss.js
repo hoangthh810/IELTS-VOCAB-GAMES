@@ -72,7 +72,7 @@ function startBattle(i){
   $('bStage').textContent=(c.final?'Trùm cuối':'Màn '+(i+1))+' · '+c.topic;
   $('bossE').textContent=c.b.e;$('bossE').className='boss';$('bossN').textContent=c.b.n;
   $('bubble').textContent='💬 '+c.b.l;
-  show('battle');updB();nextB();
+  show('battle');sceneStart(i);updB();nextB();
 }
 function updB(){
   const c=B.c,enr=B.bossHp>0&&B.bossHp/c.hp<.3;
@@ -107,9 +107,10 @@ function anim(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.
 function bossAttack(){
   const enr=B.bossHp/B.c.hp<.3;const d=Math.round(B.c.atk*(enr?1.3:1)*(.85+Math.random()*.3));
   anim($('bossE'),'atk');
-  if(B.shield){B.shield=false;floatAt('🛡️ Chặn!','var(--accent)',56,$('meE').offsetTop-8);return `🛡️ Khiên đã chặn đòn của boss!`}
+  if(B.shield){B.shield=false;if(SC)sceneBossAttack(0,true);else floatAt('🛡️ Chặn!','var(--accent)',56,$('meE').offsetTop-8);return `🛡️ Khiên đã chặn đòn của boss!`}
   B.hp=Math.max(0,B.hp-d);
-  setTimeout(()=>{$('flash').classList.add('on');anim($('meE'),'hurt');floatAt('-'+d,'var(--bad)',56,$('meE').offsetTop-8);setTimeout(()=>$('flash').classList.remove('on'),180)},200);
+  if(SC)sceneBossAttack(d,false);
+  setTimeout(()=>{$('flash').classList.add('on');anim($('meE'),'hurt');if(!SC)floatAt('-'+d,'var(--bad)',56,$('meE').offsetTop-8);setTimeout(()=>$('flash').classList.remove('on'),180)},200);
   return `${B.c.b.e} Boss phản đòn: <b>-${d} HP</b>${enr?' (đang nổi điên!)':''}`;
 }
 function answerB(v,el,timeout){
@@ -127,7 +128,8 @@ function answerB(v,el,timeout){
     if(B.rage){dmg*=2;B.rage=false;tags.push('Cuồng nộ x2')}
     dmg=Math.round(dmg);B.bossHp=Math.max(0,B.bossHp-dmg);st.xp+=10;
     if(st.wrong[id]){delete st.wrong[id];st.fixed=(st.fixed||0)+1;if(st.fixed>=10)unlock('fixer')}
-    anim($('bossE'),'hit');floatAt('-'+dmg+(tags.length?' 💥':''),tags.length?'var(--yellow)':'var(--bad)',90,10);beep('ok');
+    anim($('bossE'),'hit');beep('ok');
+    if(SC)sceneHeroAttack(q.it.term,dmg,tags.includes('Cuồng nộ x2')?2:tags.length?1:0);else floatAt('-'+dmg+(tags.length?' 💥':''),tags.length?'var(--yellow)':'var(--bad)',90,10);
     if(B.combo>=5)unlock('combo5');if(B.combo>=10)unlock('combo10');
     title=`💥 Trúng đòn! -${dmg} HP`+(tags.length?` (${tags.join(', ')})`:'');
   }else{
@@ -140,8 +142,8 @@ function answerB(v,el,timeout){
   $('bFbA').innerHTML=(line?line+'<br>':'')+(ok?'':`Đáp án đúng: <b>${esc(q.type==='col'?q.it.term:q.answer)}</b>`);
   $('bFbEx').innerHTML=`${termHtml(q.it)}: ${esc(q.it.mean)}<br>📝 ${hlEx(q.it.ex,q.it.term)}`;
   $('bFb').className='feedback show '+(ok?'ok':'no');$('bNext').style.display='';
-  if(B.bossHp<=0){B.over=true;$('bNext').style.display='none';setTimeout(()=>$('bossE').classList.add('dead'),400);setTimeout(victory,1500)}
-  else if(B.hp<=0){B.over=true;$('bNext').style.display='none';setTimeout(defeat,1300)}
+  if(B.bossHp<=0){B.over=true;$('bNext').style.display='none';setTimeout(()=>{$('bossE').classList.add('dead');if(SC)sceneBossDie()},SC?650:400);setTimeout(victory,SC?2300:1500)}
+  else if(B.hp<=0){B.over=true;$('bNext').style.display='none';if(SC)setTimeout(sceneHeroDie,750);setTimeout(defeat,SC?2000:1300)}
   else{if(ok)B.auto=setTimeout(goNextB,1800);setTimeout(()=>$('bNext').focus(),30)}
 }
 function goNextB(){clearTimeout(B.auto);if(!B.over&&B.answered)nextB()}
@@ -152,7 +154,7 @@ $('bFb').addEventListener('click',e=>{if(e.target.closest('.spk'))clearTimeout(B
 $('bQuit').onclick=()=>{if(confirm('Bỏ chạy khỏi trận đánh? Tiến độ trận này sẽ mất.')){stopTimer();clearTimeout(B.auto);B.over=true;openMap()}};
 $('items').onclick=e=>{
   const b=e.target.closest('.itm');if(!b||!B||B.over)return;const k=b.dataset.k,inv=st.rpg.inv;if(!inv[k])return;
-  if(k==='potion'){if(B.hp>=B.max){toast('Máu đang đầy rồi!');return}const h=Math.min(40,B.max-B.hp);B.hp+=h;floatAt('+'+h,'var(--good)',56,$('meE').offsetTop-8)}
+  if(k==='potion'){if(B.hp>=B.max){toast('Máu đang đầy rồi!');return}const h=Math.min(40,B.max-B.hp);B.hp+=h;if(SC)sceneHeal(h);else floatAt('+'+h,'var(--good)',56,$('meE').offsetTop-8)}
   if(k==='shield'){if(B.shield){toast('Khiên đang được kích hoạt rồi');return}B.shield=true}
   if(k==='rage'){if(B.rage){toast('Cuồng nộ đang được kích hoạt rồi');return}B.rage=true}
   if(k==='half'){if(B.answered||B.halfUsed){toast('Dùng khi đang trả lời câu hỏi nhé');return}B.halfUsed=true;const q=B.q;

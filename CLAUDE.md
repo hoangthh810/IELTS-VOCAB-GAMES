@@ -16,6 +16,7 @@ js/data.js          const DATA — dữ liệu 19 chủ đề
 js/core.js          ALL/BYID, helper, lưu trữ st/save, huy hiệu, hiệu ứng, âm thanh, show()
 js/questions.js     pool(), makeQuiz / makeFill / makeCol
 js/practice.js      Trang chủ (chọn chủ đề) + chế độ luyện tập thường
+js/scene.js         Cảnh đánh boss 2D trên canvas (hiện chỉ màn 1)
 js/boss.js          Phiêu lưu đánh Boss
 js/firebase-config.js  const FIREBASE_CONFIG (null = tắt đăng nhập/đồng bộ)
 js/sync.js          Đăng nhập Google + đồng bộ tiến độ lên Firestore (tuỳ chọn)
@@ -35,6 +36,7 @@ archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chi�
 | `js/core.js` | Dữ liệu dẫn xuất (`ALL`, `BYID`), helper (`esc`, `shuffle`, `pick`, `$`, `findMatch`, `hlEx`), storage (`KEY`, `st`, `save`, `dayKey`, `yesterday`, `liveStreak`), phát âm (`speak`, `spk`, `ipaTag`, `termHtml`), `BADGES`/`unlock`, hiệu ứng (`toast`, `confetti`, `plus`, `beep` dùng WebAudio), chuyển màn `show` |
 | `js/questions.js` | `STOP`, `colTokens`, `poolOverride`, `pool`, `choose`, `makeQuiz`, `makeFill`, `makeCol` (dùng chung cho chế độ thường và Boss) |
 | `js/practice.js` | `sel`, `useWrong`, `renderChips`, `renderHome`, nút âm thanh; `LEN`, `G`, `start`, `next`, `answer`, `finish`, phím tắt |
+| `js/scene.js` | `SCENES` (màn nào có cảnh 2D), `sceneStart`, các sự kiện `sceneHeroAttack/BossAttack/Heal/BossDie/HeroDie`, vòng lặp vẽ, hạt, đạn, HUD thanh máu; hàm vẽ nhân vật `drawHero`, màn 1: `bgClassroom`, `liveClassroom`, `drawOwl` |
 | `js/boss.js` | `BOSSES`, `ITEMS`, `DMG`, `RPG0`, `cfg`, map, shop, battle (`B`), item, victory/chest, defeat, phím tắt |
 | `js/sync.js` | `initSync`, `mergeSt`, `pullAndMerge`, `queueUpload`/`flushUpload`, `signIn`/`signOut`, `renderAcct` (ô `#acct` trên trang chủ) |
 | `js/main.js` | `renderHome(); initSync();` |
@@ -43,7 +45,7 @@ archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chi�
 
 - Dùng `<script src>` **thường** (không `type="module"`, không build tool) để mở được bằng double-click `index.html` qua `file://`. ES module và `fetch` file JSON bị chặn trên `file://`, nên **không** dùng.
 - Mọi `const`/`let`/`function` khai báo ở top-level đều là biến toàn cục dùng chung giữa các file.
-- **Thứ tự nạp trong `index.html` là bắt buộc**: `data → firebase-config → core → questions → practice → boss → sync → main`. Code chạy ngay khi nạp (top-level) chỉ được dùng thứ đã khai báo ở file trước, ví dụ `core.js` cần `DATA`, `practice.js` cần `st`, `boss.js` gán `st.rpg`. Tham chiếu "ngược" (ví dụ `pool()` trong `questions.js` dùng `sel`/`useWrong` của `practice.js`, `unlock` gọi `renderHome`) chỉ hợp lệ vì nằm trong thân hàm, chạy sau khi mọi file đã nạp.
+- **Thứ tự nạp trong `index.html` là bắt buộc**: `data → firebase-config → core → questions → practice → scene → boss → sync → main`. Code chạy ngay khi nạp (top-level) chỉ được dùng thứ đã khai báo ở file trước, ví dụ `core.js` cần `DATA`, `practice.js` cần `st`, `boss.js` gán `st.rpg`. Tham chiếu "ngược" (ví dụ `pool()` trong `questions.js` dùng `sel`/`useWrong` của `practice.js`, `unlock` gọi `renderHome`) chỉ hợp lệ vì nằm trong thân hàm, chạy sau khi mọi file đã nạp.
 - Script đặt cuối `<body>` nên DOM đã sẵn sàng khi gắn sự kiện.
 - Không khai báo trùng tên top-level giữa các file (sẽ lỗi `Identifier has already been declared`).
 
@@ -84,6 +86,16 @@ Phím tắt: `1–4` chọn đáp án, `Enter` để sang câu tiếp.
   - **Không** hiện ở câu Quiz Việt→Anh, Điền từ, Collocation vì sẽ lộ đáp án.
 - Một listener `click` chung trên `document` bắt mọi `.spk` (đọc `data-say`). Nút loa không phụ thuộc nút bật/tắt âm thanh hiệu ứng (`st.sound`).
 - Trong trận Boss, bấm loa ở phần đáp án sẽ huỷ tự chuyển câu sau 1,8 giây (`B.auto`) để kịp nghe; bấm "Tiếp tục" hoặc Enter để đi tiếp.
+
+### 🎬 Cảnh đánh boss 2D (bản mẫu)
+
+- Màn có khoá trong `SCENES` (`js/scene.js`) dùng canvas 2D thay cho emoji; hiện chỉ có màn 1 (`0`: lớp học + 🦉 Cú Giáo Sư). Các màn khác giữ khung emoji cũ.
+- Tất cả hình vẽ bằng code (Canvas 2D), không có file ảnh. Kích thước logic 640×320 (`SW`,`SH`), mặt đất `GY`, nhân vật ở `HX`, boss ở `BX`; canvas nhân `devicePixelRatio` (tối đa 2).
+- `sceneStart(i)` được gọi trong `startBattle`; bật class `.arena.scene` (ẩn emoji và dòng máu DOM, **ghim khung ở đầu màn hình** bằng `position:sticky` để khi trang cuộn xuống phần đáp án vẫn thấy hoạt ảnh). Thanh máu, tên boss, lời thoại được vẽ trên canvas (`drawHud`). Vòng `requestAnimationFrame` tự dừng khi rời màn `#battle`.
+- `boss.js` gọi cảnh qua các hàm `scene*` khi `SC` khác null; khi null thì dùng lại `floatAt`/`anim` cũ. Có cảnh thì boss chết sau 650ms (đợi đạn trúng), màn thắng sau 2,3s, màn thua sau 2s.
+- Đòn đúng bắn **chính từ tiếng Anh vừa trả lời** thành đạn phép (tím; combo vàng; thuốc cuồng nộ đỏ). Sai/hết giờ: boss ném 3 tờ giấy điểm "F". Khiên: bong bóng xanh chặn đạn. Boss dưới 30% máu: đỏ lên, mắt đỏ, bốc hơi, viền đỏ.
+- `prefers-reduced-motion` tắt rung màn hình.
+- Thêm cảnh cho màn khác: viết `bg<Tên>(c)` (phông tĩnh, vẽ 1 lần), `live<Tên>(c,s)` (chi tiết động, tuỳ chọn), `draw<Boss>(c,s)` (dựa theo `drawOwl`: đọc `s.boss.atk/hit/dead`, `sceneRage()`), rồi thêm vào `SCENES`.
 
 ### Huy hiệu (`BADGES`)
 
