@@ -1,3 +1,7 @@
 .firebase/
 node_modules/
 firebase-debug.log
+# Firebase agent skills installed locally by the Firebase CLI
+.agents/
+.claude/
+skills-lock.json
