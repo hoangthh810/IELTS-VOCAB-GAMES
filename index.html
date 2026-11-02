@@ -80,11 +80,14 @@
   <h2>📥 Nhập từ vựng</h2>
   <div class="srs imp">
     <div class="imp-row"><select id="impTo"></select><input id="impName" maxlength="40" placeholder="Tên bộ từ, ví dụ: Cambridge 18 Test 1"></div>
+    <details class="ai"><summary>🤖 File lộn xộn? Nhờ AI định dạng giúp</summary>
+      <ol><li>Bấm <b>Copy prompt</b> bên dưới.</li><li>Mở ChatGPT, Gemini hoặc Claude, dán prompt và gửi kèm file / đoạn từ vựng của bạn.</li><li>Copy khối kết quả AI trả về rồi dán vào ô bên dưới, kiểm tra bảng xem trước rồi lưu.</li></ol>
+      <pre id="aiPrompt"></pre><button class="btn ghost" id="aiCopy" type="button">📋 Copy prompt</button></details>
     <textarea id="impText" rows="7" spellcheck="false" placeholder="Mỗi dòng một từ: từ, nghĩa, câu ví dụ, phiên âm&#10;mitigate	giảm nhẹ	Governments must act to mitigate the effects of climate change.	/ˈmɪtɪɡeɪt/&#10;take into account	cân nhắc, tính đến"></textarea>
     <div class="imp-row"><label class="btn ghost file-btn">📄 Chọn file .csv / .txt<input type="file" id="impFile" accept=".csv,.tsv,.txt,text/csv,text/plain,.xlsx,.xls" hidden></label>
-      <select id="impSep" title="Ký tự ngăn cách cột"><option value="auto">Tự nhận cột</option><option value="&#9;">Tab</option><option value=",">Dấu phẩy ,</option><option value=";">Dấu chấm phẩy ;</option><option value=" - ">Gạch ngang -</option><option value=":">Dấu hai chấm :</option></select></div>
+      <select id="impSep" title="Ký tự ngăn cách cột"><option value="auto">Tự nhận cột</option><option value="&#9;">Tab</option><option value="|">Dấu |</option><option value=",">Dấu phẩy ,</option><option value=";">Dấu chấm phẩy ;</option><option value=" - ">Gạch ngang -</option><option value=":">Dấu hai chấm :</option></select></div>
     <div id="impPrev"></div>
-    <div class="srs-btns"><button class="btn" id="impSave" disabled>💾 Lưu bộ từ</button><button class="btn ghost" id="impSample">⬇️ Tải file mẫu</button></div>
+    <div class="srs-btns"><button class="btn" id="impSave" disabled>💾 Lưu bộ từ</button><button class="btn ghost" id="impCancel" hidden>✖ Huỷ</button><button class="btn ghost" id="impSample">⬇️ Tải file mẫu</button></div>
     <small class="empty">Cột 1 là từ hoặc cụm từ tiếng Anh, cột 2 là nghĩa; câu ví dụ, phiên âm, từ loại không bắt buộc. Copy bảng từ Excel / Google Sheets rồi dán vào là được. Quizlet: chọn Xuất (Export), giữ "Tab" và "Dòng mới" rồi dán vào. File Excel hãy lưu thành <b>CSV UTF-8</b>. Có câu ví dụ chứa đúng từ đó thì chơi được ✍️ Điền từ; cụm nhiều chữ thì chơi được 🧩 Collocation.</small>
   </div>
   <footer>Đấu trường luyện tập dùng bộ từ của bạn để đánh quái: nhận XP và một ít vàng, không tính sao và không mở màn trên bản đồ.</footer>

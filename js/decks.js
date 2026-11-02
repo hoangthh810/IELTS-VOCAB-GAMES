@@ -28,14 +28,14 @@ function csvRow(line,sep){ // one line, quotes allowed ("a, b" and "" for a quot
 }
 function guessSep(lines){
   const score=s=>lines.filter(l=>csvRow(l,s).filter(Boolean).length>=2).length;
-  let best='\t',n=-1;for(const s of ['\t',';',',',' - ',' : ',':','='])if(score(s)>n){n=score(s);best=s}
+  let best='\t',n=-1;for(const s of ['\t','|',';',',',' - ',' : ',':','='])if(score(s)>n){n=score(s);best=s}
   return best;
 }
 // -> {rows: [[term, mean, ex, ipa, pos]], bad: [line numbers], dup: count}
 function parseDeck(text,sep,have=new Set()){
-  const lines=text.replace(/^﻿/,'').split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  const lines=text.replace(/^﻿/,'').split(/\r?\n/).map(l=>l.trim()).filter(l=>l&&!/^```/.test(l)); // also drops code fences copied from a chatbot
   if(!sep||sep==='auto')sep=guessSep(lines.slice(0,50));
-  let rows=lines.map(l=>csvRow(l,sep));
+  let rows=(sep==='|'?lines.filter(l=>!/^[\s|:-]+$/.test(l)).map(l=>l.replace(/^\||\|$/g,'')):lines).map(l=>csvRow(l,sep)); // | also reads markdown tables
   const HEAD=/^(term|terms|word|words|english|vocabulary|vocab|meaning|definition|vietnamese|từ|từ vựng|tiếng anh|tiếng việt|nghĩa)$/i;
   if(rows.length&&(HEAD.test(rows[0][0])||HEAD.test(rows[0][1]||'')))rows.shift(); // header row
   // Vietnamese first? (most "terms" have Vietnamese letters, most "meanings" don't) -> swap
@@ -84,9 +84,9 @@ function renderDecks(){
 function previewImport(){
   const to=$('impTo').value,d=to&&st.decks[to];
   imp=$('impText').value.trim()?parseDeck($('impText').value,$('impSep').value,new Set(d?d.items.map(w=>w[0].toLowerCase()):[])):null;
-  const p=$('impPrev');$('impSave').disabled=!imp||!imp.rows.length;
+  const p=$('impPrev');$('impSave').disabled=!imp||!imp.rows.length;$('impCancel').hidden=!$('impText').value.trim()&&!$('impName').value.trim();
   if(!imp){p.innerHTML='';return}
-  const sepName={'\t':'Tab',';':'dấu chấm phẩy',',':'dấu phẩy',' - ':'gạch ngang',' : ':'dấu hai chấm',':':'dấu hai chấm','=':'dấu bằng'}[imp.sep];
+  const sepName={'\t':'Tab','|':'dấu |',';':'dấu chấm phẩy',',':'dấu phẩy',' - ':'gạch ngang',' : ':'dấu hai chấm',':':'dấu hai chấm','=':'dấu bằng'}[imp.sep];
   p.innerHTML=`<p class="empty">✅ <b>${imp.rows.length}</b> từ hợp lệ${imp.dup?` · ${imp.dup} từ trùng (bỏ qua)`:''}${imp.bad.length?` · ⚠️ ${imp.bad.length} dòng lỗi, thiếu từ hoặc nghĩa (dòng ${imp.bad.slice(0,8).join(', ')}${imp.bad.length>8?'…':''})`:''} · Ngăn cách bằng ${sepName}</p>`+
     (imp.rows.length?`<div class="tbl"><table><tr><th>Từ</th><th>Nghĩa</th><th>Ví dụ</th><th>Phiên âm</th></tr>${imp.rows.slice(0,8).map(r=>`<tr><td><b>${esc(r[0])}</b>${r[4]?` <small>(${esc(r[4])})</small>`:''}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join('')}</table></div>${imp.rows.length>8?`<p class="empty">… và ${imp.rows.length-8} từ nữa</p>`:''}`:'');
 }
@@ -100,8 +100,9 @@ function saveImport(){
   if(new TextEncoder().encode(JSON.stringify(st)).length>ST_MAX){st.decks=JSON.parse(prev);toast('Bộ từ quá lớn để đồng bộ, hãy bớt câu ví dụ dài hoặc chia nhỏ');return}
   if(!to){sel.add('u'+did);st.topics=[...sel]}
   loadDecks();save();toast(`📁 Đã lưu ${imp.rows.length} từ vào "${st.decks[did].n}"`);beep('ok');
-  $('impText').value='';$('impFile').value='';$('impName').value='';renderDecks();
+  clearImport();
 }
+function clearImport(){$('impText').value='';$('impFile').value='';$('impName').value='';$('impTo').value='';renderDecks()}
 function deleteDeck(k){
   const ti='u'+k;st.decks[k]={del:1,t:Date.now()};
   for(const o of [st.srs,st.wrong])Object.keys(o).forEach(id=>{if(id.startsWith(ti+'.'))delete o[id]});
@@ -115,6 +116,30 @@ $('impFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   if(/\.xlsx?$/i.test(f.name)){toast('Hãy lưu file Excel thành CSV UTF-8, hoặc copy bảng rồi dán vào ô bên dưới');e.target.value='';return}
   $('impText').value=await readText(f);if(!$('impTo').value&&!$('impName').value)$('impName').value=f.name.replace(/\.[^.]+$/,'').slice(0,40);previewImport()};
 $('impSave').onclick=saveImport;
+$('impCancel').onclick=clearImport;
+$('impName').oninput=()=>{$('impCancel').hidden=!$('impText').value.trim()&&!$('impName').value.trim()};
+// prompt for ChatGPT/Gemini/Claude: turns any notes or worksheet into lines this importer reads
+const AI_PROMPT=`Hãy chuyển tài liệu từ vựng tôi gửi kèm (file hoặc đoạn văn bản bên dưới) thành danh sách để nhập vào app học từ vựng IELTS, theo đúng định dạng sau:
+
+- Mỗi dòng một từ hoặc cụm từ, 4 cột ngăn cách bằng dấu |
+  từ tiếng Anh | nghĩa tiếng Việt ngắn gọn | một câu ví dụ tiếng Anh có chứa đúng từ đó | phiên âm IPA Anh-Anh dạng /.../
+- Cột 1 chỉ ghi từ hoặc cụm từ cần học (không ghi cả câu, không đánh số, không ghi từ loại).
+- Phiên âm chỉ ghi cho từ đơn; với cụm từ để trống cột này.
+- Nếu tài liệu là bài tập điền vào chỗ trống, hãy lấy đáp án làm từ cần học và dùng câu đã điền đáp án làm câu ví dụ.
+- Nếu tài liệu chưa có nghĩa tiếng Việt hoặc câu ví dụ, hãy tự bổ sung cho chính xác, tự nhiên.
+- Bỏ các từ trùng lặp. Không thêm dòng tiêu đề, không giải thích gì thêm.
+- Trả toàn bộ kết quả trong MỘT khối code để tôi copy.
+
+Ví dụ:
+mitigate | giảm nhẹ | Governments must act to mitigate the effects of climate change. | /ˈmɪtɪɡeɪt/
+extended family | đại gia đình | My extended family gets together every Lunar New Year. |`;
+$('aiPrompt').textContent=AI_PROMPT;
+$('aiCopy').onclick=()=>{
+  const ok=()=>toast('📋 Đã copy prompt, dán vào ChatGPT / Gemini / Claude kèm file của bạn nhé!');
+  (navigator.clipboard?navigator.clipboard.writeText(AI_PROMPT):Promise.reject()).then(ok,()=>{
+    const r=document.createRange();r.selectNodeContents($('aiPrompt'));const s=getSelection();s.removeAllRanges();s.addRange(r);
+    try{document.execCommand('copy');ok()}catch(e){toast('Hãy bôi đen đoạn prompt rồi copy nhé')}});
+};
 $('impSample').onclick=()=>download('mau-bo-tu-vung.csv',toCsv(SAMPLE));
 $('deckList').onclick=e=>{
   const b=e.target.closest('[data-a]'),box=e.target.closest('.deck');if(!b||!box)return;
