@@ -301,3 +301,14 @@ input,select,textarea{accent-color:var(--accent)}
 @media (min-width:720px){.hero{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:center}.hero .stats{margin:0}}
 @media (prefers-reduced-motion:reduce){.brand-ic{animation:none}}
 @media (max-width:420px){.brand{gap:9px}.brand-ic{width:42px;height:42px}.tagline{font-size:12px}.hbtns{gap:6px}.icon-btn{width:40px;height:40px;font-size:17px}}
+/* ===== cat closet ===== */
+.closet-btn .e{background:color-mix(in srgb,var(--pink) 16%,transparent)}
+.closet-stage{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:8px 12px 14px;text-align:center}
+#closetCv{display:block;width:100%;max-width:320px;aspect-ratio:320/250;margin:0 auto}
+.closet-act{min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.closet-act .btn{padding:11px 18px}
+.closet-tabs{margin:14px 0 10px}
+.citems{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.citem{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:10px 6px;text-align:center;box-shadow:var(--press)}
+.citem .e{font-size:28px;display:block;line-height:1.3}.citem b{display:block;font-size:13px;line-height:1.3}.citem small{color:var(--muted);font-size:12px;font-weight:700}
+.citem.sel{border-color:var(--accent);background:var(--accent-soft)}.citem.worn small{color:var(--good)}

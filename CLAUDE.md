@@ -18,8 +18,9 @@ js/decks.js         Bộ từ tự nhập: đọc file/dán bảng, màn #decks,
 js/questions.js     pool(), makeQuiz / makeFill / makeCol
 js/practice.js      Trang chủ (chọn chủ đề) + chế độ luyện tập thường (cả lượt ôn bằng câu hỏi)
 js/srs.js           Ôn tập ngắt quãng (Leitner) + flashcard
-js/scene.js         Cảnh đánh boss 2D trên canvas (bối cảnh + quái cho cả 20 màn)
+js/scene.js         Cảnh đánh boss 2D trên canvas (bối cảnh + quái cho cả 20 màn, nhân vật mèo + đồ mặc)
 js/boss.js          Phiêu lưu đánh Boss
+js/closet.js        Tủ đồ của mèo: mua và mặc đồ cho nhân vật (chỉ trang trí)
 js/firebase-config.js  const FIREBASE_CONFIG (null = tắt đăng nhập/đồng bộ)
 js/board.js         Bảng xếp hạng (Firestore leaderboard)
 js/remind.js        Nhắc học mỗi ngày trên lịch (link Google Calendar / file .ics)
@@ -34,15 +35,16 @@ archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chi�
 
 | File | Nội dung chính |
 |---|---|
-| `index.html` | Các màn hình `.screen` — `#home`, `#decks` (bộ từ của tôi), `#cards` (flashcard), `#board` (xếp hạng), `#game`, `#result`, `#map`, `#battle`, `#victory`, `#defeat` + `#toast`, `#flash` |
+| `index.html` | Các màn hình `.screen` — `#home`, `#decks` (bộ từ của tôi), `#closet` (tủ đồ mèo), `#cards` (flashcard), `#board` (xếp hạng), `#game`, `#result`, `#map`, `#battle`, `#victory`, `#defeat` + `#toast`, `#flash` |
 | `css/style.css` | Biến màu ở `:root` (sáng/tối theo `prefers-color-scheme` và `data-theme`), CSS cho home, game, result, phần Boss (từ comment `/* ===== boss adventure ===== */`) |
 | `js/data.js` | `const DATA = [...]` |
 | `js/core.js` | Dữ liệu dẫn xuất (`ALL`, `BYID`), helper (`esc`, `shuffle`, `pick`, `$`, `findMatch`, `hlEx`), storage (`KEY`, `st`, `save`, `dayKey`, `yesterday`, `liveStreak`), phát âm (`speak`, `spk`, `ipaTag`, `termHtml`), `BADGES`/`unlock`, hiệu ứng (`toast`, `confetti`, `plus`), âm thanh tiếng mèo `beep(kind)` (`CAT` gồm `ok`/`no`/`badge`/`end`, tạo bằng WebAudio qua `meow`/`purr`, không có file âm thanh), chuyển màn `show` |
 | `js/decks.js` | `CORE_N`, `DECK_MAX`, `ST_MAX`, `isDeck`, `liveDecks`, `topicKeys`, `topicName`, `loadDecks`, `parseDeck`/`csvRow`/`guessSep`, `readText`, `download`/`toCsv`, `openDecks`, `renderDecks`, `previewImport`, `saveImport`, `deleteDeck` |
 | `js/questions.js` | `STOP`, `colTokens`, `canFill`/`canCol`/`poolTypes` (dạng câu mà một nguồn từ làm được), `poolOverride`, `pool`, `choose`, `makeQuiz`, `makeFill`, `makeCol` (dùng chung cho chế độ thường và Boss) |
 | `js/practice.js` | `sel`, `useWrong`, `renderChips`, `renderHome`, nút âm thanh; `LEN`, `G`, `start`, `next`, `answer`, `finish`, phím tắt |
-| `js/scene.js` | `sceneStart`, sự kiện `sceneHeroAttack/BossAttack/Heal/BossDie/HeroDie`, vòng lặp vẽ, hạt, đạn, HUD; `pose` (chuyển động chung của quái), `drawHero`; `WORLDS` (bối cảnh: `school`, `city`, `ocean`, `castle`) và `KINDS` (quái: `owl`, `book`, `slime`, `golem`, `jelly`, `octo`, `whelp`, `dragon`) |
+| `js/scene.js` | `sceneStart`, sự kiện `sceneHeroAttack/BossAttack/Heal/BossDie/HeroDie`, vòng lặp vẽ, hạt, đạn, HUD; `pose` (chuyển động chung của quái), `drawHero` → `drawCat` (nhân vật mèo), `FURS`, `OUTFIT`, `SLOTS`, `WEAR0`, `wearing()`; `WORLDS` (bối cảnh: `school`, `city`, `ocean`, `castle`) và `KINDS` (quái: `owl`, `book`, `slime`, `golem`, `jelly`, `octo`, `whelp`, `dragon`) |
 | `js/boss.js` | `BOSSES`, `ITEMS`, `DMG`, `RPG0`, `cfg`, map, shop, battle (`B`), item, victory/chest, defeat, phím tắt; đấu trường `startArena`, `leaveBattle` |
+| `js/closet.js` | `owns`, `openCloset`, `renderCloset`, `wearItem`, `closetLoop` (canvas xem trước), `tryOn` (món đang mặc thử) |
 | `js/srs.js` | `SRS_DAYS`, `srsGrade`, `srsDue`, `srsStats`, `srsSession`, `srsType`, `renderSrs`; flashcard: `C`, `startCards`, `showCard`, `flipCard`, `gradeCard`, `endCards` |
 | `js/board.js` | `lbOn`, `lbName`, `lbUpload`, `openBoard`, `renderBoard` |
 | `js/remind.js` | `gcalUrl`, `icsFile`, `renderRemind` |
@@ -53,7 +55,7 @@ archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chi�
 
 - Dùng `<script src>` **thường** (không `type="module"`, không build tool) để mở được bằng double-click `index.html` qua `file://`. ES module và `fetch` file JSON bị chặn trên `file://`, nên **không** dùng.
 - Mọi `const`/`let`/`function` khai báo ở top-level đều là biến toàn cục dùng chung giữa các file.
-- **Thứ tự nạp trong `index.html` là bắt buộc**: `data → firebase-config → core → decks → questions → practice → srs → scene → boss → sync → board → remind → main`. Code chạy ngay khi nạp (top-level) chỉ được dùng thứ đã khai báo ở file trước, ví dụ `core.js` cần `DATA`, `practice.js` cần `st`, `boss.js` gán `st.rpg`. Tham chiếu "ngược" (ví dụ `pool()` trong `questions.js` dùng `sel`/`useWrong` của `practice.js`, `unlock` gọi `renderHome`) chỉ hợp lệ vì nằm trong thân hàm, chạy sau khi mọi file đã nạp.
+- **Thứ tự nạp trong `index.html` là bắt buộc**: `data → firebase-config → core → decks → questions → practice → srs → scene → boss → closet → sync → board → remind → main`. Code chạy ngay khi nạp (top-level) chỉ được dùng thứ đã khai báo ở file trước, ví dụ `core.js` cần `DATA`, `practice.js` cần `st`, `boss.js` gán `st.rpg`. Tham chiếu "ngược" (ví dụ `pool()` trong `questions.js` dùng `sel`/`useWrong` của `practice.js`, `unlock` gọi `renderHome`) chỉ hợp lệ vì nằm trong thân hàm, chạy sau khi mọi file đã nạp.
 - Script đặt cuối `<body>` nên DOM đã sẵn sàng khi gắn sự kiện.
 - Không khai báo trùng tên top-level giữa các file (sẽ lỗi `Identifier has already been declared`).
 
@@ -96,6 +98,13 @@ Phím tắt: `1–4` chọn đáp án, `Enter` để sang câu tiếp.
   - **Không** hiện ở câu Quiz Việt→Anh, Điền từ, Collocation vì sẽ lộ đáp án.
 - Một listener `click` chung trên `document` bắt mọi `.spk` (đọc `data-say`). Nút loa không phụ thuộc nút bật/tắt âm thanh hiệu ứng (`st.sound`).
 - Trong trận Boss, bấm loa ở phần đáp án sẽ huỷ tự chuyển câu sau 1,8 giây (`B.auto`) để kịp nghe; bấm "Tiếp tục" hoặc Enter để đi tiếp.
+
+### 🎀 Tủ đồ của mèo
+
+- Nhân vật chính là **chú mèo** (`drawCat` trong `scene.js`, gốc toạ độ = chân, quay mặt sang phải), dùng chung cho cảnh trận đánh và canvas xem trước `#closetCv`. Đồ mặc **chỉ để trang trí**, không đổi chỉ số trận.
+- `OUTFIT[slot][id] = {n, e, p, draw}` với 6 slot (`SLOTS`): `fur` bộ lông (màu trong `FURS`), `hat` mũ, `face` kính, `body` áo (`sleeve` = màu tay áo), `neck` cổ, `hand` vũ khí (`draw(c, casting)` tại bàn tay, chĩa theo trục x). Món `p: 0` (mướp, mũ tốt nghiệp, hoodie 6.5, bút chì) có sẵn. `WEAR0` là bộ mặc định.
+- Màn `#closet` mở từ trang chủ (`#homeClosetBtn`) và bản đồ (`#closetBtn`). Bấm món đã có → mặc luôn; món chưa có → mèo mặc thử (`tryOn`) và hiện nút mua bằng `st.rpg.gold`.
+- Thêm món: thêm vào `OUTFIT[slot]` một id mới với `draw` (toạ độ theo khung mèo: đầu tâm `(0,-102)`, mắt `(-8,-104)`/`(13,-104)`, cổ khoảng `y=-72`, thân `y` từ `-70` đến `-14`). Không đổi id cũ (đã lưu trong `own`/`wear`). Emoji biểu tượng phải hiện được trên Windows (tránh cờ quốc gia, emoji quá mới).
 
 ### 🎬 Cảnh đánh boss 2D
 
@@ -172,6 +181,7 @@ Lúc chạy, `DATA` được làm phẳng thành `ALL`, mỗi mục có dạng
 | `srs` | `{[id]: {b, d, t}}` | Lịch ôn: hộp Leitner 0–7, ngày đến hạn `YYYY-MM-DD`, thời điểm chấm gần nhất (ms) |
 | `wk` | `{k, base}` | Tuần ISO hiện tại (`2026W45`) và tổng XP lúc bắt đầu tuần → XP tuần = `xp - base` (`weekKey`, `rollWeek`, `weekXp` trong `core.js`) |
 | `lb` | `{name, on, t}` | null | Biệt danh trên bảng xếp hạng, có hiện trên bảng không, thời điểm đổi |
+| `closet` | `{own, wear, t}` | Tủ đồ mèo: `own` = món đã mua dạng `'slot:id'` (món giá 0 luôn có, không lưu), `wear` = `{slot: id}` đang mặc (`''` = không mặc; thiếu slot thì lấy `WEAR0`), `t` = lần đổi đồ gần nhất (ms) |
 | `decks` | `{[did]: {n, t, items}}` | Bộ từ tự nhập: tên, thời điểm sửa (ms), `items = [[từ, nghĩa, ví dụ, phiên âm, từ loại], ...]`; bộ đã xoá thành `{del:1, t}` |
 
 Streak được cập nhật khi kết thúc lượt chơi thường (`finish`) và khi thắng/thua trận Boss (`touchStreak`). Hiển thị dùng `liveStreak()` (về 0 nếu bỏ quá 1 ngày).
@@ -219,7 +229,7 @@ Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến đ
 - Chỉ đăng nhập bằng **Google** (`signInWithPopup`, popup bị chặn thì chuyển sang `signInWithRedirect`).
 - Dữ liệu trên mây: document `users/{uid}` = `{data: JSON.stringify(st), xp, updatedAt}`. `firestore.rules` chỉ cho chính chủ đọc/ghi, chỉ chấp nhận đúng 3 trường đó, `data` là chuỗi < 950000 ký tự.
 - **Khi đăng nhập / mở app đang đăng nhập** (`pullAndMerge`): tải bản trên mây, gộp với tiến độ trong máy bằng `mergeSt` rồi tải lên nếu khác. Nếu kết quả khác `st` hiện tại thì ghi vào `localStorage` và **tải lại trang** (để `sel`, `st.rpg`… khởi tạo lại sạch sẽ).
-  - `mergeSt` dùng max/hợp: XP, best, fixed, vàng, cấp máu, số vật phẩm, số sao từng màn lấy max; huy hiệu, modes, từ hay sai lấy hợp; bộ từ lấy bản có `t` mới hơn của từng bộ (bộ đã xoá thắng nếu xoá sau), rồi bỏ `srs`/`wrong` của bộ đã xoá; streak lấy theo ngày `last` mới hơn; `sound`, `topics` lấy theo máy đang dùng. Gộp lại lần nữa không đổi gì (nên không bị vòng lặp reload, không nhân đôi vàng).
+  - `mergeSt` dùng max/hợp: XP, best, fixed, vàng, cấp máu, số vật phẩm, số sao từng màn lấy max; huy hiệu, modes, từ hay sai lấy hợp; tủ đồ: `own` lấy hợp, `wear` theo `t` mới hơn; bộ từ lấy bản có `t` mới hơn của từng bộ (bộ đã xoá thắng nếu xoá sau), rồi bỏ `srs`/`wrong` của bộ đã xoá; streak lấy theo ngày `last` mới hơn; `sound`, `topics` lấy theo máy đang dùng. Gộp lại lần nữa không đổi gì (nên không bị vòng lặp reload, không nhân đôi vàng).
   - Tiến độ trong máy chỉ được gộp nếu là của khách hoặc của chính tài khoản đó (`OWNER_KEY`); tiến độ của tài khoản khác thì bỏ qua và lấy bản trên mây.
 - **Khi đang đăng nhập**: `save()` gọi `onSaved` → `queueUpload` (gom 2 giây rồi tải lên); khi tab bị ẩn thì tải lên ngay.
 - **Đăng xuất**: tải lên lần cuối, rồi xoá tiến độ trong máy và tải lại → máy trở về khách mới (tránh người sau thấy/gộp nhầm tiến độ).

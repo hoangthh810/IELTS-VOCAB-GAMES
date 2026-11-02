@@ -38,7 +38,7 @@ const kpt=(k,x,y)=>[BX+x*(k.scale||1),GY+y*(k.scale||1)]; // point on the enemy,
 // ---------- events from the battle ----------
 function sceneHeroAttack(word,dmg,power){ // power: 0 normal, 1 combo, 2 rage potion
   const s=SC,[x1,y1]=kpt(s.kind,-10,s.kind.cy);s.hero.cast=s.t;
-  s.shots.push({k:'word',word,dmg,power,x0:HX+40,y0:GY-118,x1,y1,t0:s.t+.18,dur:.42});
+  s.shots.push({k:'word',word,dmg,power,x0:HX+70,y0:GY-100,x1,y1,t0:s.t+.18,dur:.42});
 }
 function sceneBossAttack(dmg,blocked){
   const s=SC,k=s.kind,[x0,y0]=kpt(k,k.mx,k.my);s.boss.atk=s.t;
@@ -179,7 +179,7 @@ function hpBar(c,s,x,y,name,txt,v,ghost,cols,side){
 function wrapText(c,txt,max){const out=[];let cur='';for(const w of txt.split(' ')){const n=cur?cur+' '+w:w;if(c.measureText(n).width>max&&cur){out.push(cur);cur=w}else cur=n}if(cur)out.push(cur);return out}
 function fitText(c,txt,max){while(txt.length>3&&c.measureText(txt).width>max)txt=txt.slice(0,-2);return txt}
 
-// ---------- hero: student with a giant pencil ----------
+// ---------- hero: a cat dressed from the closet (closet.js) ----------
 function drawHero(c,s){
   const h=s.hero,t=s.t;let x=HX,y=GY,rot=0,arm=-.25+Math.sin(t*3)*.06,breathe=1+Math.sin(t*3)*.015;
   const ck=(t-h.cast)/.5,casting=ck>=0&&ck<1;if(casting){const q=Math.sin(ck*Math.PI);x+=q*22;arm=-.25-q*1.9}
@@ -189,41 +189,104 @@ function drawHero(c,s){
   const intro=ease(t/.6);x-=(1-intro)*120;
   ell(c,x,GY+4,34*(h.dead?1.4:1),7,'rgba(15,23,42,.18)');
   c.save();c.translate(x,y);c.rotate(rot);c.scale(1,breathe);c.globalAlpha=intro;
-  // legs + shoes
-  c.fillStyle='#334155';rr(c,-15,-32,12,32,5);c.fill();rr(c,3,-32,12,32,5);c.fill();
-  ell(c,-9,-1,10,5,'#111827');ell(c,10,-1,10,5,'#111827');
-  // hoodie
-  c.fillStyle='#6d28d9';rr(c,-22,-78,44,50,14);c.fill();
-  c.fillStyle='#8b5cf6';rr(c,-22,-44,44,10,4);c.fill();
-  c.fillStyle='#ede9fe';c.font=`900 13px ${FONT}`;c.textAlign='center';c.fillText('6.5',0,-52);
-  // back arm
-  c.save();c.translate(-18,-70);c.rotate(.25+Math.sin(t*3)*.05);c.fillStyle='#5b21b6';rr(c,-5,0,10,28,5);c.fill();ell(c,0,30,6,6,'#f9d4b0');c.restore();
-  // head
-  ell(c,0,-100,24,24,'#f9d4b0');
-  c.fillStyle='#3b2a20';c.beginPath();c.arc(0,-104,25,Math.PI*1.05,Math.PI*1.95);c.lineTo(18,-100);c.quadraticCurveTo(4,-112,-14,-100);c.closePath();c.fill();
-  const blink=(t%3.6)<.12;
-  if(hurt||h.dead){c.strokeStyle='#1f2937';c.lineWidth=2.5;for(const ex of[-8,9]){c.beginPath();c.moveTo(ex-4,-102);c.lineTo(ex+4,-96);c.moveTo(ex+4,-102);c.lineTo(ex-4,-96);c.stroke()}}
-  else for(const ex of[-7,10])ell(c,ex,-99,3.2,blink?.6:3.6,'#1f2937');
-  ell(c,-13,-91,4,2.5,'rgba(244,114,182,.5)');ell(c,17,-91,4,2.5,'rgba(244,114,182,.5)');
-  c.strokeStyle='#7c2d12';c.lineWidth=2;c.beginPath();
-  if(hurt||h.dead)c.arc(3,-86,3.5,0,Math.PI*2);else if(casting){c.moveTo(-2,-88);c.lineTo(8,-88)}else c.arc(3,-90,6,.2,Math.PI-.2);c.stroke();
-  // graduation cap with tassel
-  c.fillStyle='#1f2937';rr(c,-16,-128,32,10,3);c.fill();
-  c.beginPath();c.moveTo(-32,-128);c.lineTo(0,-139);c.lineTo(32,-128);c.lineTo(0,-118);c.closePath();c.fill();
-  const tz=Math.sin(t*2.5)*.25;c.strokeStyle='#f59e0b';c.lineWidth=2;c.beginPath();c.moveTo(0,-128);c.lineTo(24,-127);c.lineTo(24+Math.sin(tz)*10,-110);c.stroke();ell(c,24+Math.sin(tz)*10,-108,3,4,'#f59e0b');
-  // front arm with the pencil
-  c.save();c.translate(18,-70);c.rotate(arm);
-  c.fillStyle='#6d28d9';rr(c,-5,0,10,28,5);c.fill();ell(c,0,30,6.5,6.5,'#f9d4b0');
-  c.translate(0,30);c.rotate(-1.35);
-  c.fillStyle='#f472b6';rr(c,-4,-6,10,12,3);c.fill();c.fillStyle='#9ca3af';c.fillRect(6,-6,5,12);
-  c.fillStyle='#facc15';c.fillRect(11,-6,40,12);c.fillStyle='#eab308';c.fillRect(11,-1,40,2);
-  c.fillStyle='#fde68a';c.beginPath();c.moveTo(51,-6);c.lineTo(63,0);c.lineTo(51,6);c.closePath();c.fill();
-  if(casting){c.shadowColor='#c4b5fd';c.shadowBlur=20}
-  ell(c,61,0,2.5,2.5,casting?'#ffffff':'#1f2937');c.restore();
+  drawCat(c,{t,arm,casting,sad:hurt||!!h.dead,blink:(t%3.6)<.12},wearing());
   c.restore();
   if(B&&B.shield&&!h.dead){c.save();c.globalAlpha=.25+Math.sin(t*4)*.08;ell(c,x,GY-70,62,82,'#60a5fa');c.globalAlpha=.8;c.strokeStyle='#93c5fd';c.lineWidth=3;c.beginPath();c.ellipse(x,GY-70,62,82,0,0,Math.PI*2);c.stroke();c.restore()}
   if(B&&B.rage&&!h.dead){c.save();c.globalAlpha=.5+Math.sin(t*8)*.2;c.font=`22px ${FONT}`;c.textAlign='center';c.fillText('💢',x-30,GY-140);c.restore()}
 }
+// fur: a main, b belly/muzzle, s stripes or patches, p second patch colour, pt: Siamese dark points
+const FURS={ginger:{a:'#f59f4a',b:'#fde3c4',s:'#d9772b',tabby:1},grey:{a:'#9aa3ad',b:'#e9ecef',s:'#6b7480',tabby:1},black:{a:'#3a3337',b:'#55494f',s:'#2a2427'},
+  white:{a:'#f7f3ef',b:'#ffffff',s:'#e2d8cd'},calico:{a:'#f7f3ef',b:'#ffffff',s:'#ec8f3c',p:'#3b3236'},siamese:{a:'#f1e4d1',b:'#faf3e8',s:'#5e4033',pt:1}};
+// the cat stands on (0,0) facing right; o = {t, arm (front arm angle), casting, sad, blink}; w = {fur, hat, face, body, neck, hand}
+function drawCat(c,o,w){
+  const F=FURS[w.fur]||FURS.ginger,t=o.t,cl=OUTFIT.body[w.body],sleeve=cl&&cl.sleeve||F.a,dark=F.pt?F.s:F.a;
+  // tail
+  const sw=Math.sin(t*2.2)*7;c.lineCap='round';c.lineWidth=9;c.strokeStyle=F.a;c.beginPath();c.moveTo(-14,-24);c.quadraticCurveTo(-46,-34+sw*.3,-38+sw,-70);c.stroke();
+  c.strokeStyle=F.pt?F.s:F.s;c.lineWidth=9;c.beginPath();c.moveTo(-39+sw*.9,-62);c.lineTo(-38+sw,-70);c.stroke();
+  // back arm
+  c.save();c.translate(-17,-62);c.rotate(.28+Math.sin(t*3)*.05);c.fillStyle=sleeve;rr(c,-5,0,10,24,5);c.fill();ell(c,0,25,6,6,F.pt?F.s:F.b);c.restore();
+  // legs, body, belly
+  ell(c,-9,-8,8,9,F.a);ell(c,9,-8,8,9,F.a);ell(c,-8,-2,9,5,F.pt?F.s:F.b);ell(c,11,-2,9,5,F.pt?F.s:F.b);
+  ell(c,0,-42,21,28,F.a);ell(c,3,-37,12,19,F.b);
+  if(F.tabby){c.strokeStyle=F.s;c.lineWidth=3;for(const yy of[-56,-44,-32]){c.beginPath();c.moveTo(-20,yy);c.quadraticCurveTo(-14,yy+3,-10,yy-1);c.stroke()}}
+  if(F.p){ell(c,-11,-48,8,10,F.s);ell(c,12,-28,7,6,F.p)}
+  if(cl&&cl.draw)cl.draw(c,t);
+  const nk=OUTFIT.neck[w.neck];if(nk&&nk.draw)nk.draw(c,t);
+  // head
+  for(const sx of[-1,1]){c.fillStyle=F.pt?F.s:F.a;c.beginPath();c.moveTo(sx*26,-110);c.lineTo(sx*22,-142);c.lineTo(sx*5,-125);c.closePath();c.fill();
+    c.fillStyle='#f9b4c8';c.beginPath();c.moveTo(sx*21,-115);c.lineTo(sx*19.5,-134);c.lineTo(sx*10,-124);c.closePath();c.fill()}
+  ell(c,0,-102,29,25,F.a);
+  if(F.pt)ell(c,3,-97,17,14,'rgba(94,64,51,.75)');
+  if(F.tabby){c.strokeStyle=F.s;c.lineWidth=3;for(const dx of[-7,0,7]){c.beginPath();c.moveTo(dx,-126);c.lineTo(dx*.8,-117);c.stroke()}}
+  if(F.p){ell(c,-14,-112,11,9,F.s);ell(c,15,-114,8,8,F.p)}
+  ell(c,4,-92,13,9,F.pt?'rgba(94,64,51,.6)':F.b);
+  ell(c,-14,-92,5,3,'rgba(244,114,182,.45)');ell(c,21,-92,5,3,'rgba(244,114,182,.45)');
+  if(o.sad){c.strokeStyle='#2b2118';c.lineWidth=2.5;for(const ex of[-8,13]){c.beginPath();c.moveTo(ex-4,-108);c.lineTo(ex+4,-100);c.moveTo(ex+4,-108);c.lineTo(ex-4,-100);c.stroke()}}
+  else for(const ex of[-8,13]){ell(c,ex,-104,4.4,o.blink?.7:5.6,'#2b2118');if(!o.blink)ell(c,ex+1.4,-106,1.5,1.7,'#fff')}
+  c.fillStyle='#f06595';c.beginPath();c.moveTo(1,-96);c.lineTo(7,-96);c.lineTo(4,-92.5);c.closePath();c.fill();
+  c.strokeStyle='#2b2118';c.lineWidth=1.6;c.beginPath();
+  if(o.sad)c.arc(4,-87,2.6,0,Math.PI*2);else if(o.casting){c.moveTo(0,-89);c.quadraticCurveTo(4,-84,8,-89)}else{c.moveTo(4,-92.5);c.quadraticCurveTo(2,-88,-1,-90);c.moveTo(4,-92.5);c.quadraticCurveTo(6,-88,9,-90)}c.stroke();
+  c.strokeStyle='rgba(43,33,24,.55)';c.lineWidth=1.2;c.beginPath();
+  for(const [x0,x1,dy] of[[-10,-32,-3],[-10,-32,3],[18,40,-3],[18,40,3]]){c.moveTo(x0,-93);c.lineTo(x1,-93+dy*1.6)}c.stroke();
+  const fc=OUTFIT.face[w.face];if(fc&&fc.draw)fc.draw(c,t);
+  const ht=OUTFIT.hat[w.hat];if(ht&&ht.draw)ht.draw(c,t);
+  // front arm with the weapon
+  c.save();c.translate(17,-62);c.rotate(o.arm);c.fillStyle=sleeve;rr(c,-5,0,10,26,5);c.fill();ell(c,0,27,6.5,6.5,F.pt?F.s:F.b);
+  c.translate(0,27);c.rotate(-.75+(-.25-o.arm)/1.9*2.6);const hd=OUTFIT.hand[w.hand]; /* up-right at rest, toward the enemy while casting */if(hd&&hd.draw)hd.draw(c,o.casting);c.restore();
+}
+const star=(c,x,y,r,col)=>{c.fillStyle=col;c.beginPath();for(let j=0;j<10;j++){const a=-Math.PI/2+j*Math.PI/5,q=j%2?r*.45:r;c.lineTo(x+Math.cos(a)*q,y+Math.sin(a)*q)}c.closePath();c.fill()};
+const glint=(c,on)=>{if(on){c.shadowColor='#fde68a';c.shadowBlur=20}};
+// every item: n name, e icon, p price in gold (0 = owned from the start); draw(c,t) at the cat's origin
+const OUTFIT={
+ fur:{ginger:{n:'Mèo mướp',e:'🧡',p:0},grey:{n:'Mèo xám',e:'🌫️',p:150},black:{n:'Mèo mun',e:'🖤',p:150},white:{n:'Mèo trắng',e:'🤍',p:150},calico:{n:'Mèo tam thể',e:'🎨',p:300},siamese:{n:'Mèo Xiêm',e:'🤎',p:300}},
+ hat:{
+  cap:{n:'Mũ tốt nghiệp',e:'🎓',p:0,draw:(c,t)=>{c.fillStyle='#1f2937';rr(c,-15,-131,30,9,3);c.fill();c.beginPath();c.moveTo(-31,-131);c.lineTo(0,-142);c.lineTo(31,-131);c.lineTo(0,-121);c.closePath();c.fill();
+    const tz=Math.sin(t*2.5)*.25;c.strokeStyle='#f59e0b';c.lineWidth=2;c.beginPath();c.moveTo(0,-131);c.lineTo(23,-130);c.lineTo(23+Math.sin(tz)*10,-114);c.stroke();ell(c,23+Math.sin(tz)*10,-112,3,4,'#f59e0b')}},
+  bow:{n:'Nơ hồng',e:'🎀',p:80,draw:c=>{ell(c,8,-131,9,6,'#f783ac',-.5);ell(c,24,-133,9,6,'#f783ac',.5);ell(c,16,-132,4,4,'#e64980')}},
+  beanie:{n:'Mũ len',e:'🧶',p:120,draw:c=>{c.fillStyle='#4dabf7';c.beginPath();c.arc(0,-117,24,Math.PI,0);c.closePath();c.fill();c.fillStyle='#1c7ed6';rr(c,-26,-121,52,9,4);c.fill();
+    c.fillStyle='rgba(255,255,255,.35)';for(const dx of[-12,0,12])c.fillRect(dx-1.5,-138,3,16);ell(c,0,-142,7,7,'#fff')}},
+  nonla:{n:'Nón lá',e:'👒',p:200,draw:c=>{c.fillStyle='#e9c46a';c.beginPath();c.moveTo(-42,-118);c.lineTo(0,-150);c.lineTo(42,-118);c.quadraticCurveTo(0,-112,-42,-118);c.fill();
+    c.strokeStyle='#c99a3a';c.lineWidth=1.2;for(const k of[.35,.6,.82]){c.beginPath();c.moveTo(-42*k,-150+32*k);c.quadraticCurveTo(0,-150+28*k,42*k,-150+32*k);c.stroke()}
+    c.strokeStyle='#e64980';c.lineWidth=1.5;c.beginPath();c.moveTo(-22,-117);c.quadraticCurveTo(4,-70,26,-117);c.stroke()}},
+  witch:{n:'Mũ phù thuỷ',e:'🧙',p:350,draw:(c,t)=>{ell(c,0,-124,36,7,'#3b2f6b');c.fillStyle='#4c3d8f';c.beginPath();c.moveTo(-17,-125);c.quadraticCurveTo(-4,-150,12+Math.sin(t*2)*2,-172);c.quadraticCurveTo(4,-146,17,-125);c.closePath();c.fill();
+    c.fillStyle='#fcc419';c.fillRect(-16,-133,32,6);star(c,4,-150,5,'#fcc419')}},
+  crown:{n:'Vương miện',e:'👑',p:500,draw:(c,t)=>{c.fillStyle='#fcc419';c.beginPath();c.moveTo(-18,-122);c.lineTo(-20,-146);c.lineTo(-10,-134);c.lineTo(0,-150);c.lineTo(10,-134);c.lineTo(20,-146);c.lineTo(18,-122);c.closePath();c.fill();
+    c.fillStyle='#f59f00';c.fillRect(-18,-128,36,6);ell(c,0,-125,3,3,'#e03131');ell(c,-11,-125,2.5,2.5,'#339af0');ell(c,11,-125,2.5,2.5,'#2f9e44');
+    c.globalAlpha=.5+Math.sin(t*4)*.5;star(c,14,-150,3.5,'#fff');c.globalAlpha=1}}},
+ face:{
+  round:{n:'Kính tròn',e:'👓',p:100,draw:c=>{c.strokeStyle='#2b2118';c.lineWidth=2.2;for(const ex of[-8,13]){c.beginPath();c.arc(ex,-104,8,0,Math.PI*2);c.stroke()}c.beginPath();c.moveTo(0,-105);c.lineTo(5,-105);c.moveTo(-16,-106);c.lineTo(-27,-109);c.stroke()}},
+  sun:{n:'Kính râm',e:'🕶️',p:180,draw:c=>{c.fillStyle='#212529';rr(c,-18,-111,19,13,5);c.fill();rr(c,4,-111,19,13,5);c.fill();c.fillRect(0,-108,5,3);
+    c.fillStyle='rgba(255,255,255,.4)';c.fillRect(-14,-108,6,2);c.fillRect(8,-108,6,2)}},
+  heart:{n:'Kính trái tim',e:'💖',p:220,draw:c=>{c.fillStyle='rgba(240,101,149,.9)';for(const ex of[-8,13]){c.beginPath();c.moveTo(ex,-97);c.bezierCurveTo(ex-13,-106,ex-6,-115,ex,-108);c.bezierCurveTo(ex+6,-115,ex+13,-106,ex,-97);c.fill()}
+    c.strokeStyle='#c2255c';c.lineWidth=2;c.beginPath();c.moveTo(-1,-106);c.lineTo(4,-106);c.stroke()}}},
+ body:{
+  hoodie:{n:'Áo hoodie 6.5',e:'🟣',p:0,sleeve:'#5b21b6',draw:c=>{c.fillStyle='#6d28d9';rr(c,-21,-68,42,46,14);c.fill();c.fillStyle='#8b5cf6';rr(c,-21,-30,42,9,4);c.fill();
+    c.fillStyle='#ede9fe';c.font=`900 12px ${FONT}`;c.textAlign='center';c.fillText('6.5',2,-42)}},
+  sailor:{n:'Áo thuỷ thủ',e:'⚓',p:200,sleeve:'#f8f9fa',draw:c=>{c.fillStyle='#f8f9fa';rr(c,-21,-68,42,46,14);c.fill();c.fillStyle='#4dabf7';for(const yy of[-48,-38,-28])c.fillRect(-20,yy,40,3.5);
+    c.fillStyle='#1971c2';c.beginPath();c.moveTo(-18,-68);c.lineTo(20,-68);c.lineTo(2,-50);c.closePath();c.fill();ell(c,2,-52,4,3,'#e03131')}},
+  robe:{n:'Áo choàng phù thuỷ',e:'🔮',p:350,sleeve:'#364fc7',draw:(c,t)=>{c.fillStyle='#3b5bdb';c.beginPath();c.moveTo(-15,-70);c.lineTo(17,-70);c.lineTo(27,-12);c.quadraticCurveTo(2,-6,-24,-12);c.closePath();c.fill();
+    c.fillStyle='#fcc419';rr(c,-2,-70,6,58,3);c.fill();star(c,-12,-34,4,'#fff3bf');star(c,15,-46,3,'#fff3bf');c.globalAlpha=.6+Math.sin(t*3)*.4;star(c,12,-22,3.5,'#fff3bf');c.globalAlpha=1}},
+  aodai:{n:'Áo dài',e:'👘',p:400,sleeve:'#c2255c',draw:c=>{c.fillStyle='#d6336c';rr(c,-19,-70,38,52,12);c.fill();c.beginPath();c.moveTo(-14,-24);c.lineTo(18,-24);c.lineTo(14,-4);c.lineTo(-10,-4);c.closePath();c.fill();
+    c.fillStyle='#fcc419';rr(c,-6,-72,14,5,2);c.fill();for(const [px,py] of[[-8,-54],[10,-46],[-4,-34],[8,-16]]){ell(c,px,py,3,3,'#ffd43b');ell(c,px,py,1.3,1.3,'#d6336c')}}},
+  armor:{n:'Áo giáp hiệp sĩ',e:'🛡️',p:600,sleeve:'#868e96',draw:c=>{c.fillStyle=lingrad(c,-21,0,21,0,['#adb5bd','#f1f3f5','#adb5bd']);rr(c,-21,-68,42,46,12);c.fill();
+    ell(c,-19,-64,9,8,'#ced4da');ell(c,21,-64,9,8,'#ced4da');c.fillStyle='#e03131';c.beginPath();c.moveTo(-7,-56);c.lineTo(11,-56);c.lineTo(11,-42);c.quadraticCurveTo(2,-32,-7,-42);c.closePath();c.fill();
+    c.fillStyle='#fcc419';c.fillRect(1,-54,2,14);c.fillRect(-4,-49,12,2)}}},
+ neck:{
+  bell:{n:'Chuông vàng',e:'🔔',p:60,draw:(c,t)=>{c.strokeStyle='#e03131';c.lineWidth=4;c.beginPath();c.arc(2,-96,25,Math.PI*.36,Math.PI*.64);c.stroke();
+    const sw=Math.sin(t*5)*1.5;ell(c,3+sw,-68,5.5,5.5,'#fcc419');c.fillStyle='#b8860b';c.fillRect(1+sw,-68,4,1.5)}},
+  bowtie:{n:'Nơ cổ',e:'🎩',p:90,draw:c=>{c.fillStyle='#e64980';c.beginPath();c.moveTo(3,-72);c.lineTo(-8,-78);c.lineTo(-8,-66);c.closePath();c.moveTo(3,-72);c.lineTo(14,-78);c.lineTo(14,-66);c.closePath();c.fill();ell(c,3,-72,3,3,'#c2255c')}},
+  scarf:{n:'Khăn quàng đỏ',e:'🧣',p:120,draw:(c,t)=>{c.fillStyle='#e03131';rr(c,-18,-77,40,8,4);c.fill();const sw=Math.sin(t*3)*2;
+    c.beginPath();c.moveTo(4,-72);c.lineTo(-4+sw,-50);c.lineTo(4+sw,-52);c.closePath();c.moveTo(6,-72);c.lineTo(14+sw,-52);c.lineTo(20+sw,-56);c.closePath();c.fill();ell(c,5,-72,4,4,'#c92a2a')}}},
+ hand:{
+  pencil:{n:'Bút chì phép',e:'✏️',p:0,draw:(c,on)=>{c.fillStyle='#f472b6';rr(c,-4,-6,10,12,3);c.fill();c.fillStyle='#9ca3af';c.fillRect(6,-6,5,12);
+    c.fillStyle='#facc15';c.fillRect(11,-6,40,12);c.fillStyle='#eab308';c.fillRect(11,-1,40,2);c.fillStyle='#fde68a';c.beginPath();c.moveTo(51,-6);c.lineTo(63,0);c.lineTo(51,6);c.closePath();c.fill();
+    glint(c,on);ell(c,61,0,2.5,2.5,on?'#ffffff':'#1f2937')}},
+  fish:{n:'Cá khô',e:'🐟',p:150,draw:(c,on)=>{c.fillStyle='#74c0fc';c.beginPath();c.ellipse(32,0,22,9,0,0,Math.PI*2);c.fill();c.beginPath();c.moveTo(10,0);c.lineTo(-2,-9);c.lineTo(-2,9);c.closePath();c.fill();
+    c.strokeStyle='#4dabf7';c.lineWidth=1.5;for(const dx of[22,30,38]){c.beginPath();c.moveTo(dx,-6);c.lineTo(dx+3,6);c.stroke()}glint(c,on);ell(c,47,-2,2.5,2.5,on?'#fff':'#1f2937')}},
+  wand:{n:'Đũa phép',e:'🪄',p:250,draw:(c,on)=>{c.fillStyle='#5c3d2e';rr(c,-2,-3,48,6,3);c.fill();c.fillStyle='#fcc419';c.fillRect(4,-3,6,6);glint(c,on);star(c,54,0,on?12:9,'#ffd43b')}}}};
+const SLOTS=[['fur','🐱','Bộ lông'],['hat','🎩','Mũ'],['face','👓','Kính'],['body','👕','Áo'],['neck','🎀','Cổ'],['hand','🪄','Vũ khí']];
+const WEAR0={fur:'ginger',hat:'cap',face:'',body:'hoodie',neck:'',hand:'pencil'}; // '' = nothing in that slot
+const wearing=()=>({...WEAR0,...st.closet.wear});
 
 // ================= WORLDS (backgrounds) =================
 // bg(c,i) is drawn once per battle; live(c,s) adds the moving details every frame.

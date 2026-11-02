@@ -39,7 +39,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('.spk');if(b)spea
 
 // ---------- storage ----------
 const KEY='ielts-vocab-arena-v1';
-let st={xp:0,streak:0,last:null,badges:[],modes:[],wrong:{},fixed:0,best:0,sound:true,topics:null,srs:{},wk:null,lb:null,decks:{}};
+let st={xp:0,streak:0,last:null,badges:[],modes:[],wrong:{},fixed:0,best:0,sound:true,topics:null,srs:{},wk:null,lb:null,decks:{},closet:{own:[],wear:{},t:0}};
 try{Object.assign(st,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
 let onSaved=null; // set by sync.js while signed in, to push progress to the cloud
 const save=()=>{rollWeek();try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}if(onSaved)onSaved()};
