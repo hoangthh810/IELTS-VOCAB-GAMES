@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vocab Arena</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="wrap">
+
+<!-- HOME -->
+<div class="screen show" id="home">
+  <header>
+    <div class="logo">Vocab <span>Arena</span> 🎮</div>
+    <button class="icon-btn" id="soundBtn" title="Âm thanh">🔊</button>
+  </header>
+  <div class="stats">
+    <div class="stat"><b id="sStreak">0</b><small>🔥 ngày liên tiếp</small></div>
+    <div class="stat"><b id="sXp">0</b><small>⭐ tổng XP</small></div>
+    <div class="stat"><b id="sWrong">0</b><small>📕 từ hay sai</small></div>
+  </div>
+  <div class="level">
+    <div class="row"><span id="lvName">Level 1</span><span id="lvNext"></span></div>
+    <div class="bar"><i id="lvBar"></i></div>
+  </div>
+  <button class="adv" id="advBtn"><div class="e">⚔️</div><div><b>Phiêu lưu đánh Boss</b><span>18 màn · rương thưởng · bình máu · trùm cuối Rồng IELTS 🐲</span></div></button>
+
+  <h2>1. Chọn chủ đề</h2>
+  <div class="chips" id="chips"></div>
+
+  <h2>2. Chọn trò chơi <small class="empty">(mỗi lượt 12 câu)</small></h2>
+  <div class="modes">
+    <button class="mode" data-mode="quiz"><div class="e">🎯</div><b>Quiz nghĩa</b><span>Chọn nghĩa đúng, Anh ↔ Việt</span></button>
+    <button class="mode" data-mode="fill"><div class="e">✍️</div><b>Điền từ</b><span>Gõ từ còn thiếu trong câu, luyện chính tả</span></button>
+    <button class="mode" data-mode="col"><div class="e">🧩</div><b>Collocation</b><span>Hoàn thành cụm từ đúng chuẩn IELTS</span></button>
+    <button class="mode" data-mode="mix"><div class="e">🌀</div><b>Hỗn hợp</b><span>Trộn cả 3 dạng, khó đoán nhất</span></button>
+  </div>
+
+  <h2>🏅 Huy hiệu</h2>
+  <div class="badges" id="badges"></div>
+  <footer>Đúng liên tiếp để tăng combo: cứ 3 câu đúng thì điểm nhân thêm (tối đa x4). Từ trả lời sai được lưu vào “Từ hay sai” để ôn lại.<br>Phím tắt: 1–4 chọn đáp án, Enter để tiếp tục.</footer>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="game">
+  <div class="topbar"><button class="quit" id="quit" title="Thoát">✕</button><div class="bar"><i id="gBar"></i></div></div>
+  <div class="hud"><span class="combo" id="combo">🔥 Combo 0 · x1</span><span class="score" id="score">0</span></div>
+  <div class="qcard">
+    <div class="qtype" id="qType"></div>
+    <div class="qmain" id="qMain"></div>
+    <div class="qsub" id="qSub"></div>
+    <div class="qhint" id="qHint"></div>
+  </div>
+  <div class="opts" id="opts"></div>
+  <form class="type" id="typeForm" style="display:none" autocomplete="off">
+    <input id="typeIn" placeholder="Gõ đáp án..." autocapitalize="off" spellcheck="false">
+    <button class="btn" type="submit">Kiểm tra</button>
+  </form>
+  <div style="text-align:center;margin-top:10px"><button class="btn ghost" id="skip" style="display:none">Bỏ qua 🤷</button></div>
+  <div class="feedback" id="fb"><div class="t" id="fbT"></div><div id="fbA"></div><div class="ex" id="fbEx"></div><button class="btn" id="next">Tiếp tục →</button></div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="result">
+  <div class="result">
+    <div class="big" id="rEmoji">🎉</div>
+    <h1 id="rTitle"></h1>
+    <div class="empty" id="rSub"></div>
+    <div class="rgrid">
+      <div class="stat"><b id="rScore">0</b><small>điểm</small></div>
+      <div class="stat"><b id="rAcc">0</b><small>câu đúng</small></div>
+      <div class="stat"><b id="rCombo">0</b><small>combo cao nhất</small></div>
+    </div>
+  </div>
+  <div class="review" id="review"></div>
+  <div class="actions"><button class="btn" id="again">Chơi lại 🔁</button><button class="btn ghost" id="toHome">Về trang chủ</button></div>
+</div>
+
+<!-- MAP -->
+<div class="screen" id="map">
+  <div class="topbar"><button class="quit" id="mapBack" title="Về trang chủ">←</button><div class="logo" style="font-size:24px">⚔️ <span>Phiêu lưu</span></div></div>
+  <div class="mapbar" id="mapbar"></div>
+  <h2>🗺️ Chọn màn</h2>
+  <div class="stages" id="stages"></div>
+  <h2>🏪 Cửa hàng</h2>
+  <div class="shop" id="shop"></div>
+  <footer>Trả lời đúng để tấn công boss. Câu càng khó, sát thương càng cao: 🎯 Quiz 20 · 🧩 Collocation 26 · ✍️ Điền từ 36. Đúng liên tiếp thì sát thương tăng thêm (tối đa +50%).<br>Trả lời sai hoặc hết giờ thì boss đánh lại. Boss dưới 30% máu sẽ nổi điên và đánh mạnh hơn!</footer>
+</div>
+
+<!-- BATTLE -->
+<div class="screen" id="battle">
+  <div class="topbar"><button class="quit" id="bQuit" title="Thoát">✕</button><b id="bStage" style="flex:1;font-size:15px"></b><span class="combo" id="bCombo">🔥 0</span></div>
+  <div class="arena" id="arena">
+    <div class="bossrow"><div class="boss" id="bossE"></div><div class="binfo"><b id="bossN"></b><span class="tag" id="rageTag">😡 NỔI ĐIÊN</span>
+      <div class="hpbar boss-hp"><i id="bossBar"></i></div><div class="hptxt" id="bossTxt"></div>
+      <div class="bubble" id="bubble"></div></div></div>
+    <div class="merow"><div class="me" id="meE">🧑‍🎓</div><div class="binfo"><b>Bạn</b> <span class="status" id="meStatus"></span>
+      <div class="hpbar me-hp"><i id="meBar"></i></div><div class="hptxt" id="meTxt"></div></div></div>
+  </div>
+  <div class="items" id="items"></div>
+  <div class="qcard">
+    <div class="qtype" id="bqType"></div><div class="diff" id="bqDiff"></div>
+    <div class="qmain" id="bqMain"></div><div class="qsub" id="bqSub"></div><div class="qhint" id="bqHint"></div>
+    <div class="timer"><i id="tBar"></i></div>
+  </div>
+  <div class="opts" id="bOpts"></div>
+  <form class="type" id="bForm" style="display:none" autocomplete="off"><input id="bIn" placeholder="Gõ đáp án..." autocapitalize="off" spellcheck="false"><button class="btn" type="submit">Tấn công ⚔️</button></form>
+  <div class="feedback" id="bFb"><div class="t" id="bFbT"></div><div id="bFbA"></div><div class="ex" id="bFbEx"></div><button class="btn" id="bNext">Tiếp tục →</button></div>
+</div>
+<div class="flash" id="flash"></div>
+
+<!-- VICTORY -->
+<div class="screen" id="victory"><div class="result">
+  <div class="big">🏆</div><h1 id="vTitle"></h1><div class="bigstars" id="vStars"></div><div class="empty" id="vSub"></div>
+  <button class="chest" id="chest">🎁</button><div class="empty" id="chestHint">Chạm vào rương để mở!</div>
+  <div class="rewards" id="rewards"></div>
+  <div class="actions" id="vActions" style="display:none"><button class="btn" id="vNext">Màn tiếp theo ▶</button><button class="btn ghost" id="vMap">Bản đồ 🗺️</button></div>
+</div></div>
+
+<!-- DEFEAT -->
+<div class="screen" id="defeat">
+  <div class="result"><div class="big">💀</div><h1>Bạn đã gục ngã...</h1><div class="empty" id="dSub"></div></div>
+  <div class="review" id="dReview"></div>
+  <div class="actions"><button class="btn" id="dRetry">Thử lại 🔁</button><button class="btn ghost" id="dMap">Bản đồ 🗺️</button></div>
+</div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/core.js"></script>
+<script src="js/questions.js"></script>
+<script src="js/practice.js"></script>
+<script src="js/boss.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
