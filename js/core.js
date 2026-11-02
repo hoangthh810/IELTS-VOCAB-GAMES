@@ -34,11 +34,12 @@ function speak(text){
 const spk=text=>canSpeak?`<button class="spk" type="button" data-say="${esc(text)}" title="Nghe phát âm">🔊</button>`:'';
 const ipaTag=it=>it.ipa?` <span class="ipa">${esc(it.ipa)}</span>`:'';
 const termHtml=it=>`<b>${esc(it.term)}</b>${ipaTag(it)}${spk(it.term)}`;
+const exLine=it=>it.ex?`📝 ${hlEx(it.ex,it.term)}`:''; // imported words may have no example
 document.addEventListener('click',e=>{const b=e.target.closest('.spk');if(b)speak(b.dataset.say)});
 
 // ---------- storage ----------
 const KEY='ielts-vocab-arena-v1';
-let st={xp:0,streak:0,last:null,badges:[],modes:[],wrong:{},fixed:0,best:0,sound:true,topics:null,srs:{},wk:null,lb:null};
+let st={xp:0,streak:0,last:null,badges:[],modes:[],wrong:{},fixed:0,best:0,sound:true,topics:null,srs:{},wk:null,lb:null,decks:{}};
 try{Object.assign(st,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
 let onSaved=null; // set by sync.js while signed in, to push progress to the cloud
 const save=()=>{rollWeek();try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}if(onSaved)onSaved()};

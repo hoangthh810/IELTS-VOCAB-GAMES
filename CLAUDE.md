@@ -14,6 +14,7 @@ index.html          HTML khung: 7 màn hình .screen + nạp CSS/JS
 css/style.css       Toàn bộ CSS
 js/data.js          const DATA — dữ liệu 19 chủ đề
 js/core.js          ALL/BYID, helper, lưu trữ st/save, huy hiệu, hiệu ứng, âm thanh, show()
+js/decks.js         Bộ từ tự nhập: đọc file/dán bảng, màn #decks, gắn từ vào ALL/BYID
 js/questions.js     pool(), makeQuiz / makeFill / makeCol
 js/practice.js      Trang chủ (chọn chủ đề) + chế độ luyện tập thường (cả lượt ôn bằng câu hỏi)
 js/srs.js           Ôn tập ngắt quãng (Leitner) + flashcard
@@ -33,14 +34,15 @@ archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chi�
 
 | File | Nội dung chính |
 |---|---|
-| `index.html` | 7 màn hình `.screen` — `#home`, `#game`, `#result`, `#map`, `#battle`, `#victory`, `#defeat` + `#toast`, `#flash` |
+| `index.html` | Các màn hình `.screen` — `#home`, `#decks` (bộ từ của tôi), `#cards` (flashcard), `#board` (xếp hạng), `#game`, `#result`, `#map`, `#battle`, `#victory`, `#defeat` + `#toast`, `#flash` |
 | `css/style.css` | Biến màu ở `:root` (sáng/tối theo `prefers-color-scheme` và `data-theme`), CSS cho home, game, result, phần Boss (từ comment `/* ===== boss adventure ===== */`) |
 | `js/data.js` | `const DATA = [...]` |
 | `js/core.js` | Dữ liệu dẫn xuất (`ALL`, `BYID`), helper (`esc`, `shuffle`, `pick`, `$`, `findMatch`, `hlEx`), storage (`KEY`, `st`, `save`, `dayKey`, `yesterday`, `liveStreak`), phát âm (`speak`, `spk`, `ipaTag`, `termHtml`), `BADGES`/`unlock`, hiệu ứng (`toast`, `confetti`, `plus`, `beep` dùng WebAudio), chuyển màn `show` |
-| `js/questions.js` | `STOP`, `colTokens`, `poolOverride`, `pool`, `choose`, `makeQuiz`, `makeFill`, `makeCol` (dùng chung cho chế độ thường và Boss) |
+| `js/decks.js` | `CORE_N`, `DECK_MAX`, `ST_MAX`, `isDeck`, `liveDecks`, `topicKeys`, `topicName`, `loadDecks`, `parseDeck`/`csvRow`/`guessSep`, `readText`, `download`/`toCsv`, `openDecks`, `renderDecks`, `previewImport`, `saveImport`, `deleteDeck` |
+| `js/questions.js` | `STOP`, `colTokens`, `canFill`/`canCol`/`poolTypes` (dạng câu mà một nguồn từ làm được), `poolOverride`, `pool`, `choose`, `makeQuiz`, `makeFill`, `makeCol` (dùng chung cho chế độ thường và Boss) |
 | `js/practice.js` | `sel`, `useWrong`, `renderChips`, `renderHome`, nút âm thanh; `LEN`, `G`, `start`, `next`, `answer`, `finish`, phím tắt |
 | `js/scene.js` | `sceneStart`, sự kiện `sceneHeroAttack/BossAttack/Heal/BossDie/HeroDie`, vòng lặp vẽ, hạt, đạn, HUD; `pose` (chuyển động chung của quái), `drawHero`; `WORLDS` (bối cảnh: `school`, `city`, `ocean`, `castle`) và `KINDS` (quái: `owl`, `book`, `slime`, `golem`, `jelly`, `octo`, `whelp`, `dragon`) |
-| `js/boss.js` | `BOSSES`, `ITEMS`, `DMG`, `RPG0`, `cfg`, map, shop, battle (`B`), item, victory/chest, defeat, phím tắt |
+| `js/boss.js` | `BOSSES`, `ITEMS`, `DMG`, `RPG0`, `cfg`, map, shop, battle (`B`), item, victory/chest, defeat, phím tắt; đấu trường `startArena`, `leaveBattle` |
 | `js/srs.js` | `SRS_DAYS`, `srsGrade`, `srsDue`, `srsStats`, `srsSession`, `srsType`, `renderSrs`; flashcard: `C`, `startCards`, `showCard`, `flipCard`, `gradeCard`, `endCards` |
 | `js/board.js` | `lbOn`, `lbName`, `lbUpload`, `openBoard`, `renderBoard` |
 | `js/remind.js` | `gcalUrl`, `icsFile`, `renderRemind` |
@@ -51,7 +53,7 @@ archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chi�
 
 - Dùng `<script src>` **thường** (không `type="module"`, không build tool) để mở được bằng double-click `index.html` qua `file://`. ES module và `fetch` file JSON bị chặn trên `file://`, nên **không** dùng.
 - Mọi `const`/`let`/`function` khai báo ở top-level đều là biến toàn cục dùng chung giữa các file.
-- **Thứ tự nạp trong `index.html` là bắt buộc**: `data → firebase-config → core → questions → practice → srs → scene → boss → sync → board → remind → main`. Code chạy ngay khi nạp (top-level) chỉ được dùng thứ đã khai báo ở file trước, ví dụ `core.js` cần `DATA`, `practice.js` cần `st`, `boss.js` gán `st.rpg`. Tham chiếu "ngược" (ví dụ `pool()` trong `questions.js` dùng `sel`/`useWrong` của `practice.js`, `unlock` gọi `renderHome`) chỉ hợp lệ vì nằm trong thân hàm, chạy sau khi mọi file đã nạp.
+- **Thứ tự nạp trong `index.html` là bắt buộc**: `data → firebase-config → core → decks → questions → practice → srs → scene → boss → sync → board → remind → main`. Code chạy ngay khi nạp (top-level) chỉ được dùng thứ đã khai báo ở file trước, ví dụ `core.js` cần `DATA`, `practice.js` cần `st`, `boss.js` gán `st.rpg`. Tham chiếu "ngược" (ví dụ `pool()` trong `questions.js` dùng `sel`/`useWrong` của `practice.js`, `unlock` gọi `renderHome`) chỉ hợp lệ vì nằm trong thân hàm, chạy sau khi mọi file đã nạp.
 - Script đặt cuối `<body>` nên DOM đã sẵn sàng khi gắn sự kiện.
 - Không khai báo trùng tên top-level giữa các file (sẽ lỗi `Identifier has already been declared`).
 
@@ -59,7 +61,7 @@ Font Be Vietnam Pro lấy từ Google Fonts. Thư viện JS duy nhất là Fireb
 
 ## Các chế độ chơi
 
-Mỗi lượt chơi thường có **12 câu** (`LEN = 12`). Câu hỏi lấy từ `pool()`: các chủ đề đang chọn, hoặc kho "📕 Từ hay sai" nếu bật chip đó.
+Mỗi lượt chơi thường có **12 câu** (`LEN = 12`), ít hơn nếu nguồn từ có ít hơn 12 từ dùng được cho chế độ đó (bộ tự nhập nhỏ, kho từ hay sai). Câu hỏi lấy từ `pool()`: các chủ đề (kể cả bộ tự nhập) đang chọn, hoặc kho "📕 Từ hay sai" nếu bật chip đó. `choose` lặp lại từ trong nguồn khi đã hỏi hết, chỉ mượn từ chủ đề khác khi nguồn không có từ nào dùng được.
 
 | Chế độ | `data-mode` | Hàm | Mô tả |
 |---|---|---|---|
@@ -81,6 +83,7 @@ Phím tắt: `1–4` chọn đáp án, `Enter` để sang câu tiếp.
 - Trận đánh: mỗi câu hỏi random 40% quiz / 30% col / 30% fill. Sát thương theo độ khó `DMG = {quiz:20, col:26, fill:36}`, combo cộng thêm tối đa +50%. Sai / hết giờ / bỏ qua → boss đánh lại; boss dưới 30% HP sẽ "nổi điên" (x1.3 sát thương). Mỗi câu đúng +10 XP.
 - **Vật phẩm** (`ITEMS`): 🧪 `potion` hồi 40 HP (50 vàng), 🛡️ `shield` chặn 1 đòn (60), 💡 `half` loại 2 đáp án sai / hiện nửa số chữ (40), 💢 `rage` x2 sát thương đòn đúng kế tiếp (70).
 - **Cửa hàng**: mua vật phẩm bằng vàng; "Bùa sinh lực" +15 máu tối đa vĩnh viễn, tối đa cấp 5, giá `120 × (cấp+1)`. Máu người chơi = `100 + hpLv*15`.
+- **🏟️ Đấu trường luyện tập** (`startArena(did)`, nút trên bản đồ và nút "⚔️ Đấu" ở màn bộ từ): đánh quái bằng một bộ tự nhập. Ngoại hình lấy ngẫu nhiên từ `BOSSES` (trừ trùm cuối), độ khó theo số từ (`lv = min(18, floor(số từ / 8))`), câu khiêu khích trong `ARENA_LINES`, bảng đen lớp học hiện từ của bộ (`B.c.board`). Cấu hình trận có `arena` (id bộ) và `pool`. Thắng: XP như thường, vàng `10 + sao*5`, **không** vật phẩm, **không** ghi `cleared`, không mở huy hiệu boss; thua: không có vàng an ủi. Nút quay lại về màn bộ từ (`leaveBattle`).
 - **Rương** sau khi thắng: vàng `25 + i*4 + sao*10 (+30 nếu lần đầu, +40 nếu là màn BOSS)`, số vật phẩm = số sao (+1 bình máu nếu lần đầu thắng). 3 sao → rương vàng. Thua được 10 vàng an ủi.
 
 ### 🔊 Phát âm & phiên âm
@@ -169,6 +172,7 @@ Lúc chạy, `DATA` được làm phẳng thành `ALL`, mỗi mục có dạng
 | `srs` | `{[id]: {b, d, t}}` | Lịch ôn: hộp Leitner 0–7, ngày đến hạn `YYYY-MM-DD`, thời điểm chấm gần nhất (ms) |
 | `wk` | `{k, base}` | Tuần ISO hiện tại (`2026W45`) và tổng XP lúc bắt đầu tuần → XP tuần = `xp - base` (`weekKey`, `rollWeek`, `weekXp` trong `core.js`) |
 | `lb` | `{name, on, t}` | null | Biệt danh trên bảng xếp hạng, có hiện trên bảng không, thời điểm đổi |
+| `decks` | `{[did]: {n, t, items}}` | Bộ từ tự nhập: tên, thời điểm sửa (ms), `items = [[từ, nghĩa, ví dụ, phiên âm, từ loại], ...]`; bộ đã xoá thành `{del:1, t}` |
 
 Streak được cập nhật khi kết thúc lượt chơi thường (`finish`) và khi thắng/thua trận Boss (`touchStreak`). Hiển thị dùng `liveStreak()` (về 0 nếu bỏ quá 1 ngày).
 
@@ -183,6 +187,16 @@ Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến đ
 - **Ôn bằng câu hỏi**: `start('srs')` dùng vòng chơi thường với `G.queue`/`G.len`; mỗi câu đặt `poolOverride = [thẻ]` rồi gọi `makeQuiz/makeFill/makeCol` theo `srsType` (word: quiz/điền từ, col: quiz/collocation).
 - **Flashcard** (màn `#cards`): mặt trước từ + phiên âm + loa, lật ra nghĩa + ví dụ; chấm Quên/Nhớ/Dễ (nút hiện khoảng ôn tiếp theo). Thẻ Quên được hỏi lại cuối lượt. Nhớ/Dễ +5 XP. Phím: Space lật, 1/2/3 chấm.
 - Khu "📅 Ôn tập ngắt quãng" trên trang chủ (`renderSrs`, gọi trong `renderHome`) hiện số thẻ đến hạn / đang học / đã thuộc.
+
+## 📁 Bộ từ tự nhập
+
+- Màn `#decks` (nút "📥 Nhập bộ từ vựng của bạn" dưới danh sách chủ đề). Nhập bằng cách dán vào ô văn bản (copy bảng Excel/Google Sheets, xuất Quizlet đều ngăn cách bằng Tab) hoặc chọn file `.csv`/`.txt`. File đọc bằng UTF-8, lỗi thì thử `windows-1258` (CSV của Excel trên Windows tiếng Việt). `.xlsx` không đọc được, báo người dùng lưu thành CSV UTF-8. Có file mẫu (`SAMPLE`) và nút tải bộ từ về dạng CSV (có BOM để Excel mở đúng tiếng Việt).
+- `parseDeck`: tự chọn ký tự ngăn cách (Tab, `;`, `,`, ` - `, `:`, `=`; chọn tay được), CSV có ngoặc kép, bỏ dòng tiêu đề, tự đảo cột nếu cột 1 là tiếng Việt. Cột 1 từ, cột 2 nghĩa, các cột sau tự nhận: `/…/` hoặc `[…]` là phiên âm, `n`/`v`/`adj`… là từ loại, còn lại là câu ví dụ. Bỏ dòng thiếu từ/nghĩa và từ trùng (không phân biệt hoa thường, kể cả với từ đã có trong bộ). Giới hạn độ dài từng trường. Có xem trước trước khi lưu.
+- Từ có khoảng trắng là collocation (`kind:'col'`, không hiện phiên âm), còn lại là word. Thiếu câu ví dụ thì vẫn chơi Quiz, flashcard, ôn tập; chế độ Điền từ/Collocation chỉ cho chọn khi nguồn có từ dùng được (`poolTypes`), Hỗn hợp chỉ trộn các dạng làm được.
+- **Id**: bộ có id `did` (chuỗi base36), chủ đề là `'u' + did` (giá trị `it.ti`, nằm trong `sel`/`st.topics` cạnh số index của `DATA`), từ là `'u' + did + '.' + index`. Chỉ **thêm vào cuối** `items`, không xoá/chèn từ trong bộ (id dựa trên vị trí). `loadDecks()` xoá rồi gắn lại từ của các bộ vào cuối `ALL` và `BYID` (`ALL.slice(0, CORE_N)` là từ có sẵn; trùm cuối và các màn bản đồ chỉ dùng phần này).
+- Xoá bộ: thành `{del:1, t}` (giữ để máy khác không gộp bộ cũ trở lại), xoá luôn `st.srs`/`st.wrong` của bộ đó. Chỗ hiển thị số từ hay sai / thẻ ôn đều lọc theo `BYID` nên id mồ côi không bị đếm.
+- Giới hạn: `DECK_MAX = 1000` từ cho mọi bộ; `st` sau khi lưu phải ≤ `ST_MAX = 600000` byte (rules cho phép chuỗi `data` < 700000 ký tự, document Firestore tối đa 1 MiB).
+- XP từ bộ tự nhập tính vào bảng xếp hạng như bình thường.
 
 ## ⏰ Nhắc học trên lịch
 
@@ -200,9 +214,9 @@ Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến đ
 
 - **Không bắt buộc.** Mặc định là chế độ khách, chỉ lưu `localStorage`. Ô `#acct` chỉ hiện khi `FIREBASE_CONFIG` khác `null` **và** trang mở qua http(s); mở bằng `file://` hoặc mất mạng thì app vẫn chạy như khách.
 - Chỉ đăng nhập bằng **Google** (`signInWithPopup`, popup bị chặn thì chuyển sang `signInWithRedirect`).
-- Dữ liệu trên mây: document `users/{uid}` = `{data: JSON.stringify(st), xp, updatedAt}`. `firestore.rules` chỉ cho chính chủ đọc/ghi, chỉ chấp nhận đúng 3 trường đó, `data` là chuỗi < 200 KB.
+- Dữ liệu trên mây: document `users/{uid}` = `{data: JSON.stringify(st), xp, updatedAt}`. `firestore.rules` chỉ cho chính chủ đọc/ghi, chỉ chấp nhận đúng 3 trường đó, `data` là chuỗi < 700000 ký tự.
 - **Khi đăng nhập / mở app đang đăng nhập** (`pullAndMerge`): tải bản trên mây, gộp với tiến độ trong máy bằng `mergeSt` rồi tải lên nếu khác. Nếu kết quả khác `st` hiện tại thì ghi vào `localStorage` và **tải lại trang** (để `sel`, `st.rpg`… khởi tạo lại sạch sẽ).
-  - `mergeSt` dùng max/hợp: XP, best, fixed, vàng, cấp máu, số vật phẩm, số sao từng màn lấy max; huy hiệu, modes, từ hay sai lấy hợp; streak lấy theo ngày `last` mới hơn; `sound`, `topics` lấy theo máy đang dùng. Gộp lại lần nữa không đổi gì (nên không bị vòng lặp reload, không nhân đôi vàng).
+  - `mergeSt` dùng max/hợp: XP, best, fixed, vàng, cấp máu, số vật phẩm, số sao từng màn lấy max; huy hiệu, modes, từ hay sai lấy hợp; bộ từ lấy bản có `t` mới hơn của từng bộ (bộ đã xoá thắng nếu xoá sau), rồi bỏ `srs`/`wrong` của bộ đã xoá; streak lấy theo ngày `last` mới hơn; `sound`, `topics` lấy theo máy đang dùng. Gộp lại lần nữa không đổi gì (nên không bị vòng lặp reload, không nhân đôi vàng).
   - Tiến độ trong máy chỉ được gộp nếu là của khách hoặc của chính tài khoản đó (`OWNER_KEY`); tiến độ của tài khoản khác thì bỏ qua và lấy bản trên mây.
 - **Khi đang đăng nhập**: `save()` gọi `onSaved` → `queueUpload` (gom 2 giây rồi tải lên); khi tab bị ẩn thì tải lên ngay.
 - **Đăng xuất**: tải lên lần cuối, rồi xoá tiến độ trong máy và tải lại → máy trở về khách mới (tránh người sau thấy/gộp nhầm tiến độ).
@@ -232,6 +246,7 @@ Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến đ
   4. Phiêu lưu: vào map, đánh màn 1, dùng từng vật phẩm, thắng → mở rương; thua → màn defeat; mua đồ ở cửa hàng.
   5. Tải lại trang → XP, huy hiệu, vàng, sao vẫn giữ nguyên.
   6. Kiểm tra giao diện sáng/tối và màn hình điện thoại (~375px).
+  7. Bộ từ: nhập vài dòng (dán từ Excel và file CSV), chọn chip bộ đó chơi Quiz/Hỗn hợp, flashcard, ⚔️ Đấu; xoá bộ → chip, số từ hay sai, thẻ ôn biến mất.
 - Khi sửa `DATA`, chạy nhanh trong Console để kiểm tra dữ liệu dùng được:
   ```js
   ALL.filter(x=>x.kind==='word'&&!findMatch(x.ex,x.term)).map(x=>x.term)   // word không dùng được cho Điền từ

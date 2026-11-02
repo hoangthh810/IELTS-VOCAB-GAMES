@@ -15,11 +15,11 @@ const srsNextBox=(id,g)=>{const r=st.srs[id];return g===0?0:Math.min(7,(r?r.b:0)
 function srsDue(){const today=dayKey();
   return ALL.filter(x=>st.srs[x.id]&&st.srs[x.id].d<=today).sort((a,b)=>st.srs[a.id].d.localeCompare(st.srs[b.id].d)||st.srs[a.id].b-st.srs[b.id].b)}
 function srsStats(){let due=0,learning=0,known=0;const today=dayKey();
-  for(const r of Object.values(st.srs)){if(r.d<=today)due++;if(r.b>=5)known++;else learning++}return{due,learning,known}}
+  for(const [id,r] of Object.entries(st.srs)){if(!BYID[id])continue;if(r.d<=today)due++;if(r.b>=5)known++;else learning++}return{due,learning,known}}
 // due cards first, then a few new cards from the selected topics
 function srsSession(){
   const q=srsDue().slice(0,SRS_MAX);
-  if(q.length<SRS_MAX){const topics=sel.size?sel:new Set(DATA.map((_,i)=>i));
+  if(q.length<SRS_MAX){const topics=sel.size?sel:new Set(topicKeys());
     q.push(...shuffle(ALL.filter(x=>!st.srs[x.id]&&topics.has(x.ti))).slice(0,Math.min(SRS_NEW,SRS_MAX-q.length)))}
   return q;
 }
@@ -27,7 +27,7 @@ function srsSession(){
 const srsType=it=>it.kind==='word'?(findMatch(it.ex,it.term)?pick(['quiz','fill']):'quiz'):(it.term.includes(' ')&&colTokens(it.term).length?pick(['quiz','col']):'quiz');
 
 function renderSrs(){
-  const s=srsStats(),tomorrow=Object.values(st.srs).filter(r=>r.d===addDays(1)).length;
+  const s=srsStats(),tomorrow=Object.entries(st.srs).filter(([id,r])=>BYID[id]&&r.d===addDays(1)).length;
   $('srsBox').innerHTML=`<div class="srs-stats"><div><b>${s.due}</b><small>đến hạn hôm nay</small></div><div><b>${s.learning}</b><small>đang học</small></div><div><b>${s.known}</b><small>đã thuộc</small></div></div>
     <div class="srs-btns"><button class="btn" data-srs="quiz">🧠 Ôn bằng câu hỏi</button><button class="btn ghost" data-srs="cards">🃏 Flashcard</button></div>
     <small class="empty">${s.due?`Có ${s.due} từ cần ôn hôm nay.`:'Không có từ đến hạn.'} Mỗi lượt ôn tối đa ${SRS_MAX} thẻ, thêm tối đa ${SRS_NEW} từ mới từ chủ đề đang chọn. Nhớ đúng thì lần ôn sau giãn dần: 1 → 3 → 7 → 14 → 30 ngày.${tomorrow?` Ngày mai: ${tomorrow} từ.`:''}</small>`;
@@ -44,8 +44,8 @@ function showCard(){
   if(C.n>=C.q.length)return endCards();
   const it=C.q[C.n],r=st.srs[it.id];C.flipped=false;
   $('cBar').style.width=(C.n/C.q.length*100)+'%';$('cCount').textContent=`${C.n+1}/${C.q.length}`;
-  $('cFront').innerHTML=`<div class="qtype">${r?'🔁 Ôn lại':'✨ Từ mới'} · ${esc(DATA[it.ti].name)}</div><div class="qmain">${esc(it.term)}${spk(it.term)}</div><div class="qsub">${ipaTag(it)}${it.pos?` (${esc(it.pos)})`:' collocation'}</div>`;
-  $('cBack').innerHTML=`<div class="qtype">Nghĩa</div><div class="qmain small">${esc(it.mean)}</div><div class="ex">📝 ${hlEx(it.ex,it.term)}</div>`;
+  $('cFront').innerHTML=`<div class="qtype">${r?'🔁 Ôn lại':'✨ Từ mới'} · ${esc(topicName(it.ti))}</div><div class="qmain">${esc(it.term)}${spk(it.term)}</div><div class="qsub">${ipaTag(it)}${it.pos?` (${esc(it.pos)})`:it.kind==='col'?' collocation':''}</div>`;
+  $('cBack').innerHTML=`<div class="qtype">Nghĩa</div><div class="qmain small">${esc(it.mean)}</div>${it.ex?`<div class="ex">${exLine(it)}</div>`:''}`;
   $('card').classList.remove('flip');$('cBack').hidden=true;$('cFlipRow').hidden=false;$('cGrades').hidden=true;
   [0,1,2].forEach(g=>document.querySelector(`#cGrades [data-g="${g}"] small`).textContent=g===0?'ôn lại ngay':dayLabel(SRS_DAYS[srsNextBox(it.id,g)]));
 }

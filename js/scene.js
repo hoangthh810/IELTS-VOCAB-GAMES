@@ -236,8 +236,8 @@ function bgSchool(c,i){
   c.fillStyle='#8b6b4a';rr(c,170,26,300,136,8);c.fill();c.fillStyle='#2f5d50';c.fillRect(180,36,280,116);
   c.fillStyle='rgba(255,255,255,.07)';c.fillRect(180,36,280,116);
   c.fillStyle='rgba(255,255,255,.88)';c.font=`800 26px ${FONT}`;c.textAlign='center';c.fillText('IELTS 6.5 ✓',320,78);
-  const T=DATA[i]||DATA[0];c.font=`600 14px ${FONT}`;c.fillStyle='rgba(255,255,255,.55)';
-  c.fillText(fitText(c,T.words.slice(0,3).map(w=>w[0]).join(' · '),260),320,104);c.fillText(fitText(c,T.cols[0][0]+' = '+T.cols[0][1],260),320,126);
+  const T=DATA[i]||DATA[0],L=B&&B.c.board||[T.words.slice(0,3).map(w=>w[0]).join(' · '),T.cols[0][0]+' = '+T.cols[0][1]]; // arena: the deck's words
+  c.font=`600 14px ${FONT}`;c.fillStyle='rgba(255,255,255,.55)';c.fillText(fitText(c,L[0],260),320,104);c.fillText(fitText(c,L[1],260),320,126);
   c.fillStyle='#a3825f';c.fillRect(176,150,288,7);c.fillStyle='#fff';c.fillRect(220,146,16,4);c.fillStyle='#fca5a5';c.fillRect(244,146,12,4);
   ell(c,560,72,30,30,'#8b6b4a');ell(c,560,72,25,25,'#fffbeb');
   c.fillStyle=lingrad(c,0,GY,0,SH,['#c58b55','#a8703f']);c.fillRect(0,GY,SW,SH-GY);

@@ -240,3 +240,23 @@ footer a{color:var(--accent)}
 .board .rk{width:30px;text-align:center;font-weight:900;font-size:18px}
 .board .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
 .board .nm small{color:var(--muted);font-weight:600}
+
+/* ===== imported decks ===== */
+.chip.deckchip{border-style:dashed}.chip.deckchip.on{border-style:solid}
+.decklist{display:grid;gap:10px}
+.deck{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px;box-shadow:var(--shadow)}
+.deck-h{display:flex;align-items:center;gap:12px}.deck-h>div{flex:1;min-width:0}
+.deck-h b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.deck-h small{color:var(--muted);font-size:13px}
+.deck-h .btn{padding:9px 14px;font-size:14px;white-space:nowrap}
+.deck-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.deck-acts .chip{padding:5px 10px;font-size:13px}
+.deck-items{margin:10px 0 0;padding-left:22px;max-height:300px;overflow:auto;font-size:14px;line-height:1.6}
+.imp-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.imp select,.imp input:not([type=file]),.imp textarea{font:inherit;font-size:15px;border:2px solid var(--line);border-radius:12px;padding:9px 11px;background:var(--card);color:var(--ink);min-width:0}
+.imp-row select,.imp-row input{flex:1 1 180px}
+.imp textarea{display:block;width:100%;resize:vertical;margin-bottom:10px;font-size:14px}
+.file-btn{display:inline-block;cursor:pointer;padding:9px 14px;font-size:14px;flex:1 1 180px;text-align:center}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+.tbl table{border-collapse:collapse;width:100%;font-size:13px}
+.tbl th,.tbl td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.tbl th{color:var(--muted);font-weight:700}.tbl tr:last-child td{border-bottom:0}
+#arenaBtn{margin:16px 0 4px}

@@ -66,11 +66,11 @@ $('shop').onclick=e=>{const b=e.target.closest('[data-buy]');if(!b||b.disabled)r
 
 // ---------- battle ----------
 let B=null;
-function startBattle(i){
-  const c=cfg(i);poolOverride=c.final?ALL:ALL.filter(x=>x.ti===i);
-  B={i,c,bossHp:c.hp,hp:maxHp(),max:maxHp(),combo:0,maxCombo:0,shield:false,rage:false,used:new Set(),
+function startBattle(i,c=cfg(i)){
+  poolOverride=c.pool||(c.final?ALL.slice(0,CORE_N):ALL.filter(x=>x.ti===i));
+  B={i,c,types:poolTypes(poolOverride),bossHp:c.hp,hp:maxHp(),max:maxHp(),combo:0,maxCombo:0,shield:false,rage:false,used:new Set(),
      correct:0,total:0,wrongList:[],xp0:st.xp,over:false,answered:false,halfUsed:false};
-  $('bStage').textContent=(c.final?'Trùm cuối':'Màn '+(i+1))+' · '+c.topic;
+  $('bStage').textContent=(c.arena?'🏟️ Đấu trường':c.final?'Trùm cuối':'Màn '+(i+1))+' · '+c.topic;
   $('bossE').textContent=c.b.e;$('bossE').className='boss';$('bossN').textContent=c.b.n;
   $('bubble').textContent='💬 '+c.b.l;
   show('battle');sceneStart(i);updB();nextB();
@@ -88,7 +88,7 @@ function nextB(){
   if(B.over)return;clearTimeout(B.auto);
   B.answered=false;B.halfUsed=false;
   if(B.used.size>=poolOverride.length-4)B.used.clear();
-  const r=Math.random(),t=r<.4?'quiz':r<.7?'col':'fill';
+  const r=Math.random();let t=r<.4?'quiz':r<.7?'col':'fill';if(!B.types.includes(t))t=pick(B.types);
   const q=t==='quiz'?makeQuiz(B.used):t==='fill'?makeFill(B.used):makeCol(B.used);
   B.q=q;B.used.add(q.it.id);
   $('bqType').textContent=q.label;$('bqDiff').textContent=`⚔️ ${DMG[q.type]} sát thương · Độ khó: ${DLABEL[q.type]}`;
@@ -142,7 +142,7 @@ function answerB(v,el,timeout){
   save();updB();xpBadges();
   $('bFbT').textContent=title;
   $('bFbA').innerHTML=(line?line+'<br>':'')+(ok?'':`Đáp án đúng: <b>${esc(q.type==='col'?q.it.term:q.answer)}</b>`);
-  $('bFbEx').innerHTML=`${termHtml(q.it)}: ${esc(q.it.mean)}<br>📝 ${hlEx(q.it.ex,q.it.term)}`;
+  $('bFbEx').innerHTML=`${termHtml(q.it)}: ${esc(q.it.mean)}<br>${exLine(q.it)}`;
   $('bFb').className='feedback show '+(ok?'ok':'no');$('bNext').style.display='';
   if(B.bossHp<=0){B.over=true;$('bNext').style.display='none';setTimeout(()=>{$('bossE').classList.add('dead');if(SC)sceneBossDie()},SC?650:400);setTimeout(victory,SC?2300:1500)}
   else if(B.hp<=0){B.over=true;$('bNext').style.display='none';if(SC)setTimeout(sceneHeroDie,750);setTimeout(defeat,SC?2000:1300)}
@@ -153,7 +153,7 @@ $('bOpts').onclick=e=>{const b=e.target.closest('.opt');if(b&&!b.disabled)answer
 $('bForm').onsubmit=e=>{e.preventDefault();if(B.answered){goNextB();return}const v=$('bIn').value.trim();if(v)answerB(v,$('bIn'))};
 $('bNext').onclick=goNextB;
 $('bFb').addEventListener('click',e=>{if(e.target.closest('.spk'))clearTimeout(B.auto)}); // stay on the answer while listening
-$('bQuit').onclick=()=>{if(confirm('Bỏ chạy khỏi trận đánh? Tiến độ trận này sẽ mất.')){stopTimer();clearTimeout(B.auto);B.over=true;openMap()}};
+$('bQuit').onclick=()=>{if(confirm('Bỏ chạy khỏi trận đánh? Tiến độ trận này sẽ mất.')){stopTimer();clearTimeout(B.auto);B.over=true;leaveBattle()}};
 $('items').onclick=e=>{
   const b=e.target.closest('.itm');if(!b||!B||B.over)return;const k=b.dataset.k,inv=st.rpg.inv;if(!inv[k])return;
   if(k==='potion'){if(B.hp>=B.max){toast('Máu đang đầy rồi!');return}const h=Math.min(40,B.max-B.hp);B.hp+=h;if(SC)sceneHeal(h);else floatAt('+'+h,'var(--good)',56,$('meE').offsetTop-8)}
@@ -167,9 +167,9 @@ $('items').onclick=e=>{
 
 // ---------- end of battle ----------
 function victory(){
-  stopTimer();const r=st.rpg,ratio=B.hp/B.max,stars=ratio>=.7?3:ratio>=.4?2:1;
-  const first=!r.cleared[B.i];r.cleared[B.i]=Math.max(stars,r.cleared[B.i]||0);
-  touchStreak();save();unlock('boss1');if(stars===3)unlock('stars3');if(B.c.final)unlock('dragon');xpBadges();
+  stopTimer();const r=st.rpg,ratio=B.hp/B.max,stars=ratio>=.7?3:ratio>=.4?2:1,ar=!!B.c.arena;
+  const first=!ar&&!r.cleared[B.i];if(!ar)r.cleared[B.i]=Math.max(stars,r.cleared[B.i]||0);
+  touchStreak();save();if(!ar){unlock('boss1');if(stars===3)unlock('stars3');if(B.c.final)unlock('dragon')}xpBadges();
   B.reward={stars,first,opened:false};
   $('vTitle').textContent=`Đã hạ ${B.c.b.n}!`;
   $('vStars').innerHTML=[1,2,3].map(n=>n<=stars?'★':'<span class="off">★</span>').join('');
@@ -177,14 +177,14 @@ function victory(){
   const ch=$('chest');ch.className='chest'+(stars===3?' gold':'');ch.style.display='';
   $('chestHint').style.display='';$('chestHint').textContent=stars===3?'✨ Rương vàng! Chạm để mở!':'Chạm vào rương để mở!';
   $('rewards').innerHTML='';$('vActions').style.display='none';
-  $('vNext').style.display=B.i<LAST?'':'none';
+  $('vNext').style.display=B.i<LAST&&!ar?'':'none';$('vMap').textContent=ar?'Bộ từ 📁':'Bản đồ 🗺️';
   show('victory');confetti(90);beep('badge');
 }
 $('chest').onclick=()=>{
   const R=B.reward;if(!R||R.opened)return;R.opened=true;const r=st.rpg;
   $('chest').classList.add('open');$('chestHint').style.display='none';
-  const gold=25+B.i*4+R.stars*10+(R.first?30:0)+(B.c.boss?40:0);r.gold+=gold;
-  const got={};const n=R.stars+(R.first?1:0);
+  const ar=!!B.c.arena,gold=ar?10+R.stars*5:25+B.i*4+R.stars*10+(R.first?30:0)+(B.c.boss?40:0);r.gold+=gold;
+  const got={};const n=ar?0:R.stars+(R.first?1:0); // arena: a little gold, no items
   if(R.first)got.potion=1;
   for(let j=0;j<n-(R.first?1:0);j++){const x=Math.random();const k=x<.4?'potion':x<.65?'shield':x<.9?'half':'rage';got[k]=(got[k]||0)+1}
   Object.entries(got).forEach(([k,c])=>r.inv[k]+=c);save();
@@ -194,15 +194,27 @@ $('chest').onclick=()=>{
     $('vActions').style.display='';confetti(50);beep('end')},450);
 };
 $('vNext').onclick=()=>startBattle(B.i+1);
-$('vMap').onclick=openMap;
+const leaveBattle=()=>B&&B.c.arena?openDecks():openMap();
+$('vMap').onclick=leaveBattle;
 function defeat(){
-  stopTimer();st.rpg.gold+=10;touchStreak();save();
-  $('dSub').innerHTML=`${B.c.b.e} ${esc(B.c.b.n)} còn ${B.bossHp}/${B.c.hp} HP.<br>Bạn nhận 10 💰 an ủi và +${st.xp-B.xp0} XP. Mẹo: mua thêm 🧪 Bình máu hoặc 🛡️ Khiên trong cửa hàng, và ôn lại các từ bên dưới.`;
-  $('dReview').innerHTML=B.wrongList.length?`<h2>📕 Từ cần ôn lại</h2>`+B.wrongList.map(q=>`<div class="it">${termHtml(q.it)}: ${esc(q.it.mean)}<br><span class="empty">${hlEx(q.it.ex,q.it.term)}</span></div>`).join(''):'';
+  stopTimer();const ar=!!B.c.arena;if(!ar)st.rpg.gold+=10;touchStreak();save();$('dMap').textContent=ar?'Bộ từ 📁':'Bản đồ 🗺️';
+  $('dSub').innerHTML=`${B.c.b.e} ${esc(B.c.b.n)} còn ${B.bossHp}/${B.c.hp} HP.<br>Bạn nhận ${ar?'':'10 💰 an ủi và '}+${st.xp-B.xp0} XP. Mẹo: mua thêm 🧪 Bình máu hoặc 🛡️ Khiên trong cửa hàng, và ôn lại các từ bên dưới.`;
+  $('dReview').innerHTML=B.wrongList.length?`<h2>📕 Từ cần ôn lại</h2>`+B.wrongList.map(q=>`<div class="it">${termHtml(q.it)}: ${esc(q.it.mean)}<br><span class="empty">${exLine(q.it)}</span></div>`).join(''):'';
   show('defeat');beep('no');
 }
-$('dRetry').onclick=()=>startBattle(B.i);
-$('dMap').onclick=openMap;
+$('dRetry').onclick=()=>B.c.arena?startArena(B.c.arena):startBattle(B.i);
+$('dMap').onclick=leaveBattle;
+
+// ---------- arena: battle with an imported deck (no stars, no map progress, little gold) ----------
+const ARENA_LINES=['Bộ từ này do chính ngươi chọn, đừng nói là quên rồi nhé!','Tự nhập từ mà không nhớ thì xấu hổ lắm đấy!','Để xem ngươi học bộ từ này đến đâu rồi!','Ta đã đọc trộm sổ từ vựng của ngươi. Chiến thôi!'];
+function startArena(k){
+  const d=st.decks[k],P=ALL.filter(x=>x.ti==='u'+k);if(!d||d.del||!P.length)return;
+  const lv=Math.min(LAST-1,Math.floor(P.length/8)),j=Math.floor(Math.random()*LAST),boss=!!BOSSES[j].boss; // tougher with bigger decks
+  const w=P.filter(x=>x.kind==='word').slice(0,3).map(x=>x.term).join(' · ')||P[0].term;
+  startBattle(j,{...cfg(lv),i:j,final:false,boss,b:{...BOSSES[j],l:pick(ARENA_LINES)},topic:'📁 '+d.n,arena:k,pool:P,
+    hp:Math.round((120+lv*20)*(boss?1.5:1)),atk:Math.round((12+lv*1.2)*(boss?1.2:1)),board:[w,P[0].term+' = '+P[0].mean]});
+}
+$('arenaBtn').onclick=openDecks;
 document.addEventListener('keydown',e=>{
   if(!B||!$('battle').classList.contains('show'))return;
   if(B.answered&&e.key==='Enter'&&e.target.id!=='bIn'){e.preventDefault();goNextB();return}

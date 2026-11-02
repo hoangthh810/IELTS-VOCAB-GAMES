@@ -43,9 +43,10 @@
 
   <h2>1. Chọn chủ đề</h2>
   <div class="chips" id="chips"></div>
+  <button class="link-btn" id="deckBtn">📥 Nhập bộ từ vựng của bạn (Excel, Quizlet, CSV)</button>
 
   <h2>2. Chọn trò chơi <small class="empty">(mỗi lượt 12 câu)</small></h2>
-  <div class="modes">
+  <div class="modes" id="modes">
     <button class="mode" data-mode="quiz"><div class="e">🎯</div><b>Quiz nghĩa</b><span>Chọn nghĩa đúng, Anh ↔ Việt</span></button>
     <button class="mode" data-mode="fill"><div class="e">✍️</div><b>Điền từ</b><span>Gõ từ còn thiếu trong câu, luyện chính tả</span></button>
     <button class="mode" data-mode="col"><div class="e">🧩</div><b>Collocation</b><span>Hoàn thành cụm từ đúng chuẩn IELTS</span></button>
@@ -69,6 +70,24 @@
   </div>
   <div class="actions" id="cDone" hidden><button class="btn" id="cHome">Về trang chủ</button></div>
   <footer>Cố nhớ nghĩa trước rồi mới lật thẻ. Phím tắt: Space để lật, 1 Quên · 2 Nhớ · 3 Dễ.</footer>
+</div>
+
+<!-- DECKS -->
+<div class="screen" id="decks">
+  <div class="topbar"><button class="quit" id="decksBack" title="Về trang chủ">←</button><div class="logo" style="font-size:24px">📁 <span>Bộ từ của tôi</span></div></div>
+  <p class="empty">Học từ vựng của riêng bạn: luyện 4 trò chơi, ôn ngắt quãng, flashcard và ⚔️ đấu trường luyện tập. <span id="deckUsed"></span></p>
+  <div class="decklist" id="deckList"></div>
+  <h2>📥 Nhập từ vựng</h2>
+  <div class="srs imp">
+    <div class="imp-row"><select id="impTo"></select><input id="impName" maxlength="40" placeholder="Tên bộ từ, ví dụ: Cambridge 18 Test 1"></div>
+    <textarea id="impText" rows="7" spellcheck="false" placeholder="Mỗi dòng một từ: từ, nghĩa, câu ví dụ, phiên âm&#10;mitigate	giảm nhẹ	Governments must act to mitigate the effects of climate change.	/ˈmɪtɪɡeɪt/&#10;take into account	cân nhắc, tính đến"></textarea>
+    <div class="imp-row"><label class="btn ghost file-btn">📄 Chọn file .csv / .txt<input type="file" id="impFile" accept=".csv,.tsv,.txt,text/csv,text/plain,.xlsx,.xls" hidden></label>
+      <select id="impSep" title="Ký tự ngăn cách cột"><option value="auto">Tự nhận cột</option><option value="&#9;">Tab</option><option value=",">Dấu phẩy ,</option><option value=";">Dấu chấm phẩy ;</option><option value=" - ">Gạch ngang -</option><option value=":">Dấu hai chấm :</option></select></div>
+    <div id="impPrev"></div>
+    <div class="srs-btns"><button class="btn" id="impSave" disabled>💾 Lưu bộ từ</button><button class="btn ghost" id="impSample">⬇️ Tải file mẫu</button></div>
+    <small class="empty">Cột 1 là từ hoặc cụm từ tiếng Anh, cột 2 là nghĩa; câu ví dụ, phiên âm, từ loại không bắt buộc. Copy bảng từ Excel / Google Sheets rồi dán vào là được. Quizlet: chọn Xuất (Export), giữ "Tab" và "Dòng mới" rồi dán vào. File Excel hãy lưu thành <b>CSV UTF-8</b>. Có câu ví dụ chứa đúng từ đó thì chơi được ✍️ Điền từ; cụm nhiều chữ thì chơi được 🧩 Collocation.</small>
+  </div>
+  <footer>Đấu trường luyện tập dùng bộ từ của bạn để đánh quái: nhận XP và một ít vàng, không tính sao và không mở màn trên bản đồ.</footer>
 </div>
 
 <!-- LEADERBOARD -->
@@ -121,6 +140,7 @@
   <div class="mapbar" id="mapbar"></div>
   <h2>🗺️ Chọn màn</h2>
   <div class="stages" id="stages"></div>
+  <button class="board-btn" id="arenaBtn"><span class="e">🏟️</span><span><b>Đấu trường luyện tập</b><small>Đánh quái bằng bộ từ bạn tự nhập</small></span><span class="go">›</span></button>
   <h2>🏪 Cửa hàng</h2>
   <div class="shop" id="shop"></div>
   <footer>Trả lời đúng để tấn công boss. Câu càng khó, sát thương càng cao: 🎯 Quiz 20 · 🧩 Collocation 26 · ✍️ Điền từ 36. Đúng liên tiếp thì sát thương tăng thêm (tối đa +50%).<br>Trả lời sai hoặc hết giờ thì boss đánh lại. Boss dưới 30% máu sẽ nổi điên và đánh mạnh hơn!<br>Mỗi chương có 5 màn thường và 1 màn 👑 BOSS (màn 6, 12, 18): máu và sát thương cao hơn, rương thưởng thêm vàng.</footer>
@@ -168,6 +188,7 @@
 <script src="js/data.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/core.js"></script>
+<script src="js/decks.js"></script>
 <script src="js/questions.js"></script>
 <script src="js/practice.js"></script>
 <script src="js/srs.js"></script>

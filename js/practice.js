@@ -1,25 +1,26 @@
 // ---------- home ----------
-let sel=new Set(Array.isArray(st.topics)?st.topics:DATA.map((_,i)=>i));
+let sel=new Set(Array.isArray(st.topics)?st.topics.filter(t=>topicKeys().includes(t)):topicKeys());
 let useWrong=false;
+const wrongIds=()=>Object.keys(st.wrong).filter(id=>BYID[id]); // skips words of deleted decks
 function renderChips(){
-  const c=$('chips');const allOn=sel.size===DATA.length&&!useWrong;
-  const wn=Object.keys(st.wrong).length;
+  const c=$('chips'),keys=topicKeys(),allOn=keys.every(k=>sel.has(k))&&!useWrong;
+  const wn=wrongIds().length;
   c.innerHTML=`<button class="chip ${allOn?'on':''}" data-t="all">✨ Tất cả</button>`+
-    DATA.map((t,i)=>`<button class="chip ${sel.has(i)&&!useWrong?'on':''}" data-t="${i}">${esc(t.name)}</button>`).join('')+
+    keys.map(k=>`<button class="chip ${isDeck(k)?'deckchip':''} ${sel.has(k)&&!useWrong?'on':''}" data-t="${k}">${esc(topicName(k))}</button>`).join('')+
     (wn?`<button class="chip wrongbank ${useWrong?'on':''}" data-t="wrong">📕 Từ hay sai (${wn})</button>`:'');
 }
 $('chips').onclick=e=>{
   const b=e.target.closest('.chip');if(!b)return;const t=b.dataset.t;
   if(t==='wrong'){useWrong=!useWrong}
   else{useWrong=false;
-    if(t==='all'){sel=sel.size===DATA.length?new Set():new Set(DATA.map((_,i)=>i))}
-    else{const i=+t;sel.has(i)?sel.delete(i):sel.add(i)}
+    if(t==='all'){const keys=topicKeys();sel=keys.every(k=>sel.has(k))?new Set():new Set(keys)}
+    else{const i=/^\d+$/.test(t)?+t:t;sel.has(i)?sel.delete(i):sel.add(i)}
     st.topics=[...sel];save()}
   renderChips();
 };
 function renderHome(){
-  if(useWrong&&!Object.keys(st.wrong).length)useWrong=false;
-  $('sStreak').textContent=liveStreak();$('sXp').textContent=st.xp;$('sWrong').textContent=Object.keys(st.wrong).length;
+  if(useWrong&&!wrongIds().length)useWrong=false;
+  $('sStreak').textContent=liveStreak();$('sXp').textContent=st.xp;$('sWrong').textContent=wrongIds().length;
   const lv=Math.floor(st.xp/300)+1, into=st.xp%300;
   $('lvName').textContent=`Level ${lv}`;$('lvNext').textContent=`${into}/300 XP`;$('lvBar').style.width=(into/300*100)+'%';
   $('soundBtn').textContent=st.sound?'🔊':'🔇';
@@ -34,14 +35,16 @@ let G=null;
 function start(mode){
   poolOverride=null;let queue=null;
   if(mode==='srs'){queue=srsSession();if(!queue.length){toast('Chưa có từ nào để ôn, hãy chọn chủ đề nhé!');return}}
-  else if(!useWrong&&!sel.size){toast('Hãy chọn ít nhất 1 chủ đề nhé!');return}
-  G={mode,queue,len:queue?queue.length:LEN,n:0,score:0,combo:0,maxCombo:0,correct:0,wrongList:[],used:new Set(),xp0:st.xp,typesPlayed:new Set()};
+  else if(!pool().length){toast('Hãy chọn ít nhất 1 chủ đề nhé!');return}
+  else if(mode!=='quiz'&&mode!=='mix'&&!poolTypes(pool()).includes(mode)){toast(mode==='fill'?'Các từ đã chọn chưa có câu ví dụ chứa từ đó, thử Quiz nhé!':'Các từ đã chọn chưa có cụm từ (collocation), thử Quiz nhé!');return}
+  const P=pool(),n=mode==='fill'?P.filter(canFill).length:mode==='col'?P.filter(canCol).length:P.length; // small decks: shorter round
+  G={mode,types:poolTypes(P),queue,len:queue?queue.length:Math.min(LEN,n),n:0,score:0,combo:0,maxCombo:0,correct:0,wrongList:[],used:new Set(),xp0:st.xp,typesPlayed:new Set()};
   show('game');next();
 }
 function next(){
   if(G.n>=G.len)return finish();
   if(G.queue)poolOverride=[G.queue[G.n]]; // review session: ask about this exact card
-  const t=G.queue?srsType(G.queue[G.n]):G.mode==='mix'?pick(['quiz','fill','col']):G.mode;
+  const t=G.queue?srsType(G.queue[G.n]):G.mode==='mix'?pick(G.types):G.mode;
   const q=t==='quiz'?makeQuiz(G.used):t==='fill'?makeFill(G.used):makeCol(G.used);poolOverride=null;
   G.q=q;G.used.add(q.it.id);G.answered=false;G.typesPlayed.add(q.type);
   $('gBar').style.width=(G.n/G.len*100)+'%';
@@ -84,7 +87,7 @@ function answer(v,el){
   const praise=['Chuẩn luôn! 🎉','Xuất sắc! ✨','Quá đỉnh! 🚀','Giỏi lắm! 💪','Đúng rồi! 👏'];
   $('fbT').textContent=ok?pick(praise):(v?'Chưa đúng rồi 😅':'Đáp án là:');
   $('fbA').innerHTML=ok?'':`Đáp án đúng: <b>${esc(q.type==='col'?q.it.term:q.answer)}</b>`+(q.type==='quiz'?'':` (${esc(q.it.mean)})`);
-  $('fbEx').innerHTML=`${termHtml(q.it)}: ${esc(q.it.mean)}<br>📝 ${hlEx(q.it.ex,q.it.term)}`;
+  $('fbEx').innerHTML=`${termHtml(q.it)}: ${esc(q.it.mean)}<br>${exLine(q.it)}`;
   $('fb').className='feedback show '+(ok?'ok':'no');
   setTimeout(()=>$('next').focus(),30);
 }
@@ -109,7 +112,7 @@ function finish(){
   $('rTitle').textContent=r===1?'Hoàn hảo tuyệt đối!':r>=.75?'Làm tốt lắm!':r>=.5?'Khá ổn, cố thêm chút nữa!':'Không sao, luyện tiếp nhé!';
   $('rSub').textContent=`+${st.xp-G.xp0} XP · Chuỗi ${st.streak} ngày 🔥`+(newBest?' · Kỷ lục mới! 🥇':` · Kỷ lục: ${st.best}`);
   $('rScore').textContent=G.score;$('rAcc').textContent=`${G.correct}/${G.len}`;$('rCombo').textContent=G.maxCombo;
-  $('review').innerHTML=G.wrongList.length?`<h2>📕 Từ cần ôn lại</h2>`+G.wrongList.map(q=>`<div class="it">${termHtml(q.it)}: ${esc(q.it.mean)}<br><span class="empty">${hlEx(q.it.ex,q.it.term)}</span></div>`).join(''):'';
+  $('review').innerHTML=G.wrongList.length?`<h2>📕 Từ cần ôn lại</h2>`+G.wrongList.map(q=>`<div class="it">${termHtml(q.it)}: ${esc(q.it.mean)}<br><span class="empty">${exLine(q.it)}</span></div>`).join(''):'';
   show('result');beep('end');if(r>=.75)confetti(r===1?120:60);
 }
 $('again').onclick=()=>start(G.mode);

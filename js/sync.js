@@ -39,6 +39,9 @@ function mergeSt(a,b){
   r.srs={...a.srs};Object.entries(b.srs||{}).forEach(([k,v])=>{if(!r.srs[k]||(v.t||0)>(r.srs[k].t||0))r.srs[k]=v}); // newest review wins
   r.wk=a.wk&&b.wk&&a.wk.k===b.wk.k?{k:a.wk.k,base:Math.min(a.wk.base,b.wk.base)}:(b.wk&&(!a.wk||b.wk.k>a.wk.k)?b.wk:a.wk)||null;
   r.lb=(b.lb&&(!a.lb||(b.lb.t||0)>(a.lb.t||0))?b.lb:a.lb)||null;
+  r.decks={...a.decks};Object.entries(b.decks||{}).forEach(([k,v])=>{if(!r.decks[k]||(v.t||0)>(r.decks[k].t||0))r.decks[k]=v}); // newest copy of each deck wins
+  const gone=id=>{const d=id[0]==='u'&&r.decks[id.slice(1,id.indexOf('.'))];return !!(d&&d.del)}; // review data of deleted decks
+  for(const o of [r.wrong,r.srs])Object.keys(o).forEach(id=>{if(gone(id))delete o[id]});
   for(const k in b)if(!(k in r))r[k]=b[k]; // fields newer than the cloud copy (avoids a reload loop after app updates)
   return r;
 }
