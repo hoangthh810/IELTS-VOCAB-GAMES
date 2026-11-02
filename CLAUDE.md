@@ -202,7 +202,7 @@ Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến đ
 - Lần đầu: `npx firebase-tools login` (người dùng tự chạy, cần trình duyệt), tạo `.firebaserc` với `{"projects":{"default":"<project-id>"}}`.
 - Deploy: `npx firebase-tools deploy --only hosting,firestore:rules`.
 - `firebase.json` deploy cả thư mục gốc, trừ `archive/`, `CLAUDE.md`, file ẩn và file cấu hình Firebase. HTML/JS/CSS gửi kèm `Cache-Control: no-cache` để người dùng luôn nhận bản mới.
-- Trước khi public: thay `EMAIL_LIEN_HE` trong `privacy.html`.
+- Project: `ielts-vocab-b4905` → https://ielts-vocab-b4905.web.app
 
 ## Git
 
