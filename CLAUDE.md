@@ -195,7 +195,7 @@ Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến đ
 - Từ có khoảng trắng là collocation (`kind:'col'`, không hiện phiên âm), còn lại là word. Thiếu câu ví dụ thì vẫn chơi Quiz, flashcard, ôn tập; chế độ Điền từ/Collocation chỉ cho chọn khi nguồn có từ dùng được (`poolTypes`), Hỗn hợp chỉ trộn các dạng làm được.
 - **Id**: bộ có id `did` (chuỗi base36), chủ đề là `'u' + did` (giá trị `it.ti`, nằm trong `sel`/`st.topics` cạnh số index của `DATA`), từ là `'u' + did + '.' + index`. Chỉ **thêm vào cuối** `items`, không xoá/chèn từ trong bộ (id dựa trên vị trí). `loadDecks()` xoá rồi gắn lại từ của các bộ vào cuối `ALL` và `BYID` (`ALL.slice(0, CORE_N)` là từ có sẵn; trùm cuối và các màn bản đồ chỉ dùng phần này).
 - Xoá bộ: thành `{del:1, t}` (giữ để máy khác không gộp bộ cũ trở lại), xoá luôn `st.srs`/`st.wrong` của bộ đó. Chỗ hiển thị số từ hay sai / thẻ ôn đều lọc theo `BYID` nên id mồ côi không bị đếm.
-- Giới hạn: `DECK_MAX = 1000` từ cho mọi bộ; `st` sau khi lưu phải ≤ `ST_MAX = 600000` byte (rules cho phép chuỗi `data` < 700000 ký tự, document Firestore tối đa 1 MiB).
+- Giới hạn: `DECK_MAX = 2000` từ cho mọi bộ; `st` sau khi lưu phải ≤ `ST_MAX = 900000` byte (rules cho phép chuỗi `data` < 950000 ký tự, document Firestore tối đa 1 MiB).
 - XP từ bộ tự nhập tính vào bảng xếp hạng như bình thường.
 
 ## ⏰ Nhắc học trên lịch
@@ -214,7 +214,7 @@ Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến đ
 
 - **Không bắt buộc.** Mặc định là chế độ khách, chỉ lưu `localStorage`. Ô `#acct` chỉ hiện khi `FIREBASE_CONFIG` khác `null` **và** trang mở qua http(s); mở bằng `file://` hoặc mất mạng thì app vẫn chạy như khách.
 - Chỉ đăng nhập bằng **Google** (`signInWithPopup`, popup bị chặn thì chuyển sang `signInWithRedirect`).
-- Dữ liệu trên mây: document `users/{uid}` = `{data: JSON.stringify(st), xp, updatedAt}`. `firestore.rules` chỉ cho chính chủ đọc/ghi, chỉ chấp nhận đúng 3 trường đó, `data` là chuỗi < 700000 ký tự.
+- Dữ liệu trên mây: document `users/{uid}` = `{data: JSON.stringify(st), xp, updatedAt}`. `firestore.rules` chỉ cho chính chủ đọc/ghi, chỉ chấp nhận đúng 3 trường đó, `data` là chuỗi < 950000 ký tự.
 - **Khi đăng nhập / mở app đang đăng nhập** (`pullAndMerge`): tải bản trên mây, gộp với tiến độ trong máy bằng `mergeSt` rồi tải lên nếu khác. Nếu kết quả khác `st` hiện tại thì ghi vào `localStorage` và **tải lại trang** (để `sel`, `st.rpg`… khởi tạo lại sạch sẽ).
   - `mergeSt` dùng max/hợp: XP, best, fixed, vàng, cấp máu, số vật phẩm, số sao từng màn lấy max; huy hiệu, modes, từ hay sai lấy hợp; bộ từ lấy bản có `t` mới hơn của từng bộ (bộ đã xoá thắng nếu xoá sau), rồi bỏ `srs`/`wrong` của bộ đã xoá; streak lấy theo ngày `last` mới hơn; `sound`, `topics` lấy theo máy đang dùng. Gộp lại lần nữa không đổi gì (nên không bị vòng lặp reload, không nhân đôi vàng).
   - Tiến độ trong máy chỉ được gộp nếu là của khách hoặc của chính tài khoản đó (`OWNER_KEY`); tiến độ của tài khoản khác thì bỏ qua và lấy bản trên mây.

@@ -3,7 +3,7 @@
 // or {del: 1, t} once deleted (kept so another device's copy is not merged back). Items are only appended, never removed,
 // because item ids are 'u<did>.<index>' (st.srs / st.wrong use them). Topic key (it.ti) of a deck is 'u<did>'.
 const CORE_N=ALL.length; // built-in items come first in ALL, deck items after them
-const DECK_MAX=1000, ST_MAX=600000; // items across all decks; max size of the saved progress in bytes (Firestore rules allow 700000 chars)
+const DECK_MAX=2000, ST_MAX=900000; // items across all decks; max size of the saved progress in bytes (rules allow 950000 chars, a Firestore doc max 1 MiB)
 const isDeck=ti=>typeof ti==='string';
 const liveDecks=()=>Object.entries(st.decks).filter(([,d])=>!d.del).sort((a,b)=>a[1].n.localeCompare(b[1].n,'vi'));
 const topicKeys=()=>[...DATA.map((_,i)=>i),...liveDecks().map(([k])=>'u'+k)];

@@ -7,7 +7,7 @@ service cloud.firestore {
       allow create, update: if request.auth != null && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(['data', 'xp', 'updatedAt'])
         && request.resource.data.data is string
-        && request.resource.data.data.size() < 700000; // imported decks; Firestore docs max 1 MiB
+        && request.resource.data.data.size() < 950000; // imported decks; Firestore docs max 1 MiB
     }
 
     // Leaderboard: any signed-in player can read; each player writes only their own row.
