@@ -184,3 +184,12 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:36px}
 .qmain .spk{width:40px;height:40px;font-size:20px;margin-left:8px}
 .ipa{font-family:"Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif;font-weight:500;color:var(--muted)}
 .feedback .ex .ipa,.review .ipa{font-size:14px}
+/* ===== account / cloud sync ===== */
+.acct{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin:14px 0 0;box-shadow:var(--shadow)}
+.acct:empty{display:none}
+.acct-txt{flex:1;min-width:0}
+.acct-txt b{display:block;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct-txt small{color:var(--muted);font-size:13px;display:block}
+.acct .btn{padding:9px 14px;font-size:14px;white-space:nowrap}
+.ava{flex:0 0 40px;width:40px;height:40px;border-radius:50%;object-fit:cover;display:grid;place-items:center;background:var(--accent-soft);font-size:22px}
+footer a{color:var(--accent)}

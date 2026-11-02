@@ -17,7 +17,13 @@ js/core.js          ALL/BYID, helper, lưu trữ st/save, huy hiệu, hiệu ứ
 js/questions.js     pool(), makeQuiz / makeFill / makeCol
 js/practice.js      Trang chủ (chọn chủ đề) + chế độ luyện tập thường
 js/boss.js          Phiêu lưu đánh Boss
-js/main.js          renderHome() — khởi động app
+js/firebase-config.js  const FIREBASE_CONFIG (null = tắt đăng nhập/đồng bộ)
+js/sync.js          Đăng nhập Google + đồng bộ tiến độ lên Firestore (tuỳ chọn)
+js/main.js          renderHome(); initSync() — khởi động app
+privacy.html        Trang chính sách quyền riêng tư (link ở footer trang chủ)
+icon.svg            Favicon
+firebase.json       Cấu hình Firebase Hosting + đường dẫn rules
+firestore.rules     Quy tắc bảo mật Firestore
 archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chiếu, KHÔNG sửa
 ```
 
@@ -30,17 +36,18 @@ archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chi�
 | `js/questions.js` | `STOP`, `colTokens`, `poolOverride`, `pool`, `choose`, `makeQuiz`, `makeFill`, `makeCol` (dùng chung cho chế độ thường và Boss) |
 | `js/practice.js` | `sel`, `useWrong`, `renderChips`, `renderHome`, nút âm thanh; `LEN`, `G`, `start`, `next`, `answer`, `finish`, phím tắt |
 | `js/boss.js` | `BOSSES`, `ITEMS`, `DMG`, `RPG0`, `cfg`, map, shop, battle (`B`), item, victory/chest, defeat, phím tắt |
-| `js/main.js` | `renderHome()` |
+| `js/sync.js` | `initSync`, `mergeSt`, `pullAndMerge`, `queueUpload`/`flushUpload`, `signIn`/`signOut`, `renderAcct` (ô `#acct` trên trang chủ) |
+| `js/main.js` | `renderHome(); initSync();` |
 
 ### Cách các file JS liên kết
 
 - Dùng `<script src>` **thường** (không `type="module"`, không build tool) để mở được bằng double-click `index.html` qua `file://`. ES module và `fetch` file JSON bị chặn trên `file://`, nên **không** dùng.
 - Mọi `const`/`let`/`function` khai báo ở top-level đều là biến toàn cục dùng chung giữa các file.
-- **Thứ tự nạp trong `index.html` là bắt buộc**: `data → core → questions → practice → boss → main`. Code chạy ngay khi nạp (top-level) chỉ được dùng thứ đã khai báo ở file trước, ví dụ `core.js` cần `DATA`, `practice.js` cần `st`, `boss.js` gán `st.rpg`. Tham chiếu "ngược" (ví dụ `pool()` trong `questions.js` dùng `sel`/`useWrong` của `practice.js`, `unlock` gọi `renderHome`) chỉ hợp lệ vì nằm trong thân hàm, chạy sau khi mọi file đã nạp.
+- **Thứ tự nạp trong `index.html` là bắt buộc**: `data → firebase-config → core → questions → practice → boss → sync → main`. Code chạy ngay khi nạp (top-level) chỉ được dùng thứ đã khai báo ở file trước, ví dụ `core.js` cần `DATA`, `practice.js` cần `st`, `boss.js` gán `st.rpg`. Tham chiếu "ngược" (ví dụ `pool()` trong `questions.js` dùng `sel`/`useWrong` của `practice.js`, `unlock` gọi `renderHome`) chỉ hợp lệ vì nằm trong thân hàm, chạy sau khi mọi file đã nạp.
 - Script đặt cuối `<body>` nên DOM đã sẵn sàng khi gắn sự kiện.
 - Không khai báo trùng tên top-level giữa các file (sẽ lỗi `Identifier has already been declared`).
 
-Font Be Vietnam Pro lấy từ Google Fonts; không có thư viện JS nào khác.
+Font Be Vietnam Pro lấy từ Google Fonts. Thư viện JS duy nhất là Firebase SDK bản *compat* (`firebase-app/auth/firestore-compat.js`, phiên bản `FB_VER` trong `sync.js`), được `sync.js` nạp động từ `www.gstatic.com` **chỉ khi** có `FIREBASE_CONFIG` và trang chạy qua http(s).
 
 ## Các chế độ chơi
 
@@ -141,12 +148,27 @@ Lúc chạy, `DATA` được làm phẳng thành `ALL`, mỗi mục có dạng
 
 Streak được cập nhật khi kết thúc lượt chơi thường (`finish`) và khi thắng/thua trận Boss (`touchStreak`). Hiển thị dùng `liveStreak()` (về 0 nếu bỏ quá 1 ngày).
 
+Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến độ đang nằm trong máy (không có = khách).
+
+## Đăng nhập & đồng bộ (Firebase)
+
+- **Không bắt buộc.** Mặc định là chế độ khách, chỉ lưu `localStorage`. Ô `#acct` chỉ hiện khi `FIREBASE_CONFIG` khác `null` **và** trang mở qua http(s); mở bằng `file://` hoặc mất mạng thì app vẫn chạy như khách.
+- Chỉ đăng nhập bằng **Google** (`signInWithPopup`, popup bị chặn thì chuyển sang `signInWithRedirect`).
+- Dữ liệu trên mây: document `users/{uid}` = `{data: JSON.stringify(st), xp, updatedAt}`. `firestore.rules` chỉ cho chính chủ đọc/ghi, chỉ chấp nhận đúng 3 trường đó, `data` là chuỗi < 200 KB.
+- **Khi đăng nhập / mở app đang đăng nhập** (`pullAndMerge`): tải bản trên mây, gộp với tiến độ trong máy bằng `mergeSt` rồi tải lên nếu khác. Nếu kết quả khác `st` hiện tại thì ghi vào `localStorage` và **tải lại trang** (để `sel`, `st.rpg`… khởi tạo lại sạch sẽ).
+  - `mergeSt` dùng max/hợp: XP, best, fixed, vàng, cấp máu, số vật phẩm, số sao từng màn lấy max; huy hiệu, modes, từ hay sai lấy hợp; streak lấy theo ngày `last` mới hơn; `sound`, `topics` lấy theo máy đang dùng. Gộp lại lần nữa không đổi gì (nên không bị vòng lặp reload, không nhân đôi vàng).
+  - Tiến độ trong máy chỉ được gộp nếu là của khách hoặc của chính tài khoản đó (`OWNER_KEY`); tiến độ của tài khoản khác thì bỏ qua và lấy bản trên mây.
+- **Khi đang đăng nhập**: `save()` gọi `onSaved` → `queueUpload` (gom 2 giây rồi tải lên); khi tab bị ẩn thì tải lên ngay.
+- **Đăng xuất**: tải lên lần cuối, rồi xoá tiến độ trong máy và tải lại → máy trở về khách mới (tránh người sau thấy/gộp nhầm tiến độ).
+- So sánh tiến độ dùng `canon()` (sắp xếp key và mảng) thay vì `JSON.stringify` thường.
+
 ## Quy ước code
 
 - JS thuần, không framework, không module, không build. Biến toàn cục: `st` (lưu trữ), `G` (lượt chơi thường), `B` (trận Boss), `sel`/`useWrong` (chọn chủ đề), `poolOverride` (Boss ghi đè nguồn câu hỏi).
 - Phong cách **rất cô đọng**: arrow function, nhiều câu lệnh trên một dòng, tên ngắn (`st`, `q`, `it`, `c`, `r`). Giữ nguyên phong cách này khi sửa; không tự ý format lại cả file.
 - `$(id)` = `document.getElementById`. Render bằng template string + `innerHTML`; **mọi dữ liệu đưa vào HTML phải qua `esc()`**.
-- Sự kiện gắn bằng `el.onclick = ...` / event delegation trên container (`#chips`, `#opts`, `#stages`, `#shop`, `#items`).
+- Sự kiện gắn bằng `el.onclick = ...` / event delegation trên container (`#chips`, `#opts`, `#stages`, `#shop`, `#items`, `#acct`).
+- Thay đổi cấu trúc `st` phải cập nhật cả `mergeSt` trong `sync.js` (trường mới chưa có quy tắc gộp sẽ lấy theo bản trên mây).
 - Chia khu bằng comment `// ---------- tên ----------` và `// ================= BOSS ADVENTURE =================`.
 - Code mới đặt vào đúng file theo trách nhiệm (bảng ở trên). Thêm file JS mới thì thêm thẻ `<script src>` vào `index.html` đúng vị trí trong thứ tự nạp.
 - CSS dùng biến màu ở `:root`; màu mới phải khai báo cho cả chế độ sáng và tối (cả block `prefers-color-scheme: dark` lẫn `[data-theme="dark"]`).
@@ -172,6 +194,15 @@ Streak được cập nhật khi kết thúc lượt chơi thường (`finish`) 
   BOSSES.length === DATA.length + 1                                          // phải là true
   ```
 - Reset tiến độ: `localStorage.removeItem('ielts-vocab-arena-v1')` rồi tải lại.
+- Thử đăng nhập: phải chạy qua `http://localhost` (ví dụ `npx firebase-tools serve` hoặc `python -m http.server`), `localhost` có sẵn trong Authorized domains của Firebase. Kiểm tra: đăng nhập → ô tài khoản báo "✅ Đã đồng bộ"; chơi 1 lượt → xem document `users/{uid}` trên Firebase console cập nhật; mở trình duyệt khác đăng nhập cùng tài khoản → thấy cùng tiến độ; đăng xuất → về khách 0 XP.
+
+## Deploy (Firebase Hosting)
+
+- Link miễn phí: `https://<project-id>.web.app` (và `.firebaseapp.com`).
+- Lần đầu: `npx firebase-tools login` (người dùng tự chạy, cần trình duyệt), tạo `.firebaserc` với `{"projects":{"default":"<project-id>"}}`.
+- Deploy: `npx firebase-tools deploy --only hosting,firestore:rules`.
+- `firebase.json` deploy cả thư mục gốc, trừ `archive/`, `CLAUDE.md`, file ẩn và file cấu hình Firebase. HTML/JS/CSS gửi kèm `Cache-Control: no-cache` để người dùng luôn nhận bản mới.
+- Trước khi public: thay `EMAIL_LIEN_HE` trong `privacy.html`.
 
 ## Git
 

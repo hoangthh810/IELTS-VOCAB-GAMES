@@ -1,1 +1,1 @@
-renderHome();
+renderHome();initSync();
