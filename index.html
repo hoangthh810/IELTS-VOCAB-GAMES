@@ -6,6 +6,8 @@
 <title>Vocab Arena</title>
 <meta name="description" content="Game học từ vựng IELTS band 6.5 cho người Việt: quiz, điền từ, collocation, phát âm và phiêu lưu đánh boss.">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#fbf6f0">
+<script>try{var t=localStorage.getItem('ielts-vocab-arena-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -16,19 +18,21 @@
 <!-- HOME -->
 <div class="screen show" id="home">
   <header>
-    <div class="logo">Vocab <span>Arena</span> 🎮</div>
-    <button class="icon-btn" id="soundBtn" title="Âm thanh">🔊</button>
+    <div class="brand"><img class="brand-ic" src="icon.svg" alt=""><div><div class="logo">Vocab <span>Arena</span></div><small class="tagline">Học từ vựng IELTS cùng mèo 🐾</small></div></div>
+    <div class="hbtns"><button class="icon-btn" id="themeBtn" title="Đổi giao diện sáng / tối">🌙</button><button class="icon-btn" id="soundBtn" title="Âm thanh">🔊</button></div>
   </header>
   <div class="acct" id="acct"></div>
-  <div class="stats">
-    <div class="stat"><b id="sStreak">0</b><small>🔥 ngày liên tiếp</small></div>
-    <div class="stat"><b id="sXp">0</b><small>⭐ tổng XP</small></div>
-    <div class="stat"><b id="sWrong">0</b><small>📕 từ hay sai</small></div>
-  </div>
-  <div class="level">
-    <div class="row"><span id="lvName">Level 1</span><span id="lvNext"></span></div>
-    <div class="bar"><i id="lvBar"></i></div>
-  </div>
+  <section class="hero">
+    <div class="stats">
+      <div class="stat"><b id="sStreak">0</b><small>🔥 chuỗi ngày</small></div>
+      <div class="stat"><b id="sXp">0</b><small>⭐ tổng XP</small></div>
+      <div class="stat"><b id="sWrong">0</b><small>📕 từ hay sai</small></div>
+    </div>
+    <div class="level">
+      <div class="row"><span id="lvName">Level 1</span><span id="lvNext"></span></div>
+      <div class="bar"><i id="lvBar"></i></div>
+    </div>
+  </section>
   <button class="adv" id="advBtn"><div class="e">⚔️</div><div><b>Phiêu lưu đánh Boss</b><span>20 màn · rương thưởng · bình máu · trùm cuối Rồng IELTS 🐲</span></div></button>
   <button class="board-btn" id="boardBtn"><span class="e">🏆</span><span><b>Bảng xếp hạng</b><small>XP tuần này và tổng XP</small></span><span class="go">›</span></button>
 

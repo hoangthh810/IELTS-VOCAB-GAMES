@@ -79,7 +79,7 @@ function unlock(id){
 let toastT;
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600)}
 function confetti(n=30){
-  const cols=['#6d28d9','#db2777','#f59e0b','#16a34a','#0ea5e9'];
+  const cols=['#ff922b','#e64980','#fcc419','#51cf66','#339af0','#845ef7'];
   for(let i=0;i<n;i++){const c=document.createElement('i');c.className='cf';
     c.style.left=Math.random()*100+'vw';c.style.background=pick(cols);
     c.style.animationDuration=(1.2+Math.random()*1.3)+'s';c.style.animationDelay=Math.random()*.3+'s';

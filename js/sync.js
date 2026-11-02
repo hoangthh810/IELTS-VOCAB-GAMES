@@ -85,7 +85,7 @@ function renderAcct(state){
   if(!state||state==='wait'){el.innerHTML='';return}
   if(state==='out'||!fbUser){el.innerHTML=`<div class="acct-txt"><b>☁️ Lưu tiến độ lên tài khoản</b><small>Đăng nhập Google để chơi tiếp trên mọi thiết bị</small></div><button class="btn gbtn" data-acct="in">Đăng nhập Google</button>`;return}
   const msg={sync:'⏳ Đang đồng bộ…',ok:'✅ Đã đồng bộ',err:'⚠️ Chưa đồng bộ được, sẽ thử lại'}[state]||'';
-  el.innerHTML=(fbUser.photoURL?`<img class="ava" src="${esc(fbUser.photoURL)}" alt="" referrerpolicy="no-referrer">`:'<div class="ava">🧑‍🎓</div>')+
+  el.innerHTML=(fbUser.photoURL?`<img class="ava" src="${esc(fbUser.photoURL)}" alt="" referrerpolicy="no-referrer">`:'<div class="ava">🐱</div>')+
     `<div class="acct-txt"><b>${esc(fbUser.displayName||fbUser.email||'Bạn')}</b><small>${msg}${isAdmin()?' · 🛠️ Admin: mở mọi màn':''}</small></div><button class="btn ghost" data-acct="out">Đăng xuất</button>`;
 }
 $('acct').onclick=e=>{const b=e.target.closest('[data-acct]');if(!b)return;b.dataset.acct==='in'?signIn():signOut()};

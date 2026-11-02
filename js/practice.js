@@ -30,6 +30,14 @@ function renderHome(){
 }
 $('soundBtn').onclick=()=>{st.sound=!st.sound;save();renderHome()};
 
+// ---------- light / dark theme (per device, not synced; applied early by a script in <head>) ----------
+const THEME_KEY='ielts-vocab-arena-theme',darkMq=matchMedia('(prefers-color-scheme: dark)');
+const isDark=()=>{const t=document.documentElement.dataset.theme;return t?t==='dark':darkMq.matches};
+function renderTheme(){const d=isDark();$('themeBtn').textContent=d?'☀️':'🌙';$('themeBtn').title=d?'Chuyển sang giao diện sáng':'Chuyển sang giao diện tối';
+  document.querySelector('meta[name=theme-color]').content=d?'#17120e':'#fbf6f0'}
+$('themeBtn').onclick=()=>{const t=isDark()?'light':'dark';document.documentElement.dataset.theme=t;try{localStorage.setItem(THEME_KEY,t)}catch(e){}renderTheme()};
+darkMq.addEventListener('change',renderTheme);renderTheme();
+
 // ---------- game loop ----------
 const LEN=12;
 let G=null;

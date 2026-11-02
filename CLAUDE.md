@@ -26,7 +26,7 @@ js/remind.js        Nhắc học mỗi ngày trên lịch (link Google Calendar 
 js/sync.js          Đăng nhập Google + đồng bộ tiến độ lên Firestore (tuỳ chọn)
 js/main.js          renderHome(); initSync() — khởi động app
 privacy.html        Trang chính sách quyền riêng tư (link ở footer trang chủ)
-icon.svg            Favicon
+icon.svg            Logo mặt mèo (favicon + logo đầu trang chủ)
 firebase.json       Cấu hình Firebase Hosting + đường dẫn rules
 firestore.rules     Quy tắc bảo mật Firestore
 archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chiếu, KHÔNG sửa
@@ -176,6 +176,8 @@ Lúc chạy, `DATA` được làm phẳng thành `ALL`, mỗi mục có dạng
 
 Streak được cập nhật khi kết thúc lượt chơi thường (`finish`) và khi thắng/thua trận Boss (`touchStreak`). Hiển thị dùng `liveStreak()` (về 0 nếu bỏ quá 1 ngày).
 
+Key phụ `ielts-vocab-arena-theme`: `light`/`dark` nếu người dùng bấm nút 🌙/☀️ (`#themeBtn`), không có = theo hệ thống. Chỉ lưu trên máy, không đồng bộ. Một `<script>` nhỏ trong `<head>` của `index.html` và `privacy.html` đặt `data-theme` trước khi trang vẽ (tránh nháy màu); `renderTheme`/`isDark` trong `practice.js` đổi icon nút và `<meta name=theme-color>`.
+
 Key phụ `ielts-vocab-arena-remind`: giờ nhắc học đã chọn (`HH:MM`), chỉ lưu trên máy.
 
 Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến độ đang nằm trong máy (không có = khách).
@@ -232,7 +234,9 @@ Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến đ
 - Thay đổi cấu trúc `st` nên thêm quy tắc gộp trong `mergeSt` (`sync.js`). Trường chưa có quy tắc: lấy bản trên mây, và nếu bản trên mây chưa có trường đó thì lấy của máy (dòng `for(const k in b)…`, chống vòng lặp tải lại trang sau khi cập nhật app).
 - Chia khu bằng comment `// ---------- tên ----------` và `// ================= BOSS ADVENTURE =================`.
 - Code mới đặt vào đúng file theo trách nhiệm (bảng ở trên). Thêm file JS mới thì thêm thẻ `<script src>` vào `index.html` đúng vị trí trong thứ tự nạp.
-- CSS dùng biến màu ở `:root`; màu mới phải khai báo cho cả chế độ sáng và tối (cả block `prefers-color-scheme: dark` lẫn `[data-theme="dark"]`).
+- **Giao diện "quán cà phê mèo"**: logo mèo (`icon.svg`, ảnh `.brand-ic` ở header), nền kem có hoạ tiết dấu chân mèo (`--paw`, ảnh SVG nhúng), màu chính cam (`--accent`). Chế độ tối nền nâu đen ấm, cam sáng.
+- CSS dùng biến màu ở `:root`; màu mới phải khai báo cho cả chế độ sáng và tối (cả block `prefers-color-scheme: dark` lẫn `[data-theme="dark"]`, hai block này giống hệt nhau). Biến: `--bg`, `--card`, `--card2` (nền phụ trong thẻ), `--ink`, `--muted`, `--line`, `--accent`/`--accent-soft`/`--accent-ink` (chữ màu cam trên nền nhạt), `--on-accent` (chữ trên nền màu đặc: trắng ở chế độ sáng, nâu đậm ở chế độ tối — **không** viết `color:#fff` cho nút màu), `--pink`, `--yellow`/`--yellow-soft`/`--yellow-ink`, `--good*`, `--bad*`, `--shadow` (bóng mềm của thẻ), `--press` (gờ dưới kiểu nút bấm 3D), `--paw`.
+- Kiểm tra giao diện ở 360/375px và ~1024px, cả sáng lẫn tối: không phần tử nào tràn ngang (`document.documentElement.scrollWidth` ≤ chiều rộng màn hình).
 - Chuyển màn hình bằng `show(id)`.
 - Văn bản hiển thị cho người dùng viết bằng tiếng Việt, giọng thân thiện, có emoji.
 
