@@ -138,7 +138,7 @@ function answerB(v,el,timeout){
   save();updB();xpBadges();
   $('bFbT').textContent=title;
   $('bFbA').innerHTML=(line?line+'<br>':'')+(ok?'':`Đáp án đúng: <b>${esc(q.type==='col'?q.it.term:q.answer)}</b>`);
-  $('bFbEx').innerHTML=`<b>${esc(q.it.term)}</b>: ${esc(q.it.mean)}<br>📝 ${hlEx(q.it.ex,q.it.term)}`;
+  $('bFbEx').innerHTML=`${termHtml(q.it)}: ${esc(q.it.mean)}<br>📝 ${hlEx(q.it.ex,q.it.term)}`;
   $('bFb').className='feedback show '+(ok?'ok':'no');$('bNext').style.display='';
   if(B.bossHp<=0){B.over=true;$('bNext').style.display='none';setTimeout(()=>$('bossE').classList.add('dead'),400);setTimeout(victory,1500)}
   else if(B.hp<=0){B.over=true;$('bNext').style.display='none';setTimeout(defeat,1300)}
@@ -148,6 +148,7 @@ function goNextB(){clearTimeout(B.auto);if(!B.over&&B.answered)nextB()}
 $('bOpts').onclick=e=>{const b=e.target.closest('.opt');if(b&&!b.disabled)answerB(b.dataset.v,b)};
 $('bForm').onsubmit=e=>{e.preventDefault();if(B.answered){goNextB();return}const v=$('bIn').value.trim();if(v)answerB(v,$('bIn'))};
 $('bNext').onclick=goNextB;
+$('bFb').addEventListener('click',e=>{if(e.target.closest('.spk'))clearTimeout(B.auto)}); // stay on the answer while listening
 $('bQuit').onclick=()=>{if(confirm('Bỏ chạy khỏi trận đánh? Tiến độ trận này sẽ mất.')){stopTimer();clearTimeout(B.auto);B.over=true;openMap()}};
 $('items').onclick=e=>{
   const b=e.target.closest('.itm');if(!b||!B||B.over)return;const k=b.dataset.k,inv=st.rpg.inv;if(!inv[k])return;
@@ -193,7 +194,7 @@ $('vMap').onclick=openMap;
 function defeat(){
   stopTimer();st.rpg.gold+=10;touchStreak();save();
   $('dSub').innerHTML=`${B.c.b.e} ${esc(B.c.b.n)} còn ${B.bossHp}/${B.c.hp} HP.<br>Bạn nhận 10 💰 an ủi và +${st.xp-B.xp0} XP. Mẹo: mua thêm 🧪 Bình máu hoặc 🛡️ Khiên trong cửa hàng, và ôn lại các từ bên dưới.`;
-  $('dReview').innerHTML=B.wrongList.length?`<h2>📕 Từ cần ôn lại</h2>`+B.wrongList.map(q=>`<div class="it"><b>${esc(q.it.term)}</b>: ${esc(q.it.mean)}<br><span class="empty">${hlEx(q.it.ex,q.it.term)}</span></div>`).join(''):'';
+  $('dReview').innerHTML=B.wrongList.length?`<h2>📕 Từ cần ôn lại</h2>`+B.wrongList.map(q=>`<div class="it">${termHtml(q.it)}: ${esc(q.it.mean)}<br><span class="empty">${hlEx(q.it.ex,q.it.term)}</span></div>`).join(''):'';
   show('defeat');beep('no');
 }
 $('dRetry').onclick=()=>startBattle(B.i);

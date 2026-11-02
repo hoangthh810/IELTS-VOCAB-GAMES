@@ -177,3 +177,10 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:36px}
 .reward .e{font-size:32px;display:block}
 .bigstars{font-size:40px;color:var(--yellow);letter-spacing:6px}
 .bigstars .off{color:var(--line)}
+/* ===== pronunciation ===== */
+.spk{border:0;background:var(--accent-soft);color:var(--accent);border-radius:999px;width:30px;height:30px;padding:0;margin-left:6px;font-size:15px;line-height:1;vertical-align:middle;display:inline-grid;place-items:center}
+.spk:hover{filter:brightness(.95)}
+.spk:active{transform:scale(.9)}
+.qmain .spk{width:40px;height:40px;font-size:20px;margin-left:8px}
+.ipa{font-family:"Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif;font-weight:500;color:var(--muted)}
+.feedback .ex .ipa,.review .ipa{font-size:14px}

@@ -82,7 +82,7 @@ function answer(v,el){
   const praise=['Chuẩn luôn! 🎉','Xuất sắc! ✨','Quá đỉnh! 🚀','Giỏi lắm! 💪','Đúng rồi! 👏'];
   $('fbT').textContent=ok?pick(praise):(v?'Chưa đúng rồi 😅':'Đáp án là:');
   $('fbA').innerHTML=ok?'':`Đáp án đúng: <b>${esc(q.type==='col'?q.it.term:q.answer)}</b>`+(q.type==='quiz'?'':` (${esc(q.it.mean)})`);
-  $('fbEx').innerHTML=`<b>${esc(q.it.term)}</b>: ${esc(q.it.mean)}<br>📝 ${hlEx(q.it.ex,q.it.term)}`;
+  $('fbEx').innerHTML=`${termHtml(q.it)}: ${esc(q.it.mean)}<br>📝 ${hlEx(q.it.ex,q.it.term)}`;
   $('fb').className='feedback show '+(ok?'ok':'no');
   setTimeout(()=>$('next').focus(),30);
 }
@@ -107,7 +107,7 @@ function finish(){
   $('rTitle').textContent=r===1?'Hoàn hảo tuyệt đối!':r>=.75?'Làm tốt lắm!':r>=.5?'Khá ổn, cố thêm chút nữa!':'Không sao, luyện tiếp nhé!';
   $('rSub').textContent=`+${st.xp-G.xp0} XP · Chuỗi ${st.streak} ngày 🔥`+(newBest?' · Kỷ lục mới! 🥇':` · Kỷ lục: ${st.best}`);
   $('rScore').textContent=G.score;$('rAcc').textContent=`${G.correct}/${LEN}`;$('rCombo').textContent=G.maxCombo;
-  $('review').innerHTML=G.wrongList.length?`<h2>📕 Từ cần ôn lại</h2>`+G.wrongList.map(q=>`<div class="it"><b>${esc(q.it.term)}</b>: ${esc(q.it.mean)}<br><span class="empty">${hlEx(q.it.ex,q.it.term)}</span></div>`).join(''):'';
+  $('review').innerHTML=G.wrongList.length?`<h2>📕 Từ cần ôn lại</h2>`+G.wrongList.map(q=>`<div class="it">${termHtml(q.it)}: ${esc(q.it.mean)}<br><span class="empty">${hlEx(q.it.ex,q.it.term)}</span></div>`).join(''):'';
   show('result');beep('end');if(r>=.75)confetti(r===1?120:60);
 }
 $('again').onclick=()=>start(G.mode);

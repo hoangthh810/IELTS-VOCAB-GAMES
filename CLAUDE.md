@@ -26,7 +26,7 @@ archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chi�
 | `index.html` | 7 màn hình `.screen` — `#home`, `#game`, `#result`, `#map`, `#battle`, `#victory`, `#defeat` + `#toast`, `#flash` |
 | `css/style.css` | Biến màu ở `:root` (sáng/tối theo `prefers-color-scheme` và `data-theme`), CSS cho home, game, result, phần Boss (từ comment `/* ===== boss adventure ===== */`) |
 | `js/data.js` | `const DATA = [...]` |
-| `js/core.js` | Dữ liệu dẫn xuất (`ALL`, `BYID`), helper (`esc`, `shuffle`, `pick`, `$`, `findMatch`, `hlEx`), storage (`KEY`, `st`, `save`, `dayKey`, `yesterday`, `liveStreak`), `BADGES`/`unlock`, hiệu ứng (`toast`, `confetti`, `plus`, `beep` dùng WebAudio), chuyển màn `show` |
+| `js/core.js` | Dữ liệu dẫn xuất (`ALL`, `BYID`), helper (`esc`, `shuffle`, `pick`, `$`, `findMatch`, `hlEx`), storage (`KEY`, `st`, `save`, `dayKey`, `yesterday`, `liveStreak`), phát âm (`speak`, `spk`, `ipaTag`, `termHtml`), `BADGES`/`unlock`, hiệu ứng (`toast`, `confetti`, `plus`, `beep` dùng WebAudio), chuyển màn `show` |
 | `js/questions.js` | `STOP`, `colTokens`, `poolOverride`, `pool`, `choose`, `makeQuiz`, `makeFill`, `makeCol` (dùng chung cho chế độ thường và Boss) |
 | `js/practice.js` | `sel`, `useWrong`, `renderChips`, `renderHome`, nút âm thanh; `LEN`, `G`, `start`, `next`, `answer`, `finish`, phím tắt |
 | `js/boss.js` | `BOSSES`, `ITEMS`, `DMG`, `RPG0`, `cfg`, map, shop, battle (`B`), item, victory/chest, defeat, phím tắt |
@@ -67,6 +67,17 @@ Phím tắt: `1–4` chọn đáp án, `Enter` để sang câu tiếp.
 - **Cửa hàng**: mua vật phẩm bằng vàng; "Bùa sinh lực" +15 máu tối đa vĩnh viễn, tối đa cấp 5, giá `120 × (cấp+1)`. Máu người chơi = `100 + hpLv*15`.
 - **Rương** sau khi thắng: vàng `25 + i*4 + sao*10 (+30 nếu lần đầu)`, số vật phẩm = số sao (+1 bình máu nếu lần đầu thắng). 3 sao → rương vàng. Thua được 10 vàng an ủi.
 
+### 🔊 Phát âm & phiên âm
+
+- Nút loa `.spk` đọc từ/cụm từ bằng **Web Speech API** (`speechSynthesis`) có sẵn trong trình duyệt: ưu tiên giọng `en-GB`, không có thì lấy giọng tiếng Anh bất kỳ, tốc độ 0.9. Không cần mạng hay thư viện. Trình duyệt không hỗ trợ (`canSpeak = false`) thì nút loa không được render.
+- Phiên âm IPA (Anh-Anh, kiểu Oxford Learner's) chỉ có ở **từ đơn**; collocation không có phiên âm nhưng vẫn có nút loa.
+- Nơi hiển thị — dùng `termHtml(it)` (từ in đậm + phiên âm + loa):
+  - Câu **Quiz Anh→Việt**: loa cạnh từ ở `qMain`, phiên âm ở `qSub`.
+  - **Phần đáp án** sau mỗi câu (chế độ thường và Boss) và danh sách **"Từ cần ôn lại"** ở màn kết quả / màn thua.
+  - **Không** hiện ở câu Quiz Việt→Anh, Điền từ, Collocation vì sẽ lộ đáp án.
+- Một listener `click` chung trên `document` bắt mọi `.spk` (đọc `data-say`). Nút loa không phụ thuộc nút bật/tắt âm thanh hiệu ứng (`st.sound`).
+- Trong trận Boss, bấm loa ở phần đáp án sẽ huỷ tự chuyển câu sau 1,8 giây (`B.auto`) để kịp nghe; bấm "Tiếp tục" hoặc Enter để đi tiếp.
+
 ### Huy hiệu (`BADGES`)
 
 `first, combo5, combo10, perfect, allmodes, fixer, streak3, streak7, xp500, xp2000, boss1, stars3, dragon` — mở bằng `unlock(id)`.
@@ -77,8 +88,8 @@ Phím tắt: `1–4` chọn đáp án, `Enter` để sang câu tiếp.
 
 ```js
 {name:"🎓 Education",          // emoji + tên tiếng Anh, hiển thị trên chip và bản đồ
- words:[                         // [từ, từ loại, nghĩa tiếng Việt, câu ví dụ]
-  ["curriculum","n","chương trình học","The national curriculum includes compulsory science lessons."],
+ words:[                         // [từ, từ loại, nghĩa tiếng Việt, câu ví dụ, phiên âm IPA]
+  ["curriculum","n","chương trình học","The national curriculum includes compulsory science lessons.","/kəˈrɪkjələm/"],
   ...],
  cols:[                          // [cụm từ, nghĩa tiếng Việt, câu ví dụ]
   ["acquire knowledge","tiếp thu kiến thức","Reading widely is one of the best ways to acquire knowledge."],
@@ -86,13 +97,14 @@ Phím tắt: `1–4` chọn đáp án, `Enter` để sang câu tiếp.
 ```
 
 Lúc chạy, `DATA` được làm phẳng thành `ALL`, mỗi mục có dạng
-`{id, ti, kind:'word'|'col', term, pos, mean, ex}` với `id = ti + 'w' + i` hoặc `ti + 'c' + i` (ví dụ `"3w12"`). `BYID` tra ngược từ id.
+`{id, ti, kind:'word'|'col', term, pos, mean, ex, ipa}` (collocation và word thiếu phiên âm có `ipa = ''`) với `id = ti + 'w' + i` hoặc `ti + 'c' + i` (ví dụ `"3w12"`). `BYID` tra ngược từ id.
 
 ### Yêu cầu nội dung
 
 - Câu ví dụ của **word** nên chứa chính từ đó (hoặc dạng biến đổi cùng gốc) để chế độ Điền từ dùng được — `findMatch` tìm theo tiền tố của từ dài hơn 2 ký tự đầu tiên (bỏ `the`, `one's`, `someone's`, `something`, `with`).
 - **col** phải có ít nhất một khoảng trắng và một từ "có nghĩa" ngoài stop-word, nếu không sẽ không xuất hiện ở chế độ Collocation.
 - Nghĩa tiếng Việt nên ngắn gọn, khác nhau trong cùng chủ đề (đáp án nhiễu so sánh bằng chuỗi).
+- Mỗi **word** có phần tử thứ 5 là phiên âm IPA Anh-Anh, có dấu `/.../`, dùng ký hiệu Oxford (`əʊ`, `ɒ`, `ɜː`, `eə`, `(r)` cuối từ). Từ có cách đọc khác nhau theo từ loại thì ghi cả hai, ví dụ `"/ˈɡrædʒuət/ (n), /ˈɡrædʒueɪt/ (v)"`. Thiếu phiên âm thì app vẫn chạy, chỉ không hiện phiên âm.
 - Không dùng ký tự `"` chưa escape trong chuỗi JS.
 
 ### Cách thêm chủ đề mới
@@ -156,6 +168,7 @@ Streak được cập nhật khi kết thúc lượt chơi thường (`finish`) 
   ```js
   ALL.filter(x=>x.kind==='word'&&!findMatch(x.ex,x.term)).map(x=>x.term)   // word không dùng được cho Điền từ
   ALL.filter(x=>x.kind==='col'&&!(x.term.includes(' ')&&colTokens(x.term).length)).map(x=>x.term) // col không dùng được
+  ALL.filter(x=>x.kind==='word'&&!x.ipa).map(x=>x.term)                     // word thiếu phiên âm
   BOSSES.length === DATA.length + 1                                          // phải là true
   ```
 - Reset tiến độ: `localStorage.removeItem('ielts-vocab-arena-v1')` rồi tải lại.

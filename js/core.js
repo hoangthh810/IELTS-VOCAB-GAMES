@@ -1,6 +1,6 @@
 // ---------- data ----------
 const ALL = DATA.flatMap((t,ti)=>[
-  ...t.words.map((w,i)=>({id:ti+'w'+i,ti,kind:'word',term:w[0],pos:w[1],mean:w[2],ex:w[3]})),
+  ...t.words.map((w,i)=>({id:ti+'w'+i,ti,kind:'word',term:w[0],pos:w[1],mean:w[2],ex:w[3],ipa:w[4]||''})),
   ...t.cols.map((c,i)=>({id:ti+'c'+i,ti,kind:'col',term:c[0],pos:'',mean:c[1],ex:c[2]}))]);
 const BYID = Object.fromEntries(ALL.map(x=>[x.id,x]));
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -20,6 +20,21 @@ function hlEx(ex,term){
   const m=findMatch(ex,term); if(!m) return esc(ex);
   return esc(ex.slice(0,m.i))+'<b>'+esc(m.t)+'</b>'+esc(ex.slice(m.i+m.t.length));
 }
+
+// ---------- pronunciation ----------
+const canSpeak='speechSynthesis' in window;
+let enVoice=null;
+function pickVoice(){const vs=speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang));enVoice=vs.find(v=>/GB/i.test(v.lang))||vs[0]||null}
+if(canSpeak){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+function speak(text){
+  if(!canSpeak)return;speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);u.lang=enVoice?enVoice.lang.replace('_','-'):'en-GB';if(enVoice)u.voice=enVoice;u.rate=.9;
+  speechSynthesis.speak(u);
+}
+const spk=text=>canSpeak?`<button class="spk" type="button" data-say="${esc(text)}" title="Nghe phát âm">🔊</button>`:'';
+const ipaTag=it=>it.ipa?` <span class="ipa">${esc(it.ipa)}</span>`:'';
+const termHtml=it=>`<b>${esc(it.term)}</b>${ipaTag(it)}${spk(it.term)}`;
+document.addEventListener('click',e=>{const b=e.target.closest('.spk');if(b)speak(b.dataset.say)});
 
 // ---------- storage ----------
 const KEY='ielts-vocab-arena-v1';

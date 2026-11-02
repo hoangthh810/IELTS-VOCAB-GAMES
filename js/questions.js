@@ -14,7 +14,7 @@ function makeQuiz(used){
     if(v!==cur&&!ds.includes(v))ds.push(v); if(ds.length===3)break}
   const ans=enToVi?it.mean:it.term;
   return {type:'quiz',it,label:enToVi?'🎯 Nghĩa tiếng Việt là gì?':'🎯 Từ tiếng Anh nào?',
-    main:esc(enToVi?it.term:it.mean),sub:it.pos?`(${it.pos})`:(it.kind==='col'?'collocation':''),hint:'',
+    main:enToVi?esc(it.term)+spk(it.term):esc(it.mean),sub:(enToVi?ipaTag(it):'')+(it.pos?` (${it.pos})`:(it.kind==='col'?' collocation':'')),hint:'',
     options:shuffle([ans,...ds]),answer:ans};
 }
 function makeFill(used){
