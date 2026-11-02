@@ -31,7 +31,7 @@ const RPG0={gold:50,cleared:{},inv:{potion:2,shield:1,half:1,rage:0},hpLv:0};
 st.rpg=Object.assign(JSON.parse(JSON.stringify(RPG0)),st.rpg||{});
 st.rpg.inv=Object.assign({...RPG0.inv},st.rpg.inv||{});
 const maxHp=()=>100+st.rpg.hpLv*15;
-const unlocked=i=>i===0||!!st.rpg.cleared[i-1];
+const unlocked=i=>i===0||!!st.rpg.cleared[i-1]||isAdmin(); // admins can open any stage to test it
 const LAST=DATA.length; // index of final boss
 function cfg(i){const final=i===LAST,boss=!final&&!!BOSSES[i].boss;return{i,final,boss,b:BOSSES[i],topic:final?'Tất cả chủ đề':DATA[i].name,
   hp:final?900:Math.round((120+i*20)*(boss?1.5:1)),atk:final?40:Math.round((12+i*1.2)*(boss?1.2:1)),tq:Math.max(9,16-Math.floor(i/4)),tf:Math.max(16,28-Math.floor(i/3))}}

@@ -69,7 +69,7 @@ Phím tắt: `1–4` chọn đáp án, `Enter` để sang câu tiếp.
 ### ⚔️ Phiêu lưu đánh Boss
 
 - **Bản đồ 20 màn**: màn 1–19 ứng với 19 chủ đề trong `DATA` (màn `i` dùng chủ đề `DATA[i]`), màn 20 là **trùm cuối 🐲 Rồng IELTS Tối Thượng** dùng toàn bộ từ vựng. `LAST = DATA.length` là index của trùm cuối.
-- Mở khoá tuần tự: màn `i` mở khi màn `i-1` đã thắng (`unlocked`). Thắng được 1–3 sao theo % máu còn lại (≥70% → 3★, ≥40% → 2★).
+- Mở khoá tuần tự: màn `i` mở khi màn `i-1` đã thắng (`unlocked`). **Admin** (email trong `ADMINS` ở `js/sync.js`, đăng nhập Google và email đã xác minh) thấy mọi màn mở để chơi thử; tiến độ lưu không bị đổi. Chỉ là tiện ích kiểm thử phía trình duyệt, không phải cơ chế bảo mật. Thắng được 1–3 sao theo % máu còn lại (≥70% → 3★, ≥40% → 2★).
 - **Chương**: mỗi chương 5 màn thường đánh cùng một loại quái + 1 màn **👑 BOSS** (`boss:true` trong `BOSSES`): chương 1 lớp học 🦉→📖 (màn 1–6), chương 2 thành phố 🟢→🗿 (7–12), chương 3 đáy biển 🪼→🐙 (13–18), chương 4 lâu đài 🐉 (19) → 🐲 trùm cuối (20). Mỗi phần tử `BOSSES` có `e` (emoji trên bản đồ), `n` (tên), `l` (câu khiêu khích theo chủ đề màn), `k` (loại quái trong `KINDS`), `w` (bối cảnh trong `WORLDS`).
 - Chỉ số tính trong `cfg(i)`: HP `120 + i*20`, sát thương `12 + i*1.2`; màn BOSS nhân HP ×1,5 và sát thương ×1,2; trùm cuối 900 HP, sát thương 40; thời gian trả lời giảm dần theo màn (`tq` cho quiz/col, `tf` cho điền từ).
 - Trận đánh: mỗi câu hỏi random 40% quiz / 30% col / 30% fill. Sát thương theo độ khó `DMG = {quiz:20, col:26, fill:36}`, combo cộng thêm tối đa +50%. Sai / hết giờ / bỏ qua → boss đánh lại; boss dưới 30% HP sẽ "nổi điên" (x1.3 sát thương). Mỗi câu đúng +10 XP.

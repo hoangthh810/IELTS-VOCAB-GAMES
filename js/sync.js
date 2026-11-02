@@ -3,6 +3,10 @@
 const OWNER_KEY='ielts-vocab-arena-owner'; // uid that the local progress belongs to (absent = guest)
 const FB_VER='10.12.2';
 let fbUser=null,syncT=null;
+// Admin accounts (Google-verified email) see every adventure stage unlocked; their saved progress is not changed.
+// Client-side only: it is a testing convenience, not a security boundary.
+const ADMINS=['hoanglolthachdau@gmail.com'];
+const isAdmin=()=>!!(fbUser&&fbUser.emailVerified&&ADMINS.includes((fbUser.email||'').toLowerCase()));
 const syncable=()=>!!FIREBASE_CONFIG&&/^https?:$/.test(location.protocol); // Google sign-in does not work on file://
 const userRef=uid=>firebase.firestore().collection('users').doc(uid);
 // stable stringify (sorted keys and primitive arrays) so equal progress compares equal
@@ -17,7 +21,7 @@ async function initSync(){
   try{if(!window.firebase)for(const m of ['app','auth','firestore'])await loadScript(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-${m}-compat.js`)}
   catch(e){renderAcct('');return} // offline: stay in guest mode
   firebase.initializeApp(FIREBASE_CONFIG);
-  firebase.auth().onAuthStateChanged(u=>{fbUser=u;if(u)pullAndMerge(u);else{onSaved=null;renderAcct('out')}});
+  firebase.auth().onAuthStateChanged(u=>{fbUser=u;if($('map').classList.contains('show'))renderMap();if(u)pullAndMerge(u);else{onSaved=null;renderAcct('out')}});
 }
 
 // Combine cloud (a) and this device (b). Every rule is max/union, so merging again changes nothing.
@@ -75,6 +79,6 @@ function renderAcct(state){
   if(state==='out'||!fbUser){el.innerHTML=`<div class="acct-txt"><b>☁️ Lưu tiến độ lên tài khoản</b><small>Đăng nhập Google để chơi tiếp trên mọi thiết bị</small></div><button class="btn gbtn" data-acct="in">Đăng nhập Google</button>`;return}
   const msg={sync:'⏳ Đang đồng bộ…',ok:'✅ Đã đồng bộ',err:'⚠️ Chưa đồng bộ được, sẽ thử lại'}[state]||'';
   el.innerHTML=(fbUser.photoURL?`<img class="ava" src="${esc(fbUser.photoURL)}" alt="" referrerpolicy="no-referrer">`:'<div class="ava">🧑‍🎓</div>')+
-    `<div class="acct-txt"><b>${esc(fbUser.displayName||fbUser.email||'Bạn')}</b><small>${msg}</small></div><button class="btn ghost" data-acct="out">Đăng xuất</button>`;
+    `<div class="acct-txt"><b>${esc(fbUser.displayName||fbUser.email||'Bạn')}</b><small>${msg}${isAdmin()?' · 🛠️ Admin: mở mọi màn':''}</small></div><button class="btn ghost" data-acct="out">Đăng xuất</button>`;
 }
 $('acct').onclick=e=>{const b=e.target.closest('[data-acct]');if(!b)return;b.dataset.acct==='in'?signIn():signOut()};
