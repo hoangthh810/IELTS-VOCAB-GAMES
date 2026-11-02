@@ -16,7 +16,7 @@ js/data.js          const DATA — dữ liệu 19 chủ đề
 js/core.js          ALL/BYID, helper, lưu trữ st/save, huy hiệu, hiệu ứng, âm thanh, show()
 js/questions.js     pool(), makeQuiz / makeFill / makeCol
 js/practice.js      Trang chủ (chọn chủ đề) + chế độ luyện tập thường
-js/scene.js         Cảnh đánh boss 2D trên canvas (hiện chỉ màn 1)
+js/scene.js         Cảnh đánh boss 2D trên canvas (bối cảnh + quái cho cả 20 màn)
 js/boss.js          Phiêu lưu đánh Boss
 js/firebase-config.js  const FIREBASE_CONFIG (null = tắt đăng nhập/đồng bộ)
 js/sync.js          Đăng nhập Google + đồng bộ tiến độ lên Firestore (tuỳ chọn)
@@ -36,7 +36,7 @@ archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chi�
 | `js/core.js` | Dữ liệu dẫn xuất (`ALL`, `BYID`), helper (`esc`, `shuffle`, `pick`, `$`, `findMatch`, `hlEx`), storage (`KEY`, `st`, `save`, `dayKey`, `yesterday`, `liveStreak`), phát âm (`speak`, `spk`, `ipaTag`, `termHtml`), `BADGES`/`unlock`, hiệu ứng (`toast`, `confetti`, `plus`, `beep` dùng WebAudio), chuyển màn `show` |
 | `js/questions.js` | `STOP`, `colTokens`, `poolOverride`, `pool`, `choose`, `makeQuiz`, `makeFill`, `makeCol` (dùng chung cho chế độ thường và Boss) |
 | `js/practice.js` | `sel`, `useWrong`, `renderChips`, `renderHome`, nút âm thanh; `LEN`, `G`, `start`, `next`, `answer`, `finish`, phím tắt |
-| `js/scene.js` | `SCENES` (màn nào có cảnh 2D), `sceneStart`, các sự kiện `sceneHeroAttack/BossAttack/Heal/BossDie/HeroDie`, vòng lặp vẽ, hạt, đạn, HUD thanh máu; hàm vẽ nhân vật `drawHero`, màn 1: `bgClassroom`, `liveClassroom`, `drawOwl` |
+| `js/scene.js` | `sceneStart`, sự kiện `sceneHeroAttack/BossAttack/Heal/BossDie/HeroDie`, vòng lặp vẽ, hạt, đạn, HUD; `pose` (chuyển động chung của quái), `drawHero`; `WORLDS` (bối cảnh: `school`, `city`, `ocean`, `castle`) và `KINDS` (quái: `owl`, `book`, `slime`, `golem`, `jelly`, `octo`, `whelp`, `dragon`) |
 | `js/boss.js` | `BOSSES`, `ITEMS`, `DMG`, `RPG0`, `cfg`, map, shop, battle (`B`), item, victory/chest, defeat, phím tắt |
 | `js/sync.js` | `initSync`, `mergeSt`, `pullAndMerge`, `queueUpload`/`flushUpload`, `signIn`/`signOut`, `renderAcct` (ô `#acct` trên trang chủ) |
 | `js/main.js` | `renderHome(); initSync();` |
@@ -70,11 +70,12 @@ Phím tắt: `1–4` chọn đáp án, `Enter` để sang câu tiếp.
 
 - **Bản đồ 20 màn**: màn 1–19 ứng với 19 chủ đề trong `DATA` (màn `i` dùng chủ đề `DATA[i]`), màn 20 là **trùm cuối 🐲 Rồng IELTS Tối Thượng** dùng toàn bộ từ vựng. `LAST = DATA.length` là index của trùm cuối.
 - Mở khoá tuần tự: màn `i` mở khi màn `i-1` đã thắng (`unlocked`). Thắng được 1–3 sao theo % máu còn lại (≥70% → 3★, ≥40% → 2★).
-- Chỉ số boss tính trong `cfg(i)`: HP `120 + i*20` (trùm cuối 600), sát thương `12 + i*1.2` (trùm cuối 34), thời gian trả lời giảm dần theo màn (`tq` cho quiz/col, `tf` cho điền từ).
+- **Chương**: mỗi chương 5 màn thường đánh cùng một loại quái + 1 màn **👑 BOSS** (`boss:true` trong `BOSSES`): chương 1 lớp học 🦉→📖 (màn 1–6), chương 2 thành phố 🟢→🗿 (7–12), chương 3 đáy biển 🪼→🐙 (13–18), chương 4 lâu đài 🐉 (19) → 🐲 trùm cuối (20). Mỗi phần tử `BOSSES` có `e` (emoji trên bản đồ), `n` (tên), `l` (câu khiêu khích theo chủ đề màn), `k` (loại quái trong `KINDS`), `w` (bối cảnh trong `WORLDS`).
+- Chỉ số tính trong `cfg(i)`: HP `120 + i*20`, sát thương `12 + i*1.2`; màn BOSS nhân HP ×1,5 và sát thương ×1,2; trùm cuối 900 HP, sát thương 40; thời gian trả lời giảm dần theo màn (`tq` cho quiz/col, `tf` cho điền từ).
 - Trận đánh: mỗi câu hỏi random 40% quiz / 30% col / 30% fill. Sát thương theo độ khó `DMG = {quiz:20, col:26, fill:36}`, combo cộng thêm tối đa +50%. Sai / hết giờ / bỏ qua → boss đánh lại; boss dưới 30% HP sẽ "nổi điên" (x1.3 sát thương). Mỗi câu đúng +10 XP.
 - **Vật phẩm** (`ITEMS`): 🧪 `potion` hồi 40 HP (50 vàng), 🛡️ `shield` chặn 1 đòn (60), 💡 `half` loại 2 đáp án sai / hiện nửa số chữ (40), 💢 `rage` x2 sát thương đòn đúng kế tiếp (70).
 - **Cửa hàng**: mua vật phẩm bằng vàng; "Bùa sinh lực" +15 máu tối đa vĩnh viễn, tối đa cấp 5, giá `120 × (cấp+1)`. Máu người chơi = `100 + hpLv*15`.
-- **Rương** sau khi thắng: vàng `25 + i*4 + sao*10 (+30 nếu lần đầu)`, số vật phẩm = số sao (+1 bình máu nếu lần đầu thắng). 3 sao → rương vàng. Thua được 10 vàng an ủi.
+- **Rương** sau khi thắng: vàng `25 + i*4 + sao*10 (+30 nếu lần đầu, +40 nếu là màn BOSS)`, số vật phẩm = số sao (+1 bình máu nếu lần đầu thắng). 3 sao → rương vàng. Thua được 10 vàng an ủi.
 
 ### 🔊 Phát âm & phiên âm
 
@@ -87,15 +88,17 @@ Phím tắt: `1–4` chọn đáp án, `Enter` để sang câu tiếp.
 - Một listener `click` chung trên `document` bắt mọi `.spk` (đọc `data-say`). Nút loa không phụ thuộc nút bật/tắt âm thanh hiệu ứng (`st.sound`).
 - Trong trận Boss, bấm loa ở phần đáp án sẽ huỷ tự chuyển câu sau 1,8 giây (`B.auto`) để kịp nghe; bấm "Tiếp tục" hoặc Enter để đi tiếp.
 
-### 🎬 Cảnh đánh boss 2D (bản mẫu)
+### 🎬 Cảnh đánh boss 2D
 
-- Màn có khoá trong `SCENES` (`js/scene.js`) dùng canvas 2D thay cho emoji; hiện chỉ có màn 1 (`0`: lớp học + 🦉 Cú Giáo Sư). Các màn khác giữ khung emoji cũ.
-- Tất cả hình vẽ bằng code (Canvas 2D), không có file ảnh. Kích thước logic 640×320 (`SW`,`SH`), mặt đất `GY`, nhân vật ở `HX`, boss ở `BX`; canvas nhân `devicePixelRatio` (tối đa 2).
-- `sceneStart(i)` được gọi trong `startBattle`; bật class `.arena.scene` (ẩn emoji và dòng máu DOM, **ghim khung ở đầu màn hình** bằng `position:sticky` để khi trang cuộn xuống phần đáp án vẫn thấy hoạt ảnh). Thanh máu, tên boss, lời thoại được vẽ trên canvas (`drawHud`). Vòng `requestAnimationFrame` tự dừng khi rời màn `#battle`.
-- `boss.js` gọi cảnh qua các hàm `scene*` khi `SC` khác null; khi null thì dùng lại `floatAt`/`anim` cũ. Có cảnh thì boss chết sau 650ms (đợi đạn trúng), màn thắng sau 2,3s, màn thua sau 2s.
-- Đòn đúng bắn **chính từ tiếng Anh vừa trả lời** thành đạn phép (tím; combo vàng; thuốc cuồng nộ đỏ). Sai/hết giờ: boss ném 3 tờ giấy điểm "F". Khiên: bong bóng xanh chặn đạn. Boss dưới 30% máu: đỏ lên, mắt đỏ, bốc hơi, viền đỏ.
+- Mọi màn đều vẽ trên canvas 2D (`js/scene.js`): bối cảnh lấy theo `BOSSES[i].w` trong `WORLDS`, quái theo `BOSSES[i].k` trong `KINDS`. Thiếu một trong hai thì tự quay về khung emoji cũ.
+- Tất cả hình vẽ bằng code, không có file ảnh. Kích thước logic 640×320 (`SW`,`SH`), mặt đất `GY`, nhân vật ở `HX`, quái ở `BX`; canvas nhân `devicePixelRatio` (tối đa 2). Bảng đen lớp học hiện từ vựng của chủ đề màn đó.
+- `sceneStart(i)` được gọi trong `startBattle`; bật class `.arena.scene` (ẩn emoji và dòng máu DOM, **ghim khung ở đầu màn hình** bằng `position:sticky` để khi trang cuộn xuống phần đáp án vẫn thấy hoạt ảnh). Thanh máu, tên quái (kèm nhãn 👑 BOSS / 🐲 TRÙM CUỐI), lời thoại được vẽ trên canvas (`drawHud`). Vòng `requestAnimationFrame` tự dừng khi rời màn `#battle`.
+- `boss.js` gọi cảnh qua các hàm `scene*` khi `SC` khác null; khi null thì dùng lại `floatAt`/`anim` cũ. Có cảnh thì quái chết sau 650ms (đợi đạn trúng), màn thắng sau 2,3s, màn thua sau 2s.
+- Đòn đúng bắn **chính từ tiếng Anh vừa trả lời** thành đạn phép (tím; combo vàng; thuốc cuồng nộ đỏ). Sai/hết giờ: quái bắn 3 viên theo `shot` của loại (`paper` giấy điểm F, `goo` nhớt, `rock` đá, `zap` tia điện, `ink` mực, `fire` lửa). Khiên: bong bóng xanh chặn đạn. Dưới 30% máu: đỏ lên, mắt đỏ, bốc hơi, viền đỏ.
+- `pose()` lo chuyển động chung (bay vào, lơ lửng, lao lên khi đánh, giật lùi + chớp sáng khi trúng, xoay thu nhỏ khi chết); hàm `draw` của từng loại chỉ vẽ hình tại gốc toạ độ = chân quái, mặt quay sang trái, dùng `p.atk` (0..1) cho động tác đánh và `p.rage`.
+- Trường của `KINDS`: `cy`/`top` (tâm/đỉnh thân, toạ độ y âm), `mx`,`my` (điểm bắn ra), `sp`/`bob`/`lift` (nhịp, biên độ lơ lửng, độ cao), `shadow`, `scale`, `shot`, `pk`/`parts` (kiểu và màu mảnh vỡ). Quái phải vừa khung: đỉnh không chạm thanh máu (y ≥ ~60 trên canvas), không tràn mép phải.
 - `prefers-reduced-motion` tắt rung màn hình.
-- Thêm cảnh cho màn khác: viết `bg<Tên>(c)` (phông tĩnh, vẽ 1 lần), `live<Tên>(c,s)` (chi tiết động, tuỳ chọn), `draw<Boss>(c,s)` (dựa theo `drawOwl`: đọc `s.boss.atk/hit/dead`, `sceneRage()`), rồi thêm vào `SCENES`.
+- Thêm loại quái: viết `draw<Tên>(c,s,p)` rồi thêm vào `KINDS`. Thêm bối cảnh: `bg<Tên>(c,i)` (vẽ 1 lần) + `live<Tên>(c,s)` (chi tiết động) rồi thêm vào `WORLDS`.
 
 ### Huy hiệu (`BADGES`)
 
@@ -132,7 +135,7 @@ Lúc chạy, `DATA` được làm phẳng thành `ALL`, mỗi mục có dạng
 
 1. **Chỉ thêm chủ đề mới vào CUỐI mảng `DATA`**. Không chèn giữa, không đổi thứ tự, không xoá chủ đề cũ — nếu không, `st.wrong`, `st.topics` và `st.rpg.cleared` của người dùng sẽ trỏ nhầm từ/màn.
 2. Tương tự, trong một chủ đề chỉ **thêm từ/collocation vào cuối** `words`/`cols`.
-3. Thêm 1 boss mới vào `BOSSES` (`js/boss.js`) **ngay trước** Rồng IELTS (phần tử cuối) — `BOSSES` phải luôn có `DATA.length + 1` phần tử. Mẫu: `{e:'🐸', n:'Tên boss tiếng Việt', l:'Câu thoại khiêu khích'}`.
+3. Thêm 1 boss mới vào `BOSSES` (`js/boss.js`) **ngay trước** Rồng IELTS (phần tử cuối) — `BOSSES` phải luôn có `DATA.length + 1` phần tử. Mẫu: `{e:'🐉', n:'Rồng Con Hiếu Chiến', k:'whelp', w:'castle', l:'Câu thoại khiêu khích theo chủ đề'}` — chọn `k`/`w` có sẵn, hoặc mở chương mới (5 màn cùng `k` + 1 màn `boss:true`).
 4. Cập nhật mô tả "20 màn" trong nút `#advBtn` (`index.html`) và CLAUDE.md.
 5. Lưu ý: thêm chủ đề làm trùm cuối dời sang index mới. Ví dụ ai đã thắng trùm cuối khi còn 17 chủ đề có `st.rpg.cleared[17]`; sau khi thêm Government (index 17) và Sports (index 18), giá trị đó được hiểu là đã thắng màn Government, còn trùm cuối chuyển sang index 19 (cần thắng lại). Chấp nhận được, nhưng cần biết.
 

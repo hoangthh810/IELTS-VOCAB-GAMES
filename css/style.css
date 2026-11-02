@@ -121,6 +121,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:36px}
 .stage small{display:block;color:var(--muted);font-size:12px;line-height:1.4}
 .stage .stars{color:var(--yellow);letter-spacing:2px;font-size:16px}
 .stage.locked{opacity:.45;cursor:not-allowed}
+.stage.boss{border-color:var(--yellow);background:linear-gradient(160deg,var(--yellow-soft),var(--card) 70%)}
 .stage.final{grid-column:1/-1;background:linear-gradient(135deg,var(--accent-soft),var(--yellow-soft))}
 .stage:not(.locked):hover{border-color:var(--accent)}
 .stage.cur{border-color:var(--pink);animation:glow 1.6s ease-in-out infinite}

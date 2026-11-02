@@ -1,25 +1,26 @@
 // ================= BOSS ADVENTURE =================
+// Chapters: 5 stages against the same enemy kind (k) in one world (w), then a boss stage. k/w pick the 2D scene in scene.js.
 const BOSSES=[
- {e:'🦉',n:'Cú Giáo Sư Khó Tính',l:'Ngươi đã học bài chưa mà dám vào lớp ta?'},
- {e:'🌋',n:'Núi Lửa Ô Nhiễm',l:'Khói bụi của ta sẽ làm ngươi quên sạch từ vựng!'},
- {e:'🤖',n:'Robot Hacker',l:'Đang tải virus... xoá sạch trí nhớ của ngươi!'},
- {e:'🦠',n:'Virus Lười Biếng',l:'Nằm xuống đi, học làm gì cho mệt...'},
- {e:'👔',n:'Sếp Deadline',l:'Báo cáo đâu? Hạn chót là 5 phút nữa!'},
- {e:'🐙',n:'Bạch Tuộc Thất Lạc Hành Lý',l:'Vali của ngươi giờ là của ta!'},
- {e:'🦹',n:'Siêu Trộm Bóng Đêm',l:'Ta sẽ trộm sạch điểm số của ngươi!'},
- {e:'🗿',n:'Golem Bê Tông',l:'Thành phố này là của ta, kẻ lạ mặt!'},
- {e:'👻',n:'Bóng Ma Cô Đơn',l:'Không ai làm bạn với ngươi đâu...'},
- {e:'🦁',n:'Lân Tinh Nghịch',l:'Muốn lì xì thì phải thắng ta trước!'},
- {e:'🕷️',n:'Nhện Bụi Bặm',l:'Nhà ngươi bừa quá, ta giăng tơ khắp nơi rồi!'},
- {e:'🐼',n:'Gấu Trúc Lười Nhác',l:'Cứ nằm xem phim cả ngày như ta đi...'},
- {e:'🦖',n:'Khủng Long Kẹt Xe',l:'Giờ cao điểm rồi, đừng hòng thoát!'},
- {e:'🐍',n:'Rắn Bất Công',l:'Khoảng cách giàu nghèo là sức mạnh của ta!'},
- {e:'🧌',n:'Troll Khoảng Cách Thế Hệ',l:'Thời của ta khác thời của ngươi!'},
- {e:'👾',n:'Quái Vật Đồ Ăn Nhanh',l:'Ăn thêm miếng nữa đi... rồi ngủ quên!'},
- {e:'🦊',n:'Cáo Tin Giả',l:'Tin ta đi, ta là nguồn tin đáng tin nhất!'},
- {e:'🎩',n:'Quan Liêu Ngàn Thủ Tục',l:'Thiếu một con dấu thôi là ngươi phải làm lại từ đầu!'},
- {e:'🦍',n:'Khỉ Đột Cơ Bắp',l:'Thể lực yếu thế kia thì chạy nổi một vòng sân không?'},
- {e:'🐲',n:'Rồng IELTS Tối Thượng',l:'Ta là trùm cuối. Không 6.5 thì đừng mơ qua!'}];
+ {e:'🦉',n:'Cú Giáo Sư Khó Tính',k:'owl',w:'school',l:'Ngươi đã học bài chưa mà dám vào lớp ta?'},
+ {e:'🦉',n:'Cú Giáo Sư Khó Tính',k:'owl',w:'school',l:'Bài luận về môi trường của ngươi... điểm F!'},
+ {e:'🦉',n:'Cú Giáo Sư Khó Tính',k:'owl',w:'school',l:'Cấm tra Google! Trả lời bằng trí nhớ đi!'},
+ {e:'🦉',n:'Cú Giáo Sư Khó Tính',k:'owl',w:'school',l:'Thức khuya học bài à? Mắt thâm thế kia thì nhớ được gì!'},
+ {e:'🦉',n:'Cú Giáo Sư Khó Tính',k:'owl',w:'school',l:'Muốn đi làm thì qua bài kiểm tra của ta trước!'},
+ {e:'📖',n:'Sách Ma Ngàn Trang',k:'book',w:'school',boss:true,l:'Ta là cuốn từ điển cổ. Ngươi thuộc hết ngàn trang của ta chưa?'},
+ {e:'🟢',n:'Slime Nón Giao Thông',k:'slime',w:'city',l:'Ta trộm hết từ vựng của ngươi rồi, đuổi theo đi!'},
+ {e:'🟢',n:'Slime Nón Giao Thông',k:'slime',w:'city',l:'Thành phố đông thế này, ngươi lạc là cái chắc!'},
+ {e:'🟢',n:'Slime Nón Giao Thông',k:'slime',w:'city',l:'Học dở thế thì ai thèm làm bạn với ngươi?'},
+ {e:'🟢',n:'Slime Nón Giao Thông',k:'slime',w:'city',l:'Nghỉ lễ rồi, học làm gì nữa? Nằm xuống đi!'},
+ {e:'🟢',n:'Slime Nón Giao Thông',k:'slime',w:'city',l:'Nhà ngươi bừa quá, ta chiếm luôn rồi!'},
+ {e:'🗿',n:'Golem Bê Tông',k:'golem',w:'city',boss:true,l:'Ta là bức tường cuối cùng của thành phố. Đập nổi không?'},
+ {e:'🪼',n:'Sứa Điện',k:'jelly',w:'ocean',l:'Kẹt xe dưới biển còn tệ hơn trên bờ đấy!'},
+ {e:'🪼',n:'Sứa Điện',k:'jelly',w:'ocean',l:'Ta chích một cái là trí nhớ ngươi tê liệt!'},
+ {e:'🪼',n:'Sứa Điện',k:'jelly',w:'ocean',l:'Cả họ nhà sứa đang chờ ngươi đấy!'},
+ {e:'🪼',n:'Sứa Điện',k:'jelly',w:'ocean',l:'Đói bụng à? Đừng hòng ăn được ta!'},
+ {e:'🪼',n:'Sứa Điện',k:'jelly',w:'ocean',l:'Tin nóng: ngươi sắp thua rồi!'},
+ {e:'🐙',n:'Bạch Tuộc Quan Liêu',k:'octo',w:'ocean',boss:true,l:'Tám tay, tám con dấu. Thiếu một chữ ký là làm lại từ đầu!'},
+ {e:'🐉',n:'Rồng Con Hiếu Chiến',k:'whelp',w:'castle',l:'Muốn gặp mẹ ta à? Thắng ta trước đã!'},
+ {e:'🐲',n:'Rồng IELTS Tối Thượng',k:'dragon',w:'castle',l:'Ta là trùm cuối. Không 6.5 thì đừng mơ qua!'}];
 const ITEMS={
  potion:{e:'🧪',n:'Bình máu',d:'Hồi 40 HP',price:50},
  shield:{e:'🛡️',n:'Khiên',d:'Chặn hoàn toàn đòn đánh kế tiếp của boss',price:60},
@@ -32,8 +33,8 @@ st.rpg.inv=Object.assign({...RPG0.inv},st.rpg.inv||{});
 const maxHp=()=>100+st.rpg.hpLv*15;
 const unlocked=i=>i===0||!!st.rpg.cleared[i-1];
 const LAST=DATA.length; // index of final boss
-function cfg(i){const final=i===LAST;return{i,final,b:BOSSES[i],topic:final?'Tất cả chủ đề':DATA[i].name,
-  hp:final?600:120+i*20,atk:final?34:Math.round(12+i*1.2),tq:Math.max(9,16-Math.floor(i/4)),tf:Math.max(16,28-Math.floor(i/3))}}
+function cfg(i){const final=i===LAST,boss=!final&&!!BOSSES[i].boss;return{i,final,boss,b:BOSSES[i],topic:final?'Tất cả chủ đề':DATA[i].name,
+  hp:final?900:Math.round((120+i*20)*(boss?1.5:1)),atk:final?40:Math.round((12+i*1.2)*(boss?1.2:1)),tq:Math.max(9,16-Math.floor(i/4)),tf:Math.max(16,28-Math.floor(i/3))}}
 function touchStreak(){const t=dayKey();if(st.last!==t){st.streak=(st.last===yesterday())?st.streak+1:1;st.last=t}
   if(st.streak>=3)unlock('streak3');if(st.streak>=7)unlock('streak7')}
 function xpBadges(){if(st.xp>=500)unlock('xp500');if(st.xp>=2000)unlock('xp2000')}
@@ -46,8 +47,8 @@ function renderMap(){
     Object.entries(ITEMS).map(([k,v])=>`<span class="pill" title="${v.n}">${v.e} ${r.inv[k]}</span>`).join('');
   let cur=-1;for(let i=0;i<=LAST;i++){if(unlocked(i)&&!r.cleared[i]){cur=i;break}}
   let h='';for(let i=0;i<=LAST;i++){const c=cfg(i),lock=!unlocked(i),s=r.cleared[i]||0;
-    h+=`<button class="stage ${lock?'locked':''} ${c.final?'final':''} ${i===cur?'cur':''}" data-i="${i}" ${lock?'disabled':''}>
-      <div class="e">${lock?'🔒':c.b.e}</div><b>${c.final?'TRÙM CUỐI · ':'Màn '+(i+1)+' · '}${esc(c.b.n)}</b>
+    h+=`<button class="stage ${lock?'locked':''} ${c.final?'final':''} ${c.boss?'boss':''} ${i===cur?'cur':''}" data-i="${i}" ${lock?'disabled':''}>
+      <div class="e">${lock?'🔒':c.b.e}</div><b>${c.final?'TRÙM CUỐI · ':'Màn '+(i+1)+(c.boss?' · 👑 BOSS':'')+' · '}${esc(c.b.n)}</b>
       <small>${esc(c.topic)}</small><small>❤️ ${c.hp} HP · ⚔️ ${c.atk}</small>
       <div class="stars">${'★'.repeat(s)}${'☆'.repeat(3-s)}</div></button>`}
   $('stages').innerHTML=h;
@@ -181,7 +182,7 @@ function victory(){
 $('chest').onclick=()=>{
   const R=B.reward;if(!R||R.opened)return;R.opened=true;const r=st.rpg;
   $('chest').classList.add('open');$('chestHint').style.display='none';
-  const gold=25+B.i*4+R.stars*10+(R.first?30:0);r.gold+=gold;
+  const gold=25+B.i*4+R.stars*10+(R.first?30:0)+(B.c.boss?40:0);r.gold+=gold;
   const got={};const n=R.stars+(R.first?1:0);
   if(R.first)got.potion=1;
   for(let j=0;j<n-(R.first?1:0);j++){const x=Math.random();const k=x<.4?'potion':x<.65?'shield':x<.9?'half':'rage';got[k]=(got[k]||0)+1}
