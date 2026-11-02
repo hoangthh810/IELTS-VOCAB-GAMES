@@ -30,6 +30,16 @@
     <div class="bar"><i id="lvBar"></i></div>
   </div>
   <button class="adv" id="advBtn"><div class="e">⚔️</div><div><b>Phiêu lưu đánh Boss</b><span>20 màn · rương thưởng · bình máu · trùm cuối Rồng IELTS 🐲</span></div></button>
+  <button class="board-btn" id="boardBtn"><span class="e">🏆</span><span><b>Bảng xếp hạng</b><small>XP tuần này và tổng XP</small></span><span class="go">›</span></button>
+
+  <h2>📅 Ôn tập ngắt quãng</h2>
+  <div class="srs" id="srsBox"></div>
+  <button class="link-btn" id="remindBtn">⏰ Nhắc học mỗi ngày trên lịch</button>
+  <div class="remind" id="remindBox" hidden>
+    <label>Giờ nhắc <input type="time" id="remindTime" value="20:00"></label>
+    <div class="srs-btns"><a class="btn" id="gcalLink" target="_blank" rel="noopener">📆 Thêm vào Google Calendar</a><button class="btn ghost" id="icsBtn">⬇️ Tải file .ics</button></div>
+    <small class="empty">Tạo sự kiện 15 phút lặp lại mỗi ngày, lịch của bạn sẽ báo khi đến giờ. File .ics dùng cho lịch iPhone, Outlook và các ứng dụng lịch khác.</small>
+  </div>
 
   <h2>1. Chọn chủ đề</h2>
   <div class="chips" id="chips"></div>
@@ -45,6 +55,29 @@
   <h2>🏅 Huy hiệu</h2>
   <div class="badges" id="badges"></div>
   <footer>Đúng liên tiếp để tăng combo: cứ 3 câu đúng thì điểm nhân thêm (tối đa x4). Từ trả lời sai được lưu vào “Từ hay sai” để ôn lại.<br>Phím tắt: 1–4 chọn đáp án, Enter để tiếp tục.<br><a href="privacy.html">Chính sách quyền riêng tư</a></footer>
+</div>
+
+<!-- FLASHCARDS -->
+<div class="screen" id="cards">
+  <div class="topbar"><button class="quit" id="cQuit" title="Thoát">✕</button><div class="bar"><i id="cBar"></i></div><span class="pill" id="cCount"></span></div>
+  <div class="fcard" id="card"><div id="cFront"></div><div class="back" id="cBack" hidden></div></div>
+  <div class="actions" id="cFlipRow"><button class="btn" id="cFlip">Lật thẻ ↻</button></div>
+  <div class="grades" id="cGrades" hidden>
+    <button class="btn grade g0" data-g="0">😵 Quên<small></small></button>
+    <button class="btn grade g1" data-g="1">🙂 Nhớ<small></small></button>
+    <button class="btn grade g2" data-g="2">😎 Dễ<small></small></button>
+  </div>
+  <div class="actions" id="cDone" hidden><button class="btn" id="cHome">Về trang chủ</button></div>
+  <footer>Cố nhớ nghĩa trước rồi mới lật thẻ. Phím tắt: Space để lật, 1 Quên · 2 Nhớ · 3 Dễ.</footer>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="screen" id="board">
+  <div class="topbar"><button class="quit" id="boardBack" title="Về trang chủ">←</button><div class="logo" style="font-size:24px">🏆 <span>Xếp hạng</span></div></div>
+  <div class="chips" id="boardTabs"><button class="chip on" data-tab="week">📆 Tuần này</button><button class="chip" data-tab="all">⭐ Tổng XP</button></div>
+  <div class="acct board-me" id="boardMe"></div>
+  <ol class="board" id="boardList"></ol>
+  <footer>Bảng tuần tính XP từ thứ Hai. Chỉ người chơi đã đăng nhập mới xem được; bảng chỉ hiện biệt danh và XP, không hiện email.</footer>
 </div>
 
 <!-- GAME -->
@@ -137,9 +170,12 @@
 <script src="js/core.js"></script>
 <script src="js/questions.js"></script>
 <script src="js/practice.js"></script>
+<script src="js/srs.js"></script>
 <script src="js/scene.js"></script>
 <script src="js/boss.js"></script>
 <script src="js/sync.js"></script>
+<script src="js/board.js"></script>
+<script src="js/remind.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

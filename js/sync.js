@@ -21,7 +21,7 @@ async function initSync(){
   try{if(!window.firebase)for(const m of ['app','auth','firestore'])await loadScript(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-${m}-compat.js`)}
   catch(e){renderAcct('');return} // offline: stay in guest mode
   firebase.initializeApp(FIREBASE_CONFIG);
-  firebase.auth().onAuthStateChanged(u=>{fbUser=u;if($('map').classList.contains('show'))renderMap();if(u)pullAndMerge(u);else{onSaved=null;renderAcct('out')}});
+  firebase.auth().onAuthStateChanged(u=>{fbUser=u;if($('map').classList.contains('show'))renderMap();if($('board').classList.contains('show'))renderBoard();if(u)pullAndMerge(u);else{onSaved=null;renderAcct('out')}});
 }
 
 // Combine cloud (a) and this device (b). Every rule is max/union, so merging again changes nothing.
@@ -36,6 +36,10 @@ function mergeSt(a,b){
   const cl={...ra.cleared};Object.entries(rb.cleared||{}).forEach(([k,v])=>cl[k]=mx(cl[k],v));
   const inv={...ra.inv};Object.entries(rb.inv||{}).forEach(([k,v])=>inv[k]=mx(inv[k],v));
   r.rpg={gold:mx(ra.gold,rb.gold),cleared:cl,inv,hpLv:mx(ra.hpLv,rb.hpLv)};
+  r.srs={...a.srs};Object.entries(b.srs||{}).forEach(([k,v])=>{if(!r.srs[k]||(v.t||0)>(r.srs[k].t||0))r.srs[k]=v}); // newest review wins
+  r.wk=a.wk&&b.wk&&a.wk.k===b.wk.k?{k:a.wk.k,base:Math.min(a.wk.base,b.wk.base)}:(b.wk&&(!a.wk||b.wk.k>a.wk.k)?b.wk:a.wk)||null;
+  r.lb=(b.lb&&(!a.lb||(b.lb.t||0)>(a.lb.t||0))?b.lb:a.lb)||null;
+  for(const k in b)if(!(k in r))r[k]=b[k]; // fields newer than the cloud copy (avoids a reload loop after app updates)
   return r;
 }
 const upload=s=>userRef(fbUser.uid).set({data:JSON.stringify(s),xp:s.xp,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
@@ -49,13 +53,13 @@ async function pullAndMerge(u){
     if(!cloud||canon(cloud)!==canon(merged))await upload(merged);
     lsSet(OWNER_KEY,u.uid);
     if(canon(merged)!==canon(st)&&lsSet(KEY,JSON.stringify(merged))){location.reload();return} // restart with the account's progress
-    onSaved=queueUpload;renderAcct('ok');
+    onSaved=queueUpload;renderAcct('ok');lbUpload().catch(e=>console.warn(e));
   }catch(e){console.error(e);renderAcct('err');setTimeout(()=>{if(fbUser===u)pullAndMerge(u)},15000)}
 }
 function queueUpload(){clearTimeout(syncT);syncT=setTimeout(flushUpload,2000)}
 function flushUpload(){
   clearTimeout(syncT);syncT=null;if(!fbUser)return Promise.resolve();
-  renderAcct('sync');return upload(st).then(()=>renderAcct('ok'),e=>{console.error(e);renderAcct('err')});
+  renderAcct('sync');lbUpload().catch(e=>console.warn(e));return upload(st).then(()=>renderAcct('ok'),e=>{console.error(e);renderAcct('err')});
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&syncT)flushUpload()});
 

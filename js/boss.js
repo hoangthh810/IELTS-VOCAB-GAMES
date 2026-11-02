@@ -121,6 +121,7 @@ function answerB(v,el,timeout){
   if(q.options){document.querySelectorAll('#bOpts .opt').forEach(b=>{b.disabled=true;if(b.dataset.v===q.answer)b.classList.add('right');else if(b===el)b.classList.add('wrong')})}
   else{const i=$('bIn');i.disabled=true;i.classList.add(ok?'right':'wrong')}
   if(!st.modes.includes(q.type)){st.modes.push(q.type);if(st.modes.length>=3)unlock('allmodes')}
+  srsGrade(id,ok?1:0);
   let title,line='';
   if(ok){
     B.correct++;B.combo++;B.maxCombo=Math.max(B.maxCombo,B.combo);

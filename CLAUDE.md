@@ -15,10 +15,13 @@ css/style.css       Toàn bộ CSS
 js/data.js          const DATA — dữ liệu 19 chủ đề
 js/core.js          ALL/BYID, helper, lưu trữ st/save, huy hiệu, hiệu ứng, âm thanh, show()
 js/questions.js     pool(), makeQuiz / makeFill / makeCol
-js/practice.js      Trang chủ (chọn chủ đề) + chế độ luyện tập thường
+js/practice.js      Trang chủ (chọn chủ đề) + chế độ luyện tập thường (cả lượt ôn bằng câu hỏi)
+js/srs.js           Ôn tập ngắt quãng (Leitner) + flashcard
 js/scene.js         Cảnh đánh boss 2D trên canvas (bối cảnh + quái cho cả 20 màn)
 js/boss.js          Phiêu lưu đánh Boss
 js/firebase-config.js  const FIREBASE_CONFIG (null = tắt đăng nhập/đồng bộ)
+js/board.js         Bảng xếp hạng (Firestore leaderboard)
+js/remind.js        Nhắc học mỗi ngày trên lịch (link Google Calendar / file .ics)
 js/sync.js          Đăng nhập Google + đồng bộ tiến độ lên Firestore (tuỳ chọn)
 js/main.js          renderHome(); initSync() — khởi động app
 privacy.html        Trang chính sách quyền riêng tư (link ở footer trang chủ)
@@ -38,6 +41,9 @@ archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chi�
 | `js/practice.js` | `sel`, `useWrong`, `renderChips`, `renderHome`, nút âm thanh; `LEN`, `G`, `start`, `next`, `answer`, `finish`, phím tắt |
 | `js/scene.js` | `sceneStart`, sự kiện `sceneHeroAttack/BossAttack/Heal/BossDie/HeroDie`, vòng lặp vẽ, hạt, đạn, HUD; `pose` (chuyển động chung của quái), `drawHero`; `WORLDS` (bối cảnh: `school`, `city`, `ocean`, `castle`) và `KINDS` (quái: `owl`, `book`, `slime`, `golem`, `jelly`, `octo`, `whelp`, `dragon`) |
 | `js/boss.js` | `BOSSES`, `ITEMS`, `DMG`, `RPG0`, `cfg`, map, shop, battle (`B`), item, victory/chest, defeat, phím tắt |
+| `js/srs.js` | `SRS_DAYS`, `srsGrade`, `srsDue`, `srsStats`, `srsSession`, `srsType`, `renderSrs`; flashcard: `C`, `startCards`, `showCard`, `flipCard`, `gradeCard`, `endCards` |
+| `js/board.js` | `lbOn`, `lbName`, `lbUpload`, `openBoard`, `renderBoard` |
+| `js/remind.js` | `gcalUrl`, `icsFile`, `renderRemind` |
 | `js/sync.js` | `initSync`, `mergeSt`, `pullAndMerge`, `queueUpload`/`flushUpload`, `signIn`/`signOut`, `renderAcct` (ô `#acct` trên trang chủ) |
 | `js/main.js` | `renderHome(); initSync();` |
 
@@ -45,7 +51,7 @@ archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chi�
 
 - Dùng `<script src>` **thường** (không `type="module"`, không build tool) để mở được bằng double-click `index.html` qua `file://`. ES module và `fetch` file JSON bị chặn trên `file://`, nên **không** dùng.
 - Mọi `const`/`let`/`function` khai báo ở top-level đều là biến toàn cục dùng chung giữa các file.
-- **Thứ tự nạp trong `index.html` là bắt buộc**: `data → firebase-config → core → questions → practice → scene → boss → sync → main`. Code chạy ngay khi nạp (top-level) chỉ được dùng thứ đã khai báo ở file trước, ví dụ `core.js` cần `DATA`, `practice.js` cần `st`, `boss.js` gán `st.rpg`. Tham chiếu "ngược" (ví dụ `pool()` trong `questions.js` dùng `sel`/`useWrong` của `practice.js`, `unlock` gọi `renderHome`) chỉ hợp lệ vì nằm trong thân hàm, chạy sau khi mọi file đã nạp.
+- **Thứ tự nạp trong `index.html` là bắt buộc**: `data → firebase-config → core → questions → practice → srs → scene → boss → sync → board → remind → main`. Code chạy ngay khi nạp (top-level) chỉ được dùng thứ đã khai báo ở file trước, ví dụ `core.js` cần `DATA`, `practice.js` cần `st`, `boss.js` gán `st.rpg`. Tham chiếu "ngược" (ví dụ `pool()` trong `questions.js` dùng `sel`/`useWrong` của `practice.js`, `unlock` gọi `renderHome`) chỉ hợp lệ vì nằm trong thân hàm, chạy sau khi mọi file đã nạp.
 - Script đặt cuối `<body>` nên DOM đã sẵn sàng khi gắn sự kiện.
 - Không khai báo trùng tên top-level giữa các file (sẽ lỗi `Identifier has already been declared`).
 
@@ -160,10 +166,35 @@ Lúc chạy, `DATA` được làm phẳng thành `ALL`, mỗi mục có dạng
 | `rpg.cleared` | `{[stageIndex]: 1\|2\|3}` | Số sao tốt nhất mỗi màn đã thắng |
 | `rpg.inv` | `{potion, shield, half, rage}` | Số lượng vật phẩm (mặc định 2/1/1/0) |
 | `rpg.hpLv` | number | Cấp Bùa sinh lực (0–5) |
+| `srs` | `{[id]: {b, d, t}}` | Lịch ôn: hộp Leitner 0–7, ngày đến hạn `YYYY-MM-DD`, thời điểm chấm gần nhất (ms) |
+| `wk` | `{k, base}` | Tuần ISO hiện tại (`2026W45`) và tổng XP lúc bắt đầu tuần → XP tuần = `xp - base` (`weekKey`, `rollWeek`, `weekXp` trong `core.js`) |
+| `lb` | `{name, on, t}` | null | Biệt danh trên bảng xếp hạng, có hiện trên bảng không, thời điểm đổi |
 
 Streak được cập nhật khi kết thúc lượt chơi thường (`finish`) và khi thắng/thua trận Boss (`touchStreak`). Hiển thị dùng `liveStreak()` (về 0 nếu bỏ quá 1 ngày).
 
+Key phụ `ielts-vocab-arena-remind`: giờ nhắc học đã chọn (`HH:MM`), chỉ lưu trên máy.
+
 Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến độ đang nằm trong máy (không có = khách).
+
+## 📅 Ôn tập ngắt quãng (spaced repetition)
+
+- Hộp Leitner: `SRS_DAYS = [0,1,3,7,14,30,60,120]` ngày. **Mọi** câu trả lời (luyện tập, trận boss, ôn tập, flashcard) gọi `srsGrade(id, g)`: sai/Quên (`g=0`) → hộp 0, đến hạn hôm nay; đúng/Nhớ (`g=1`) +1 hộp; Dễ (`g=2`) +2 hộp. Thẻ chưa đến hạn trả lời đúng thì không tăng hộp (tránh lên hộp nhiều lần trong một ngày). Hộp ≥ 5 tính là "đã thuộc".
+- Lượt ôn (`srsSession`): tối đa `SRS_MAX = 20` thẻ đến hạn (hạn sớm nhất, hộp thấp trước), thiếu thì thêm tối đa `SRS_NEW = 10` từ mới của chủ đề đang chọn.
+- **Ôn bằng câu hỏi**: `start('srs')` dùng vòng chơi thường với `G.queue`/`G.len`; mỗi câu đặt `poolOverride = [thẻ]` rồi gọi `makeQuiz/makeFill/makeCol` theo `srsType` (word: quiz/điền từ, col: quiz/collocation).
+- **Flashcard** (màn `#cards`): mặt trước từ + phiên âm + loa, lật ra nghĩa + ví dụ; chấm Quên/Nhớ/Dễ (nút hiện khoảng ôn tiếp theo). Thẻ Quên được hỏi lại cuối lượt. Nhớ/Dễ +5 XP. Phím: Space lật, 1/2/3 chấm.
+- Khu "📅 Ôn tập ngắt quãng" trên trang chủ (`renderSrs`, gọi trong `renderHome`) hiện số thẻ đến hạn / đang học / đã thuộc.
+
+## ⏰ Nhắc học trên lịch
+
+- Không truy cập lịch của người dùng. `remind.js` tạo link Google Calendar (`action=TEMPLATE`, `recur=RRULE:FREQ=DAILY`, `ctz` = múi giờ trình duyệt) hoặc file `.ics` (VEVENT 15 phút lặp mỗi ngày + VALARM đúng giờ, giờ địa phương "floating", gập dòng 75 byte, CRLF). Giờ bắt đầu: hôm nay nếu chưa qua giờ đã chọn, không thì ngày mai.
+
+## 🏆 Bảng xếp hạng
+
+- Chỉ khi đã đăng nhập. Firestore `leaderboard/{uid}` = `{name, xp, w_<YYYYWww>: XP tuần, updatedAt}`; chỉ ghi trường của tuần hiện tại nên tab Tuần là `orderBy('w_<tuần>')` (index một trường tự có, không cần composite index). Tab Tổng là `orderBy('xp')`. Lấy 50 dòng.
+- `lbUpload` chạy cùng mỗi lần đồng bộ (`flushUpload`, `pullAndMerge`) và khi mở bảng; tắt "Hiện tôi trên bảng" thì xoá dòng.
+- Biệt danh mặc định = từ cuối của tên Google (tên gọi của người Việt), tối đa 20 ký tự; không lưu email/ảnh.
+- `firestore.rules`: ai đăng nhập cũng đọc được; chỉ chủ dòng ghi/xoá; đúng các trường `name, xp, updatedAt` + đúng 1 trường `w_YYYYWww`; `xp` là số nguyên 0..10 triệu, không được giảm; XP tuần ≤ tổng XP; `updatedAt` phải là thời gian máy chủ. **Không chống gian lận tuyệt đối**: người rành kỹ thuật vẫn tự ghi XP lớn được (cần Cloud Functions/gói Blaze để kiểm tra phía máy chủ).
+- Kiểm thử rules: Firestore Emulator (cần Java 21 cho firebase-tools mới; với Java 17 dùng `firebase-tools@13`, và bỏ biến môi trường `VSCODE_CWD` khi chạy trong VS Code).
 
 ## Đăng nhập & đồng bộ (Firebase)
 
@@ -183,7 +214,7 @@ Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến đ
 - Phong cách **rất cô đọng**: arrow function, nhiều câu lệnh trên một dòng, tên ngắn (`st`, `q`, `it`, `c`, `r`). Giữ nguyên phong cách này khi sửa; không tự ý format lại cả file.
 - `$(id)` = `document.getElementById`. Render bằng template string + `innerHTML`; **mọi dữ liệu đưa vào HTML phải qua `esc()`**.
 - Sự kiện gắn bằng `el.onclick = ...` / event delegation trên container (`#chips`, `#opts`, `#stages`, `#shop`, `#items`, `#acct`).
-- Thay đổi cấu trúc `st` phải cập nhật cả `mergeSt` trong `sync.js` (trường mới chưa có quy tắc gộp sẽ lấy theo bản trên mây).
+- Thay đổi cấu trúc `st` nên thêm quy tắc gộp trong `mergeSt` (`sync.js`). Trường chưa có quy tắc: lấy bản trên mây, và nếu bản trên mây chưa có trường đó thì lấy của máy (dòng `for(const k in b)…`, chống vòng lặp tải lại trang sau khi cập nhật app).
 - Chia khu bằng comment `// ---------- tên ----------` và `// ================= BOSS ADVENTURE =================`.
 - Code mới đặt vào đúng file theo trách nhiệm (bảng ở trên). Thêm file JS mới thì thêm thẻ `<script src>` vào `index.html` đúng vị trí trong thứ tự nạp.
 - CSS dùng biến màu ở `:root`; màu mới phải khai báo cho cả chế độ sáng và tối (cả block `prefers-color-scheme: dark` lẫn `[data-theme="dark"]`).

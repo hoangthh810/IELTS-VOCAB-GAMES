@@ -9,5 +9,26 @@ service cloud.firestore {
         && request.resource.data.data is string
         && request.resource.data.data.size() < 200000;
     }
+
+    // Leaderboard: any signed-in player can read; each player writes only their own row.
+    // Row = {name, xp, w_<YYYYWww>: XP this week, updatedAt}. Total XP can never go down.
+    match /leaderboard/{uid} {
+      allow read: if request.auth != null;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid && validRow(request.resource.data);
+      allow update: if request.auth != null && request.auth.uid == uid && validRow(request.resource.data)
+        && request.resource.data.xp >= resource.data.xp;
+    }
+
+    function validRow(d) {
+      let extra = d.keys().removeAll(['name', 'xp', 'updatedAt']);
+      return d.keys().hasAll(['name', 'xp', 'updatedAt'])
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 20
+        && d.xp is int && d.xp >= 0 && d.xp <= 10000000
+        && d.updatedAt == request.time
+        && extra.size() == 1
+        && extra[0].matches('w_[0-9]{4}W[0-9]{2}')
+        && d[extra[0]] is int && d[extra[0]] >= 0 && d[extra[0]] <= d.xp;
+    }
   }
 }

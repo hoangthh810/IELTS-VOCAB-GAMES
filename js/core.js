@@ -38,13 +38,21 @@ document.addEventListener('click',e=>{const b=e.target.closest('.spk');if(b)spea
 
 // ---------- storage ----------
 const KEY='ielts-vocab-arena-v1';
-let st={xp:0,streak:0,last:null,badges:[],modes:[],wrong:{},fixed:0,best:0,sound:true,topics:null};
+let st={xp:0,streak:0,last:null,badges:[],modes:[],wrong:{},fixed:0,best:0,sound:true,topics:null,srs:{},wk:null,lb:null};
 try{Object.assign(st,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
 let onSaved=null; // set by sync.js while signed in, to push progress to the cloud
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}if(onSaved)onSaved()};
+const save=()=>{rollWeek();try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}if(onSaved)onSaved()};
 const dayKey=(d=new Date())=>d.toLocaleDateString('sv');
 const yesterday=()=>{const d=new Date();d.setDate(d.getDate()-1);return dayKey(d)};
 const liveStreak=()=>(st.last===dayKey()||st.last===yesterday())?st.streak:0;
+// ISO week like '2026W45' (weeks start on Monday). st.wk = {k: week, base: st.xp when the week started}
+function weekKey(d=new Date()){
+  const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));t.setUTCDate(t.getUTCDate()+4-(t.getUTCDay()||7));
+  const w=Math.ceil(((t-Date.UTC(t.getUTCFullYear(),0,1))/864e5+1)/7);return t.getUTCFullYear()+'W'+String(w).padStart(2,'0');
+}
+function rollWeek(){const k=weekKey();if(!st.wk||st.wk.k!==k)st.wk={k,base:st.xp}}
+const weekXp=()=>{rollWeek();return st.xp-st.wk.base};
+rollWeek();
 
 // ---------- badges ----------
 const BADGES=[
