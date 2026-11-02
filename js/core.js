@@ -87,14 +87,38 @@ function confetti(n=30){
 }
 function plus(txt,el){const r=el.getBoundingClientRect();const p=document.createElement('div');p.className='plus';p.textContent=txt;
   p.style.left=(r.left+r.width/2-20)+'px';p.style.top=(r.top-10)+'px';document.body.appendChild(p);setTimeout(()=>p.remove(),900)}
+// ---------- cat sounds (synthesised with WebAudio, no audio files) ----------
 let actx;
+// one "meow": a sawtooth voice through two vowel formants; pitch p and formant f glide [start, peak, end] (Hz) over dur seconds
+function meow(a,out,t,dur,p,f,vol){
+  const o=a.createOscillator(),vib=a.createOscillator(),vg=a.createGain(),f1=a.createBiquadFilter(),f2=a.createBiquadFilter(),g2=a.createGain(),g=a.createGain();
+  o.type='sawtooth';o.frequency.setValueAtTime(p[0],t);o.frequency.linearRampToValueAtTime(p[1],t+dur*.35);o.frequency.exponentialRampToValueAtTime(p[2],t+dur);
+  vib.frequency.value=6;vg.gain.value=p[1]*.015;vib.connect(vg);vg.connect(o.frequency); // a little vibrato
+  [f1,f2].forEach((b,j)=>{const k=j?2.3:1;b.type='bandpass';b.Q.value=j?6:3.5;
+    b.frequency.setValueAtTime(f[0]*k,t);b.frequency.linearRampToValueAtTime(f[1]*k,t+dur*.4);b.frequency.linearRampToValueAtTime(f[2]*k,t+dur)});
+  g2.gain.value=.5;o.connect(f1);o.connect(f2);f2.connect(g2);f1.connect(g);g2.connect(g);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.05);g.gain.setValueAtTime(vol,t+dur*.55);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  g.connect(out);o.start(t);vib.start(t);o.stop(t+dur+.02);vib.stop(t+dur+.02);
+}
+// purr: low-passed noise pulsing ~24 times a second
+function purr(a,out,t,dur,vol){
+  const n=a.createBufferSource(),b=a.createBuffer(1,Math.ceil(a.sampleRate*dur),a.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  const lp=a.createBiquadFilter(),am=a.createGain(),lfo=a.createOscillator(),lg=a.createGain(),g=a.createGain();
+  n.buffer=b;lp.type='lowpass';lp.frequency.value=260;lfo.frequency.value=24;lg.gain.value=.5;am.gain.value=.5;lfo.connect(lg);lg.connect(am.gain);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.12);g.gain.setValueAtTime(vol,t+dur-.25);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  n.connect(lp);lp.connect(am);am.connect(g);g.connect(out);n.start(t);lfo.start(t);n.stop(t+dur);lfo.stop(t+dur);
+}
+const CAT={ // kind -> (context, output, start time)
+  ok:(a,o,t)=>meow(a,o,t,.26,[760,1100,950],[1300,2300,1700],.9),                                      // short happy "mew"
+  no:(a,o,t)=>meow(a,o,t,.55,[560,640,380],[900,1500,650],.8),                                         // sad "mraow"
+  badge:(a,o,t)=>{meow(a,o,t,.16,[600,1000,1250],[1000,1900,2200],.7);meow(a,o,t+.2,.4,[820,1250,1000],[1300,2400,1600],.9)}, // "mrrp, meow!"
+  end:(a,o,t)=>{meow(a,o,t,.45,[680,1000,760],[1100,2100,1300],.85);purr(a,o,t+.42,.9,.9)}};          // meow, then purr
 function beep(kind){
   if(!st.sound)return;
-  try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();
-    const seq={ok:[660,880],no:[220,170],badge:[523,659,784,1047],end:[392,523,659]}[kind];
-    seq.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain();o.type='triangle';o.frequency.value=f;
-      g.gain.setValueAtTime(.12,actx.currentTime+i*.09);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+i*.09+.18);
-      o.connect(g);g.connect(actx.destination);o.start(actx.currentTime+i*.09);o.stop(actx.currentTime+i*.09+.2)})}catch(e){}
+  try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();
+    const m=actx.createGain();m.gain.value=.4;m.connect(actx.destination); // about as loud as the old beeps
+    CAT[kind](actx,m,actx.currentTime+.01);setTimeout(()=>m.disconnect(),2500)}catch(e){}
 }
 
 // ---------- screens ----------
