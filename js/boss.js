@@ -17,6 +17,8 @@ const BOSSES=[
  {e:'🧌',n:'Troll Khoảng Cách Thế Hệ',l:'Thời của ta khác thời của ngươi!'},
  {e:'👾',n:'Quái Vật Đồ Ăn Nhanh',l:'Ăn thêm miếng nữa đi... rồi ngủ quên!'},
  {e:'🦊',n:'Cáo Tin Giả',l:'Tin ta đi, ta là nguồn tin đáng tin nhất!'},
+ {e:'🎩',n:'Quan Liêu Ngàn Thủ Tục',l:'Thiếu một con dấu thôi là ngươi phải làm lại từ đầu!'},
+ {e:'🦍',n:'Khỉ Đột Cơ Bắp',l:'Thể lực yếu thế kia thì chạy nổi một vòng sân không?'},
  {e:'🐲',n:'Rồng IELTS Tối Thượng',l:'Ta là trùm cuối. Không 6.5 thì đừng mơ qua!'}];
 const ITEMS={
  potion:{e:'🧪',n:'Bình máu',d:'Hồi 40 HP',price:50},

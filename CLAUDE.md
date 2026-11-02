@@ -12,7 +12,7 @@
 ```
 index.html          HTML khung: 7 màn hình .screen + nạp CSS/JS
 css/style.css       Toàn bộ CSS
-js/data.js          const DATA — dữ liệu 17 chủ đề
+js/data.js          const DATA — dữ liệu 19 chủ đề
 js/core.js          ALL/BYID, helper, lưu trữ st/save, huy hiệu, hiệu ứng, âm thanh, show()
 js/questions.js     pool(), makeQuiz / makeFill / makeCol
 js/practice.js      Trang chủ (chọn chủ đề) + chế độ luyện tập thường
@@ -59,7 +59,7 @@ Phím tắt: `1–4` chọn đáp án, `Enter` để sang câu tiếp.
 
 ### ⚔️ Phiêu lưu đánh Boss
 
-- **Bản đồ 18 màn**: màn 1–17 ứng với 17 chủ đề trong `DATA` (màn `i` dùng chủ đề `DATA[i]`), màn 18 là **trùm cuối 🐲 Rồng IELTS Tối Thượng** dùng toàn bộ từ vựng. `LAST = DATA.length` là index của trùm cuối.
+- **Bản đồ 20 màn**: màn 1–19 ứng với 19 chủ đề trong `DATA` (màn `i` dùng chủ đề `DATA[i]`), màn 20 là **trùm cuối 🐲 Rồng IELTS Tối Thượng** dùng toàn bộ từ vựng. `LAST = DATA.length` là index của trùm cuối.
 - Mở khoá tuần tự: màn `i` mở khi màn `i-1` đã thắng (`unlocked`). Thắng được 1–3 sao theo % máu còn lại (≥70% → 3★, ≥40% → 2★).
 - Chỉ số boss tính trong `cfg(i)`: HP `120 + i*20` (trùm cuối 600), sát thương `12 + i*1.2` (trùm cuối 34), thời gian trả lời giảm dần theo màn (`tq` cho quiz/col, `tf` cho điền từ).
 - Trận đánh: mỗi câu hỏi random 40% quiz / 30% col / 30% fill. Sát thương theo độ khó `DMG = {quiz:20, col:26, fill:36}`, combo cộng thêm tối đa +50%. Sai / hết giờ / bỏ qua → boss đánh lại; boss dưới 30% HP sẽ "nổi điên" (x1.3 sát thương). Mỗi câu đúng +10 XP.
@@ -73,7 +73,7 @@ Phím tắt: `1–4` chọn đáp án, `Enter` để sang câu tiếp.
 
 ## Dữ liệu `DATA`
 
-`DATA` (trong `js/data.js`) là mảng **17 chủ đề** (thứ tự hiện tại: Education, Environment, Technology, Health, Work & Career, Travel & Tourism, Crime & Law, City & Society, Friends, National Holidays & Festivals, Home & House, Hobbies & Free Time, Transport & Traffic, Social Welfare, Family, Food & Eating, Media & Advertising). Mỗi chủ đề hiện có **20 words + 15 cols**.
+`DATA` (trong `js/data.js`) là mảng **19 chủ đề** (thứ tự hiện tại: Education, Environment, Technology, Health, Work & Career, Travel & Tourism, Crime & Law, City & Society, Friends, National Holidays & Festivals, Home & House, Hobbies & Free Time, Transport & Traffic, Social Welfare, Family, Food & Eating, Media & Advertising, Government, Sports). Mỗi chủ đề hiện có **20 words + 15 cols**.
 
 ```js
 {name:"🎓 Education",          // emoji + tên tiếng Anh, hiển thị trên chip và bản đồ
@@ -102,8 +102,8 @@ Lúc chạy, `DATA` được làm phẳng thành `ALL`, mỗi mục có dạng
 1. **Chỉ thêm chủ đề mới vào CUỐI mảng `DATA`**. Không chèn giữa, không đổi thứ tự, không xoá chủ đề cũ — nếu không, `st.wrong`, `st.topics` và `st.rpg.cleared` của người dùng sẽ trỏ nhầm từ/màn.
 2. Tương tự, trong một chủ đề chỉ **thêm từ/collocation vào cuối** `words`/`cols`.
 3. Thêm 1 boss mới vào `BOSSES` (`js/boss.js`) **ngay trước** Rồng IELTS (phần tử cuối) — `BOSSES` phải luôn có `DATA.length + 1` phần tử. Mẫu: `{e:'🐸', n:'Tên boss tiếng Việt', l:'Câu thoại khiêu khích'}`.
-4. Cập nhật mô tả "18 màn" trong nút `#advBtn` (`index.html`) và CLAUDE.md.
-5. Lưu ý: người đã thắng trùm cuối có `st.rpg.cleared[17]`; sau khi thêm chủ đề thứ 18, giá trị đó sẽ được hiểu là đã thắng màn 18 mới, và trùm cuối chuyển sang index 18 (cần thắng lại). Chấp nhận được, nhưng cần biết.
+4. Cập nhật mô tả "20 màn" trong nút `#advBtn` (`index.html`) và CLAUDE.md.
+5. Lưu ý: thêm chủ đề làm trùm cuối dời sang index mới. Ví dụ ai đã thắng trùm cuối khi còn 17 chủ đề có `st.rpg.cleared[17]`; sau khi thêm Government (index 17) và Sports (index 18), giá trị đó được hiểu là đã thắng màn Government, còn trùm cuối chuyển sang index 19 (cần thắng lại). Chấp nhận được, nhưng cần biết.
 
 ## Lưu tiến độ (`localStorage`)
 
