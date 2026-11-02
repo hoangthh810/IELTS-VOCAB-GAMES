@@ -1,0 +1,1401 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vocab Arena</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f3ff; --card:#ffffff; --ink:#1e1b2e; --muted:#6b6880; --line:#e6e2f3;
+  --accent:#6d28d9; --accent-soft:#ede7fd; --pink:#db2777; --yellow:#f59e0b; --yellow-soft:#fef3c7;
+  --good:#16a34a; --good-soft:#dcfce7; --bad:#dc2626; --bad-soft:#fee2e2; --shadow:0 4px 0 #e2dcf5;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#13111c; --card:#1d1a2a; --ink:#efecf8; --muted:#a39fb8; --line:#2f2b40;
+    --accent:#a78bfa; --accent-soft:#2a2245; --pink:#f472b6; --yellow:#fbbf24; --yellow-soft:#3a2e12;
+    --good:#4ade80; --good-soft:#143224; --bad:#f87171; --bad-soft:#3b1717; --shadow:0 4px 0 #0b0a12;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#13111c; --card:#1d1a2a; --ink:#efecf8; --muted:#a39fb8; --line:#2f2b40;
+  --accent:#a78bfa; --accent-soft:#2a2245; --pink:#f472b6; --yellow:#fbbf24; --yellow-soft:#3a2e12;
+  --good:#4ade80; --good-soft:#143224; --bad:#f87171; --bad-soft:#3b1717; --shadow:0 4px 0 #0b0a12;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Be Vietnam Pro",system-ui,sans-serif;line-height:1.55;font-size:16px;overflow-x:hidden}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px 60px}
+button{font:inherit;color:inherit;cursor:pointer}
+.screen{display:none}.screen.show{display:block;animation:fade .25s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+header{padding:28px 0 8px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{font-weight:900;font-size:clamp(26px,6vw,34px);letter-spacing:-.02em}
+.logo span{background:linear-gradient(90deg,var(--accent),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.icon-btn{border:1px solid var(--line);background:var(--card);border-radius:12px;width:42px;height:42px;font-size:18px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;text-align:center;box-shadow:var(--shadow)}
+.stat b{display:block;font-size:24px;font-weight:900}
+.stat small{color:var(--muted);font-size:13px}
+.level{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow)}
+.level .row{display:flex;justify-content:space-between;font-weight:700;font-size:14px}
+.bar{height:12px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--pink));border-radius:999px;transition:width .4s}
+h2{font-size:19px;margin:26px 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 13px;font-size:14px;font-weight:600}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip.wrongbank.on{background:var(--pink);border-color:var(--pink)}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.mode{border:2px solid var(--line);background:var(--card);border-radius:20px;padding:18px 16px;text-align:left;box-shadow:var(--shadow);transition:transform .1s}
+.mode:hover{transform:translateY(-2px);border-color:var(--accent)}
+.mode:active{transform:translateY(2px);box-shadow:none}
+.mode .e{font-size:30px}
+.mode b{display:block;font-size:17px;margin:6px 0 2px}
+.mode span{color:var(--muted);font-size:13px}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.badge{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+.badge .e{font-size:28px}
+.badge b{display:block;font-size:14px}
+.badge small{color:var(--muted);font-size:12px;line-height:1.35;display:block}
+.badge.locked{opacity:.4;filter:grayscale(1)}
+/* game */
+.topbar{display:flex;align-items:center;gap:10px;padding:20px 0 10px}
+.topbar .bar{flex:1;margin:0}
+.quit{border:0;background:transparent;font-size:22px;color:var(--muted);padding:4px}
+.hud{display:flex;justify-content:space-between;align-items:center;margin:4px 0 14px;font-weight:700}
+.combo{background:var(--yellow-soft);color:var(--yellow);padding:4px 12px;border-radius:999px;font-size:14px;transition:transform .15s}
+.combo.pop{transform:scale(1.25)}
+.score{font-size:20px;font-weight:900}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:24px 20px;box-shadow:var(--shadow);text-align:center}
+.qtype{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--pink)}
+.qmain{font-size:clamp(24px,6vw,32px);font-weight:900;margin:10px 0 4px;word-break:break-word}
+.qmain.sentence{font-size:clamp(18px,4.5vw,21px);font-weight:600;line-height:1.6}
+.blank{display:inline-block;min-width:80px;border-bottom:3px solid var(--accent);color:var(--accent)}
+.qsub{color:var(--muted);font-size:15px}
+.qhint{margin-top:10px;font-size:14px;color:var(--muted)}
+.opts{display:grid;gap:10px;margin-top:16px}
+.opt{border:2px solid var(--line);background:var(--card);border-radius:16px;padding:14px 16px;text-align:left;font-weight:600;font-size:16px;box-shadow:var(--shadow);display:flex;gap:12px;align-items:center}
+.opt .k{flex:0 0 26px;height:26px;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;font-size:13px;color:var(--muted)}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.type{display:flex;gap:8px;margin-top:16px}
+.type input{flex:1;min-width:0;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;padding:13px 14px;font:inherit;font-size:17px;font-weight:600}
+.type input:focus{outline:none;border-color:var(--accent)}
+.type input.right{border-color:var(--good);background:var(--good-soft)}
+.type input.wrong{border-color:var(--bad);background:var(--bad-soft);animation:shake .35s}
+.btn{border:0;background:var(--accent);color:#fff;border-radius:14px;padding:13px 20px;font-weight:800;box-shadow:0 4px 0 color-mix(in srgb,var(--accent) 60%,#000)}
+.btn:active{transform:translateY(3px);box-shadow:none}
+.btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow)}
+.feedback{margin-top:14px;border-radius:18px;padding:16px;display:none;text-align:left}
+.feedback.show{display:block;animation:fade .2s}
+.feedback.ok{background:var(--good-soft)}
+.feedback.no{background:var(--bad-soft)}
+.feedback .t{font-weight:900;font-size:18px}
+.feedback.ok .t{color:var(--good)} .feedback.no .t{color:var(--bad)}
+.feedback .ex{margin-top:6px;font-size:15px}
+.feedback .ex b{color:var(--accent)}
+.feedback .btn{width:100%;margin-top:12px}
+.plus{position:fixed;font-weight:900;color:var(--yellow);font-size:22px;pointer-events:none;animation:float 0.9s forwards;z-index:30}
+@keyframes float{to{transform:translateY(-60px);opacity:0}}
+/* result */
+.result{text-align:center;padding-top:30px}
+.result .big{font-size:64px;line-height:1}
+.result h1{font-size:30px;margin:10px 0 4px}
+.rgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}
+.review{text-align:left}
+.review .it{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:8px}
+.review .it b{color:var(--accent)}
+.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+/* toast & confetti */
+.toast{position:fixed;left:50%;top:16px;transform:translateX(-50%) translateY(-120%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:14px;font-weight:700;z-index:40;transition:transform .35s;max-width:calc(100% - 32px);text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.cf{position:fixed;top:-12px;width:9px;height:14px;border-radius:2px;z-index:35;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
+.empty{color:var(--muted);font-size:14px}
+footer{color:var(--muted);font-size:13px;text-align:center;margin-top:36px}
+/* ===== boss adventure ===== */
+.adv{display:flex;align-items:center;gap:14px;width:100%;margin-top:16px;border:0;border-radius:22px;padding:18px;text-align:left;color:#fff;background:linear-gradient(135deg,#7c3aed,#db2777 60%,#f59e0b);box-shadow:0 5px 0 #4c1d95;transition:transform .1s}
+.adv:hover{transform:translateY(-2px)}.adv:active{transform:translateY(3px);box-shadow:none}
+.adv .e{font-size:44px;line-height:1}.adv b{font-size:19px;display:block}.adv span{font-size:13px;opacity:.92}
+.mapbar{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+.pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:700;font-size:14px}
+.stages{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.stage{border:2px solid var(--line);background:var(--card);border-radius:18px;padding:14px 10px;text-align:center;box-shadow:var(--shadow)}
+.stage .e{font-size:40px;line-height:1.15}
+.stage b{display:block;font-size:14px;margin-top:6px;line-height:1.3}
+.stage small{display:block;color:var(--muted);font-size:12px;line-height:1.4}
+.stage .stars{color:var(--yellow);letter-spacing:2px;font-size:16px}
+.stage.locked{opacity:.45;cursor:not-allowed}
+.stage.final{grid-column:1/-1;background:linear-gradient(135deg,var(--accent-soft),var(--yellow-soft))}
+.stage:not(.locked):hover{border-color:var(--accent)}
+.stage.cur{border-color:var(--pink);animation:glow 1.6s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--pink) 30%,transparent)}}
+.shop{display:grid;gap:10px}
+.shopit{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.shopit .e{font-size:28px}.shopit>div{flex:1;min-width:0}.shopit small{color:var(--muted);display:block;font-size:13px}
+.shopit .btn{padding:9px 14px;font-size:14px;white-space:nowrap}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.arena{background:linear-gradient(180deg,var(--accent-soft),var(--card));border:1px solid var(--line);border-radius:24px;padding:16px;position:relative;overflow:hidden}
+.bossrow,.merow{display:flex;align-items:center;gap:14px}
+.merow{margin-top:14px}
+.boss{font-size:76px;line-height:1;animation:bob 2s ease-in-out infinite;flex:0 0 auto}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.boss.hit{animation:hit .4s}
+@keyframes hit{0%{filter:brightness(3)}20%{transform:translateX(-10px) rotate(-8deg)}40%{transform:translateX(10px) rotate(8deg)}60%{transform:translateX(-6px)}100%{transform:none;filter:none}}
+.boss.atk{animation:lunge .45s}
+@keyframes lunge{40%{transform:scale(1.35) translateY(16px)}100%{transform:none}}
+.boss.dead{animation:die .9s forwards}
+@keyframes die{to{transform:scale(0) rotate(360deg);opacity:0}}
+.boss.enraged{filter:drop-shadow(0 0 12px #ef4444)}
+.me{font-size:38px;flex:0 0 auto}
+.me.hurt{animation:shake .35s}
+.binfo{flex:1;min-width:0}
+.binfo b{font-size:16px}
+.tag{font-size:11px;font-weight:800;background:var(--bad);color:#fff;padding:2px 8px;border-radius:999px;margin-left:6px;display:none;vertical-align:middle}
+.tag.show{display:inline-block}
+.hpbar{height:14px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:6px}
+.hpbar i{display:block;height:100%;border-radius:999px;transition:width .4s}
+.boss-hp i{background:linear-gradient(90deg,#ef4444,#f97316)}
+.me-hp i{background:linear-gradient(90deg,#22c55e,#84cc16)}
+.hptxt{font-size:12px;font-weight:700;color:var(--muted);margin-top:2px}
+.bubble{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 10px;font-size:13px;margin-top:8px;font-style:italic}
+.status{font-size:16px}
+.items{display:flex;gap:8px;margin:12px 0;overflow-x:auto;padding-bottom:4px}
+.itm{flex:1 0 auto;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:8px 12px;font-weight:800;font-size:15px;box-shadow:var(--shadow)}
+.itm:disabled{opacity:.35;cursor:not-allowed}
+.itm small{display:block;font-size:11px;font-weight:600;color:var(--muted)}
+.timer{height:7px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:12px}
+.timer i{display:block;height:100%;background:var(--yellow);width:100%}
+.timer i.low{background:var(--bad)}
+.dmg{position:absolute;font-weight:900;font-size:28px;pointer-events:none;animation:float 1s forwards;z-index:5;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.flash{position:fixed;inset:0;background:#ef4444;opacity:0;pointer-events:none;z-index:30;transition:opacity .15s}
+.flash.on{opacity:.28}
+.diff{font-size:12px;font-weight:700;color:var(--muted);margin-top:4px}
+.opt.gone{opacity:.2;pointer-events:none}
+.chest{font-size:110px;line-height:1;border:0;background:transparent;animation:wobble 1.2s ease-in-out infinite;margin:14px auto 0;display:block}
+.chest.gold{filter:drop-shadow(0 0 18px #f59e0b)}
+@keyframes wobble{25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+.chest.open{animation:pop .45s forwards}
+@keyframes pop{50%{transform:scale(1.4)}100%{transform:scale(0);opacity:0}}
+.rewards{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:14px 0}
+.reward{background:var(--card);border:2px solid var(--yellow);border-radius:16px;padding:12px 14px;min-width:96px;text-align:center;animation:fade .4s backwards;font-weight:800}
+.reward .e{font-size:32px;display:block}
+.bigstars{font-size:40px;color:var(--yellow);letter-spacing:6px}
+.bigstars .off{color:var(--line)}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="wrap">
+
+<!-- HOME -->
+<div class="screen show" id="home">
+  <header>
+    <div class="logo">Vocab <span>Arena</span> 🎮</div>
+    <button class="icon-btn" id="soundBtn" title="Âm thanh">🔊</button>
+  </header>
+  <div class="stats">
+    <div class="stat"><b id="sStreak">0</b><small>🔥 ngày liên tiếp</small></div>
+    <div class="stat"><b id="sXp">0</b><small>⭐ tổng XP</small></div>
+    <div class="stat"><b id="sWrong">0</b><small>📕 từ hay sai</small></div>
+  </div>
+  <div class="level">
+    <div class="row"><span id="lvName">Level 1</span><span id="lvNext"></span></div>
+    <div class="bar"><i id="lvBar"></i></div>
+  </div>
+  <button class="adv" id="advBtn"><div class="e">⚔️</div><div><b>Phiêu lưu đánh Boss</b><span>18 màn · rương thưởng · bình máu · trùm cuối Rồng IELTS 🐲</span></div></button>
+
+  <h2>1. Chọn chủ đề</h2>
+  <div class="chips" id="chips"></div>
+
+  <h2>2. Chọn trò chơi <small class="empty">(mỗi lượt 12 câu)</small></h2>
+  <div class="modes">
+    <button class="mode" data-mode="quiz"><div class="e">🎯</div><b>Quiz nghĩa</b><span>Chọn nghĩa đúng, Anh ↔ Việt</span></button>
+    <button class="mode" data-mode="fill"><div class="e">✍️</div><b>Điền từ</b><span>Gõ từ còn thiếu trong câu, luyện chính tả</span></button>
+    <button class="mode" data-mode="col"><div class="e">🧩</div><b>Collocation</b><span>Hoàn thành cụm từ đúng chuẩn IELTS</span></button>
+    <button class="mode" data-mode="mix"><div class="e">🌀</div><b>Hỗn hợp</b><span>Trộn cả 3 dạng, khó đoán nhất</span></button>
+  </div>
+
+  <h2>🏅 Huy hiệu</h2>
+  <div class="badges" id="badges"></div>
+  <footer>Đúng liên tiếp để tăng combo: cứ 3 câu đúng thì điểm nhân thêm (tối đa x4). Từ trả lời sai được lưu vào “Từ hay sai” để ôn lại.<br>Phím tắt: 1–4 chọn đáp án, Enter để tiếp tục.</footer>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="game">
+  <div class="topbar"><button class="quit" id="quit" title="Thoát">✕</button><div class="bar"><i id="gBar"></i></div></div>
+  <div class="hud"><span class="combo" id="combo">🔥 Combo 0 · x1</span><span class="score" id="score">0</span></div>
+  <div class="qcard">
+    <div class="qtype" id="qType"></div>
+    <div class="qmain" id="qMain"></div>
+    <div class="qsub" id="qSub"></div>
+    <div class="qhint" id="qHint"></div>
+  </div>
+  <div class="opts" id="opts"></div>
+  <form class="type" id="typeForm" style="display:none" autocomplete="off">
+    <input id="typeIn" placeholder="Gõ đáp án..." autocapitalize="off" spellcheck="false">
+    <button class="btn" type="submit">Kiểm tra</button>
+  </form>
+  <div style="text-align:center;margin-top:10px"><button class="btn ghost" id="skip" style="display:none">Bỏ qua 🤷</button></div>
+  <div class="feedback" id="fb"><div class="t" id="fbT"></div><div id="fbA"></div><div class="ex" id="fbEx"></div><button class="btn" id="next">Tiếp tục →</button></div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="result">
+  <div class="result">
+    <div class="big" id="rEmoji">🎉</div>
+    <h1 id="rTitle"></h1>
+    <div class="empty" id="rSub"></div>
+    <div class="rgrid">
+      <div class="stat"><b id="rScore">0</b><small>điểm</small></div>
+      <div class="stat"><b id="rAcc">0</b><small>câu đúng</small></div>
+      <div class="stat"><b id="rCombo">0</b><small>combo cao nhất</small></div>
+    </div>
+  </div>
+  <div class="review" id="review"></div>
+  <div class="actions"><button class="btn" id="again">Chơi lại 🔁</button><button class="btn ghost" id="toHome">Về trang chủ</button></div>
+</div>
+
+<!-- MAP -->
+<div class="screen" id="map">
+  <div class="topbar"><button class="quit" id="mapBack" title="Về trang chủ">←</button><div class="logo" style="font-size:24px">⚔️ <span>Phiêu lưu</span></div></div>
+  <div class="mapbar" id="mapbar"></div>
+  <h2>🗺️ Chọn màn</h2>
+  <div class="stages" id="stages"></div>
+  <h2>🏪 Cửa hàng</h2>
+  <div class="shop" id="shop"></div>
+  <footer>Trả lời đúng để tấn công boss. Câu càng khó, sát thương càng cao: 🎯 Quiz 20 · 🧩 Collocation 26 · ✍️ Điền từ 36. Đúng liên tiếp thì sát thương tăng thêm (tối đa +50%).<br>Trả lời sai hoặc hết giờ thì boss đánh lại. Boss dưới 30% máu sẽ nổi điên và đánh mạnh hơn!</footer>
+</div>
+
+<!-- BATTLE -->
+<div class="screen" id="battle">
+  <div class="topbar"><button class="quit" id="bQuit" title="Thoát">✕</button><b id="bStage" style="flex:1;font-size:15px"></b><span class="combo" id="bCombo">🔥 0</span></div>
+  <div class="arena" id="arena">
+    <div class="bossrow"><div class="boss" id="bossE"></div><div class="binfo"><b id="bossN"></b><span class="tag" id="rageTag">😡 NỔI ĐIÊN</span>
+      <div class="hpbar boss-hp"><i id="bossBar"></i></div><div class="hptxt" id="bossTxt"></div>
+      <div class="bubble" id="bubble"></div></div></div>
+    <div class="merow"><div class="me" id="meE">🧑‍🎓</div><div class="binfo"><b>Bạn</b> <span class="status" id="meStatus"></span>
+      <div class="hpbar me-hp"><i id="meBar"></i></div><div class="hptxt" id="meTxt"></div></div></div>
+  </div>
+  <div class="items" id="items"></div>
+  <div class="qcard">
+    <div class="qtype" id="bqType"></div><div class="diff" id="bqDiff"></div>
+    <div class="qmain" id="bqMain"></div><div class="qsub" id="bqSub"></div><div class="qhint" id="bqHint"></div>
+    <div class="timer"><i id="tBar"></i></div>
+  </div>
+  <div class="opts" id="bOpts"></div>
+  <form class="type" id="bForm" style="display:none" autocomplete="off"><input id="bIn" placeholder="Gõ đáp án..." autocapitalize="off" spellcheck="false"><button class="btn" type="submit">Tấn công ⚔️</button></form>
+  <div class="feedback" id="bFb"><div class="t" id="bFbT"></div><div id="bFbA"></div><div class="ex" id="bFbEx"></div><button class="btn" id="bNext">Tiếp tục →</button></div>
+</div>
+<div class="flash" id="flash"></div>
+
+<!-- VICTORY -->
+<div class="screen" id="victory"><div class="result">
+  <div class="big">🏆</div><h1 id="vTitle"></h1><div class="bigstars" id="vStars"></div><div class="empty" id="vSub"></div>
+  <button class="chest" id="chest">🎁</button><div class="empty" id="chestHint">Chạm vào rương để mở!</div>
+  <div class="rewards" id="rewards"></div>
+  <div class="actions" id="vActions" style="display:none"><button class="btn" id="vNext">Màn tiếp theo ▶</button><button class="btn ghost" id="vMap">Bản đồ 🗺️</button></div>
+</div></div>
+
+<!-- DEFEAT -->
+<div class="screen" id="defeat">
+  <div class="result"><div class="big">💀</div><h1>Bạn đã gục ngã...</h1><div class="empty" id="dSub"></div></div>
+  <div class="review" id="dReview"></div>
+  <div class="actions"><button class="btn" id="dRetry">Thử lại 🔁</button><button class="btn ghost" id="dMap">Bản đồ 🗺️</button></div>
+</div>
+</div>
+
+<script>
+const DATA = [
+{name:"🎓 Education", words:[
+["curriculum","n","chương trình học","The national curriculum includes compulsory science lessons."],
+["tuition","n","học phí","Tuition at private universities can be extremely expensive."],
+["literacy","n","khả năng đọc viết","Literacy rates have risen sharply in rural areas."],
+["compulsory","adj","bắt buộc","Education is compulsory until the age of 16 in many countries."],
+["academic","adj","thuộc về học thuật","She has an excellent academic record."],
+["assessment","n","sự đánh giá","Continuous assessment reduces exam pressure on students."],
+["discipline","n","kỷ luật","Teachers often struggle to maintain discipline in large classes."],
+["enrol","v","ghi danh, đăng ký học","More adults are enrolling in online courses."],
+["graduate","n/v","người tốt nghiệp; tốt nghiệp","Many graduates find it difficult to get a job immediately."],
+["scholarship","n","học bổng","He won a scholarship to study in Australia."],
+["vocational","adj","thuộc về nghề nghiệp","Vocational training prepares students for specific jobs."],
+["memorise","v","ghi nhớ, học thuộc","Students often memorise facts without really understanding them."],
+["motivate","v","tạo động lực","Good teachers know how to motivate their students."],
+["syllabus","n","đề cương môn học","The syllabus covers both theory and practical work."],
+["undergraduate","n","sinh viên đại học (chưa tốt nghiệp)","Undergraduates usually study for three or four years."],
+["qualification","n","bằng cấp, chứng chỉ","A university qualification is required for this position."],
+["peer","n","bạn đồng trang lứa","Children learn a great deal from their peers."],
+["extracurricular","adj","ngoại khoá","Extracurricular activities help students develop social skills."],
+["lecture","n","bài giảng","The lecture was recorded so that students could watch it later."],
+["analytical","adj","có tính phân tích","Science subjects help develop analytical skills."]],
+cols:[
+["acquire knowledge","tiếp thu kiến thức","Reading widely is one of the best ways to acquire knowledge."],
+["pursue higher education","theo đuổi học lên cao","More women are choosing to pursue higher education."],
+["drop out of school","bỏ học","Financial problems force some teenagers to drop out of school."],
+["gain practical experience","tích luỹ kinh nghiệm thực tế","Internships allow students to gain practical experience."],
+["attend classes","đi học, dự lớp","Students who attend classes regularly tend to get better results."],
+["sit an exam","tham gia một kỳ thi","She is going to sit the exam next month."],
+["a well-rounded education","nền giáo dục toàn diện","Schools should provide a well-rounded education, not just exam preparation."],
+["rote learning","học vẹt","Rote learning does little to encourage creativity."],
+["learn by heart","học thuộc lòng","We had to learn the poem by heart."],
+["develop critical thinking","phát triển tư duy phản biện","Debating helps young people develop critical thinking."],
+["academic performance","kết quả học tập","Lack of sleep can have a negative effect on academic performance."],
+["distance learning","học từ xa","Distance learning is ideal for people who work full-time."],
+["a heavy workload","khối lượng bài vở nặng","Many students complain about a heavy workload."],
+["fall behind","bị tụt lại phía sau","Students who miss lessons may fall behind their classmates."],
+["meet a deadline","kịp thời hạn","You must meet the deadline for submitting your essay."]]},
+
+{name:"🌿 Environment", words:[
+["pollution","n","sự ô nhiễm","Air pollution is a serious problem in many large cities."],
+["emission","n","khí thải","Factories must reduce their emissions of harmful gases."],
+["deforestation","n","nạn phá rừng","Deforestation destroys the homes of countless animals."],
+["biodiversity","n","đa dạng sinh học","Coral reefs have extremely high biodiversity."],
+["sustainable","adj","bền vững","We need a more sustainable way of producing food."],
+["renewable","adj","có thể tái tạo","Solar and wind are renewable sources of energy."],
+["contaminate","v","làm nhiễm bẩn","Chemicals from farms can contaminate drinking water."],
+["endangered","adj","có nguy cơ tuyệt chủng","The tiger is an endangered species."],
+["habitat","n","môi trường sống","Many animals are losing their natural habitat."],
+["conservation","n","sự bảo tồn","The government has launched a wildlife conservation project."],
+["recycle","v","tái chế","Households are encouraged to recycle paper and glass."],
+["landfill","n","bãi chôn lấp rác","Most plastic waste ends up in landfill."],
+["drought","n","hạn hán","The region has suffered from severe drought this year."],
+["ecosystem","n","hệ sinh thái","Pollution can damage the delicate balance of an ecosystem."],
+["extinction","n","sự tuyệt chủng","Thousands of species are facing extinction."],
+["pesticide","n","thuốc trừ sâu","Excessive use of pesticides harms bees."],
+["degrade","v","làm suy thoái","Overgrazing has degraded the soil in this area."],
+["toxic","adj","độc hại","The river was polluted with toxic waste."],
+["waste","n","rác thải; sự lãng phí","Cities produce millions of tonnes of waste every year."],
+["flood","n/v","lũ lụt; làm ngập","Rising sea levels increase the risk of floods in coastal areas."]],
+cols:[
+["reduce carbon emissions","giảm khí thải carbon","Countries have agreed to reduce carbon emissions by 2030."],
+["combat climate change","chống biến đổi khí hậu","International cooperation is essential to combat climate change."],
+["protect endangered species","bảo vệ các loài có nguy cơ tuyệt chủng","Stricter laws are needed to protect endangered species."],
+["renewable energy sources","các nguồn năng lượng tái tạo","Investing in renewable energy sources creates new jobs."],
+["raise public awareness","nâng cao nhận thức cộng đồng","Campaigns can raise public awareness of plastic pollution."],
+["take drastic measures","áp dụng biện pháp mạnh","Governments must take drastic measures to cut pollution."],
+["pose a serious threat to","gây ra mối đe doạ nghiêm trọng cho","Rising temperatures pose a serious threat to marine life."],
+["fossil fuels","nhiên liệu hoá thạch","Burning fossil fuels releases large amounts of carbon dioxide."],
+["global warming","sự nóng lên toàn cầu","Global warming is causing polar ice to melt."],
+["deplete natural resources","làm cạn kiệt tài nguyên thiên nhiên","Overfishing is rapidly depleting natural resources."],
+["single-use plastics","nhựa dùng một lần","Several countries have banned single-use plastics."],
+["environmentally friendly","thân thiện với môi trường","Cycling is an environmentally friendly way to travel."],
+["air quality","chất lượng không khí","Air quality in the capital has improved slightly."],
+["carbon footprint","lượng khí thải carbon (dấu chân carbon)","Eating less meat can reduce your carbon footprint."],
+["natural disasters","thảm hoạ thiên nhiên","Climate change makes natural disasters more frequent."]]},
+
+{name:"💻 Technology", words:[
+["innovation","n","sự đổi mới, sáng tạo","Technological innovation has transformed the way we work."],
+["device","n","thiết bị","Most teenagers own at least one electronic device."],
+["automation","n","sự tự động hoá","Automation may replace many factory jobs."],
+["digital","adj","kỹ thuật số","Libraries are converting old books into digital formats."],
+["gadget","n","đồ công nghệ nhỏ","He loves buying the latest gadgets."],
+["software","n","phần mềm","The company developed software to manage customer data."],
+["breakthrough","n","bước đột phá","Scientists have made a major breakthrough in battery technology."],
+["cyberbullying","n","bắt nạt qua mạng","Schools are taking steps to prevent cyberbullying."],
+["privacy","n","sự riêng tư","Many users are worried about their online privacy."],
+["addicted","adj","nghiện","Some children are addicted to video games."],
+["obsolete","adj","lỗi thời","Smartphones quickly become obsolete."],
+["user-friendly","adj","dễ sử dụng","The new app is simple and user-friendly."],
+["algorithm","n","thuật toán","Social media algorithms decide which posts we see."],
+["surveillance","n","sự giám sát","Surveillance cameras have been installed in the city centre."],
+["hacker","n","tin tặc","Hackers stole the personal details of millions of customers."],
+["network","n","mạng lưới","The mobile network was down for several hours."],
+["interact","v","tương tác","People now interact more online than in person."],
+["virtual","adj","ảo","Virtual meetings save time and travel costs."],
+["revolutionise","v","cách mạng hoá","The internet has revolutionised communication."],
+["dependence","n","sự phụ thuộc","Our dependence on technology continues to grow."]],
+cols:[
+["technological advances","những tiến bộ công nghệ","Technological advances have made life more convenient."],
+["rely heavily on","phụ thuộc nhiều vào","Modern businesses rely heavily on the internet."],
+["have access to the internet","có thể truy cập internet","Millions of people still do not have access to the internet."],
+["social media platforms","các nền tảng mạng xã hội","Young people spend hours on social media platforms every day."],
+["a double-edged sword","con dao hai lưỡi","Technology is a double-edged sword: it helps us but also distracts us."],
+["keep up with the latest technology","bắt kịp công nghệ mới nhất","Older people sometimes find it hard to keep up with the latest technology."],
+["artificial intelligence","trí tuệ nhân tạo","Artificial intelligence is being used to diagnose diseases."],
+["invade someone's privacy","xâm phạm quyền riêng tư","Some apps invade users' privacy by collecting their data."],
+["screen time","thời gian dùng màn hình","Parents should limit their children's screen time."],
+["cutting-edge technology","công nghệ tiên tiến nhất","The hospital uses cutting-edge technology for surgery."],
+["digital literacy","kỹ năng sử dụng công nghệ số","Digital literacy should be taught in primary schools."],
+["spread misinformation","lan truyền thông tin sai lệch","Fake accounts are often used to spread misinformation."],
+["remote working","làm việc từ xa","Remote working became common after the pandemic."],
+["face-to-face interaction","giao tiếp trực tiếp","Online chatting cannot replace face-to-face interaction."],
+["online shopping","mua sắm trực tuyến","Online shopping has hurt many small local stores."]]},
+
+{name:"🩺 Health", words:[
+["obesity","n","bệnh béo phì","Childhood obesity is increasing in many developed countries."],
+["nutrition","n","dinh dưỡng","Good nutrition is essential for children's growth."],
+["diet","n","chế độ ăn","A diet high in sugar can lead to health problems."],
+["sedentary","adj","ít vận động","Office workers often have sedentary jobs."],
+["chronic","adj","mãn tính","Diabetes is a chronic disease that requires long-term care."],
+["epidemic","n","dịch bệnh","The country is facing an obesity epidemic."],
+["symptom","n","triệu chứng","Fever and cough are common symptoms of flu."],
+["diagnose","v","chẩn đoán","Doctors can now diagnose cancer at an earlier stage."],
+["prescription","n","đơn thuốc","This medicine is only available with a prescription."],
+["vaccine","n","vắc-xin","The vaccine protects children against measles."],
+["immune","adj","miễn dịch","Regular exercise can strengthen the immune system."],
+["disease","n","bệnh tật","Heart disease is a leading cause of death worldwide."],
+["longevity","n","tuổi thọ, sự sống lâu","A healthy diet is linked to longevity."],
+["hygiene","n","vệ sinh","Poor hygiene helps diseases spread quickly."],
+["stress","n","căng thẳng","Long working hours can cause high levels of stress."],
+["fatigue","n","sự mệt mỏi","Lack of sleep leads to fatigue and poor concentration."],
+["therapy","n","liệu pháp điều trị","She is receiving therapy for her back injury."],
+["processed","adj","đã qua chế biến","Processed food often contains too much salt."],
+["insomnia","n","chứng mất ngủ","Using phones late at night can cause insomnia."],
+["recover","v","hồi phục","It took him six weeks to recover from the operation."]],
+cols:[
+["lead a healthy lifestyle","sống lành mạnh","It is never too late to start leading a healthy lifestyle."],
+["a balanced diet","chế độ ăn cân bằng","A balanced diet includes plenty of fruit and vegetables."],
+["take regular exercise","tập thể dục thường xuyên","Doctors advise everyone to take regular exercise."],
+["junk food","đồ ăn vặt không lành mạnh","Junk food advertising should be banned during children's TV programmes."],
+["a sedentary lifestyle","lối sống ít vận động","A sedentary lifestyle increases the risk of heart disease."],
+["life expectancy","tuổi thọ trung bình","Life expectancy has risen thanks to better healthcare."],
+["mental health","sức khoẻ tinh thần","Social media can have a negative impact on mental health."],
+["put on weight","tăng cân","He put on weight after he stopped playing football."],
+["lose weight","giảm cân","Cutting out sugary drinks is an easy way to lose weight."],
+["the healthcare system","hệ thống y tế","An ageing population puts pressure on the healthcare system."],
+["prevention is better than cure","phòng bệnh hơn chữa bệnh","Prevention is better than cure, so governments should promote healthy habits."],
+["suffer from","mắc phải, chịu đựng","Millions of people suffer from depression."],
+["burn calories","đốt cháy calo","Swimming is a great way to burn calories."],
+["get enough sleep","ngủ đủ giấc","Teenagers need to get enough sleep to concentrate at school."],
+["physical activity","hoạt động thể chất","Children should do at least an hour of physical activity a day."]]},
+
+{name:"💼 Work & Career", words:[
+["employee","n","nhân viên","The company has over 500 employees."],
+["employer","n","người sử dụng lao động","Employers value good communication skills."],
+["salary","n","lương (tháng/năm)","She earns a high salary as a software engineer."],
+["wage","n","tiền công (theo giờ/tuần)","The minimum wage was increased last year."],
+["promotion","n","sự thăng chức","He received a promotion after two years."],
+["colleague","n","đồng nghiệp","I get on well with my colleagues."],
+["redundant","adj","bị cho thôi việc (do dư thừa)","Hundreds of workers were made redundant when the factory closed."],
+["unemployment","n","tình trạng thất nghiệp","Youth unemployment remains a serious issue."],
+["productivity","n","năng suất","Flexible hours can increase productivity."],
+["freelance","adj","làm tự do","She works as a freelance designer."],
+["recruit","v","tuyển dụng","The firm is recruiting new graduates."],
+["resign","v","từ chức, nghỉ việc","He resigned because of the long working hours."],
+["flexible","adj","linh hoạt","Many parents prefer jobs with flexible hours."],
+["incentive","n","sự khuyến khích, ưu đãi","Bonuses are used as an incentive to work harder."],
+["workload","n","khối lượng công việc","My workload has doubled since my colleague left."],
+["applicant","n","người nộp đơn xin việc","There were over 200 applicants for the position."],
+["career","n","sự nghiệp","She wants a career in medicine."],
+["retire","v","nghỉ hưu","Most people retire at around 60 or 65."],
+["entrepreneur","n","doanh nhân khởi nghiệp","Young entrepreneurs are starting businesses online."],
+["internship","n","kỳ thực tập","He did a three-month internship at a bank."]],
+cols:[
+["job satisfaction","sự hài lòng với công việc","For many people, job satisfaction matters more than salary."],
+["work-life balance","cân bằng công việc và cuộc sống","Working from home can improve work-life balance."],
+["climb the career ladder","thăng tiến trong sự nghiệp","She is determined to climb the career ladder quickly."],
+["apply for a job","nộp đơn xin việc","I applied for a job at an international company."],
+["a well-paid job","công việc lương cao","Everyone wants a well-paid job, but few want to work long hours."],
+["job security","sự ổn định công việc","Government jobs usually offer greater job security."],
+["work overtime","làm thêm giờ","Nurses often have to work overtime."],
+["a nine-to-five job","công việc giờ hành chính","He left his nine-to-five job to travel the world."],
+["earn a living","kiếm sống","She earns a living by teaching English online."],
+["career prospects","triển vọng nghề nghiệp","A second language can improve your career prospects."],
+["get promoted","được thăng chức","It took him only two years to get promoted to manager."],
+["working conditions","điều kiện làm việc","Workers are protesting about poor working conditions."],
+["the job market","thị trường việc làm","The job market is very competitive for new graduates."],
+["run a business","điều hành một doanh nghiệp","Running a business requires a lot of time and energy."],
+["gain work experience","tích luỹ kinh nghiệm làm việc","Part-time jobs help students gain work experience."]]},
+
+{name:"✈️ Travel & Tourism", words:[
+["destination","n","điểm đến","Bali is a popular holiday destination."],
+["tourism","n","ngành du lịch","Tourism is the main source of income for the island."],
+["itinerary","n","lịch trình","Our itinerary includes three days in Kyoto."],
+["accommodation","n","chỗ ở","Accommodation in the city centre is very expensive."],
+["sightseeing","n","việc tham quan","We spent the afternoon sightseeing in Rome."],
+["landmark","n","địa danh nổi tiếng","The Eiffel Tower is the most famous landmark in Paris."],
+["souvenir","n","quà lưu niệm","I bought some souvenirs for my family."],
+["heritage","n","di sản","Hoi An is a UNESCO World Heritage Site."],
+["exotic","adj","lạ, mang nét ngoại quốc","They wanted to visit somewhere exotic for their honeymoon."],
+["crowded","adj","đông đúc","The beaches are very crowded in summer."],
+["backpacker","n","khách du lịch bụi","The hostel is popular with backpackers."],
+["journey","n","chuyến đi, hành trình","The train journey took eight hours."],
+["abroad","adv","ở nước ngoài","More young people are studying abroad."],
+["attraction","n","điểm thu hút khách","The museum is the city's main attraction."],
+["local","adj/n","địa phương; người dân địa phương","We asked a local for directions."],
+["cuisine","n","ẩm thực","Vietnamese cuisine is famous for its fresh herbs."],
+["picturesque","adj","đẹp như tranh","We stayed in a picturesque village in the mountains."],
+["explore","v","khám phá","We hired bikes to explore the countryside."],
+["overseas","adj/adv","ở nước ngoài","The number of overseas visitors has doubled."],
+["eco-tourism","n","du lịch sinh thái","Eco-tourism helps protect natural areas."]],
+cols:[
+["go sightseeing","đi tham quan","We went sightseeing in the old town."],
+["a tourist attraction","điểm thu hút khách du lịch","The cave has become a major tourist attraction."],
+["broaden one's horizons","mở rộng tầm hiểu biết","Travelling abroad can broaden your horizons."],
+["travel abroad","đi du lịch nước ngoài","More families can now afford to travel abroad."],
+["off the beaten track","ở nơi hẻo lánh, ít người biết","We prefer places off the beaten track."],
+["a popular destination","điểm đến được ưa chuộng","Da Nang has become a popular destination for Korean tourists."],
+["cultural heritage","di sản văn hoá","Tourism can help preserve cultural heritage."],
+["local cuisine","ẩm thực địa phương","Trying the local cuisine is the best part of travelling."],
+["mass tourism","du lịch đại trà","Mass tourism can damage the environment."],
+["peak season","mùa cao điểm","Hotel prices double during the peak season."],
+["book in advance","đặt trước","It is cheaper to book flights in advance."],
+["boost the local economy","thúc đẩy kinh tế địa phương","Tourism can boost the local economy by creating jobs."],
+["experience a different culture","trải nghiệm một nền văn hoá khác","Living with a host family lets you experience a different culture."],
+["a holiday resort","khu nghỉ dưỡng","The coast is full of luxury holiday resorts."],
+["a breathtaking view","khung cảnh ngoạn mục","The hotel room offered a breathtaking view of the bay."]]},
+
+{name:"⚖️ Crime & Law", words:[
+["offence","n","sự phạm tội, hành vi vi phạm","Drink-driving is a serious offence."],
+["criminal","n/adj","tội phạm; thuộc về tội phạm","The criminal was caught by the police."],
+["victim","n","nạn nhân","The victim was taken to hospital."],
+["punishment","n","sự trừng phạt","Some people believe harsher punishment reduces crime."],
+["prison","n","nhà tù","He spent five years in prison."],
+["sentence","n/v","bản án; kết án","She was sentenced to ten years in prison."],
+["deter","v","ngăn chặn, răn đe","Security cameras can deter thieves."],
+["rehabilitate","v","cải tạo, phục hồi","Prisons should try to rehabilitate offenders."],
+["juvenile","adj","vị thành niên","Juvenile crime has increased in some cities."],
+["theft","n","sự trộm cắp","Car theft is common in this area."],
+["burglary","n","vụ trộm đột nhập","There has been a rise in burglary in the suburbs."],
+["fraud","n","sự gian lận, lừa đảo","Online fraud costs consumers billions each year."],
+["violence","n","bạo lực","Some people blame violent films for real-life violence."],
+["police","n","cảnh sát","The police are investigating the robbery."],
+["law-abiding","adj","tuân thủ pháp luật","Most citizens are law-abiding."],
+["illegal","adj","bất hợp pháp","It is illegal to drive without a licence."],
+["arrest","v","bắt giữ","Two men were arrested after the robbery."],
+["commit","v","phạm (tội)","Young people who commit crimes need support."],
+["witness","n/v","nhân chứng; chứng kiến","A witness saw the man leaving the building."],
+["penalty","n","hình phạt, tiền phạt","The penalty for littering is a large fine."]],
+cols:[
+["commit a crime","phạm tội","Poverty may lead some people to commit a crime."],
+["the crime rate","tỷ lệ tội phạm","The crime rate has fallen over the past decade."],
+["serve a prison sentence","thụ án tù","He is serving a prison sentence for robbery."],
+["act as a deterrent","đóng vai trò răn đe","Heavy fines act as a deterrent to speeding."],
+["the death penalty","án tử hình","Many countries have abolished the death penalty."],
+["juvenile delinquency","tội phạm vị thành niên","Lack of parental supervision contributes to juvenile delinquency."],
+["break the law","vi phạm pháp luật","Anyone who breaks the law should face the consequences."],
+["law enforcement","việc thực thi pháp luật","Law enforcement agencies are using AI to fight crime."],
+["rehabilitation programmes","các chương trình cải tạo","Rehabilitation programmes help prisoners find jobs after release."],
+["petty crime","tội vặt","Petty crime such as pickpocketing is common in tourist areas."],
+["re-offend","tái phạm","Prisoners without education are more likely to re-offend."],
+["community service","lao động công ích","Minor offenders are often given community service."],
+["harsh punishments","hình phạt nghiêm khắc","Harsh punishments do not always reduce crime."],
+["violent crime","tội phạm bạo lực","Violent crime is rare in this small town."],
+["a criminal record","tiền án tiền sự","It is hard to find a job if you have a criminal record."]]},
+
+{name:"🏙️ City & Society", words:[
+["urbanisation","n","quá trình đô thị hoá","Rapid urbanisation has created housing shortages."],
+["congestion","n","sự tắc nghẽn","Congestion in the city centre is getting worse."],
+["infrastructure","n","cơ sở hạ tầng","The government is investing in transport infrastructure."],
+["suburb","n","vùng ngoại ô","Many families move to the suburbs for more space."],
+["overcrowded","adj","quá đông đúc","Public hospitals are often overcrowded."],
+["housing","n","nhà ở","The demand for housing is rising rapidly."],
+["rural","adj","thuộc nông thôn","Rural areas often lack good schools."],
+["migrate","v","di cư","Young people migrate to cities in search of work."],
+["pedestrian","n","người đi bộ","The street has been closed to cars and opened to pedestrians."],
+["skyscraper","n","nhà chọc trời","The city skyline is full of skyscrapers."],
+["amenities","n","tiện ích","The apartment is close to shops and other amenities."],
+["commute","v/n","đi lại hằng ngày (đi làm)","He commutes two hours every day."],
+["residential","adj","thuộc khu dân cư","Factories should not be built in residential areas."],
+["noise","n","tiếng ồn","Noise from traffic makes it hard to sleep."],
+["affordable","adj","giá phải chăng","Young couples cannot find affordable homes."],
+["slum","n","khu ổ chuột","Millions of people live in slums with no clean water."],
+["density","n","mật độ","Hong Kong has a very high population density."],
+["facilities","n","cơ sở vật chất","The town has excellent sports facilities."],
+["transport","n","giao thông, phương tiện","The city needs better public transport."],
+["neighbourhood","n","khu phố, khu dân cư","I grew up in a quiet neighbourhood."]],
+cols:[
+["traffic congestion","tắc nghẽn giao thông","Traffic congestion costs the economy billions every year."],
+["public transport","giao thông công cộng","Improving public transport would reduce air pollution."],
+["the cost of living","chi phí sinh hoạt","The cost of living in big cities is very high."],
+["urban sprawl","sự lan rộng của đô thị","Urban sprawl destroys farmland around the city."],
+["rural-urban migration","di cư từ nông thôn ra thành thị","Rural-urban migration puts pressure on city services."],
+["high-rise buildings","các toà nhà cao tầng","High-rise buildings make the most of limited land."],
+["affordable housing","nhà ở giá rẻ","The government should build more affordable housing."],
+["green spaces","không gian xanh","Parks and other green spaces improve residents' wellbeing."],
+["quality of life","chất lượng cuộc sống","Good public services improve quality of life."],
+["densely populated","đông dân cư","Ho Chi Minh City is one of the most densely populated cities in Vietnam."],
+["the rush hour","giờ cao điểm","Buses are packed during the rush hour."],
+["a sense of community","tinh thần cộng đồng","Small villages often have a strong sense of community."],
+["ease the pressure on","giảm áp lực lên","New metro lines will ease the pressure on the roads."],
+["invest in infrastructure","đầu tư vào cơ sở hạ tầng","Developing countries need to invest in infrastructure."],
+["live on the outskirts","sống ở vùng ven","Many workers live on the outskirts and commute to the centre."]]},
+
+{name:"🤝 Friends", words:[
+["acquaintance","n","người quen","He has many acquaintances but only a few close friends."],
+["companion","n","bạn đồng hành","My dog has been my faithful companion for ten years."],
+["loyal","adj","trung thành","A loyal friend will support you in difficult times."],
+["trustworthy","adj","đáng tin cậy","I only share secrets with trustworthy people."],
+["supportive","adj","luôn ủng hộ, giúp đỡ","My friends were very supportive when I lost my job."],
+["bond","n","mối gắn kết","Travelling together strengthened the bond between us."],
+["reliable","adj","đáng tin, có thể trông cậy","She is reliable and always keeps her promises."],
+["sociable","adj","hoà đồng","Sociable people find it easy to make new friends."],
+["introverted","adj","hướng nội","Introverted people often prefer a small group of friends."],
+["outgoing","adj","cởi mở, hướng ngoại","He is outgoing and loves meeting new people."],
+["gossip","n/v","chuyện ngồi lê; buôn chuyện","Real friends don't gossip about you behind your back."],
+["quarrel","n/v","cuộc cãi vã; cãi nhau","We had a quarrel but made up the next day."],
+["reunion","n","cuộc hội ngộ, họp lớp","Our class reunion is held every five years."],
+["mutual","adj","chung, lẫn nhau","We met through a mutual friend."],
+["confide","v","tâm sự, giãi bày","I confide in my best friend when I have problems."],
+["empathy","n","sự đồng cảm","Empathy is an important quality in a good friend."],
+["classmate","n","bạn cùng lớp","Most of my close friends are former classmates."],
+["childhood","n","thời thơ ấu","We have been friends since childhood."],
+["encourage","v","động viên, khuyến khích","Good friends encourage you to follow your dreams."],
+["compatible","adj","hợp nhau","We are very compatible because we share the same interests."]],
+cols:[
+["make friends","kết bạn","It is easier to make friends at university than at work."],
+["a close friend","bạn thân","I have only two or three close friends."],
+["a lifelong friend","người bạn cả đời","She has been my lifelong friend since primary school."],
+["get on well with","hoà hợp với","I get on well with most of my classmates."],
+["hang out with","đi chơi với","At weekends, I usually hang out with my friends at a café."],
+["keep in touch with","giữ liên lạc với","Social media makes it easy to keep in touch with old friends."],
+["lose touch with","mất liên lạc với","I lose touch with friends easily when I'm busy with work."],
+["have a lot in common","có nhiều điểm chung","We have a lot in common, especially our love of music."],
+["fall out with","bất hoà, cãi nhau với","It's a pity to fall out with a friend over something small."],
+["make up","làm lành","It's important to make up quickly after an argument."],
+["a friend in need is a friend indeed","hoạn nạn mới biết bạn hiền","She helped me when I was sick – a friend in need is a friend indeed."],
+["peer pressure","áp lực từ bạn bè","Some teenagers start smoking because of peer pressure."],
+["a shoulder to cry on","chỗ dựa tinh thần","My sister is always a shoulder to cry on when I feel down."],
+["see eye to eye","đồng quan điểm","We don't always see eye to eye, but we respect each other."],
+["online friendships","tình bạn trên mạng","Online friendships can be just as meaningful as real-life ones."]]},
+
+{name:"🎆 National Holidays & Festivals", words:[
+["festival","n","lễ hội","The Mid-Autumn Festival is especially popular with children."],
+["celebration","n","sự ăn mừng, lễ kỷ niệm","New Year celebrations last for several days."],
+["tradition","n","truyền thống","Giving lucky money is a Tet tradition."],
+["custom","n","phong tục","It is a custom to visit relatives during Tet."],
+["ancestor","n","tổ tiên","Many Vietnamese homes have an altar for their ancestors."],
+["fireworks","n","pháo hoa","Thousands of people gathered to watch the fireworks."],
+["parade","n","cuộc diễu hành","There is a big parade on National Day."],
+["decorate","v","trang trí","People decorate their homes with peach and apricot blossoms."],
+["reunite","v","đoàn tụ","Tet is a time when families reunite."],
+["commemorate","v","tưởng niệm, kỷ niệm","The holiday commemorates an important historical event."],
+["patriotic","adj","yêu nước","National Day makes many people feel patriotic."],
+["independence","n","sự độc lập","Vietnam celebrates its Independence Day on 2 September."],
+["occasion","n","dịp","A wedding is a special occasion for the whole family."],
+["feast","n","bữa tiệc lớn, cỗ","The family prepares a big feast on New Year's Eve."],
+["ritual","n","nghi lễ","Burning incense is an important ritual during Tet."],
+["superstition","n","sự mê tín, điều kiêng kỵ","According to superstition, sweeping the floor on the first day of Tet brings bad luck."],
+["festive","adj","mang không khí lễ hội","The streets have a festive atmosphere before Tet."],
+["lantern","n","đèn lồng","Children carry colourful lanterns during the Mid-Autumn Festival."],
+["anniversary","n","ngày kỷ niệm","This year marks the 50th anniversary of the event."],
+["pilgrimage","n","cuộc hành hương","Many people make a pilgrimage to pagodas in spring."]],
+cols:[
+["a public holiday","ngày nghỉ lễ","Tet is the longest public holiday in Vietnam."],
+["the Lunar New Year","Tết Nguyên Đán","The Lunar New Year usually falls in late January or February."],
+["celebrate a festival","ăn mừng, tổ chức lễ hội","People celebrate the festival with music and dancing."],
+["hold a ceremony","tổ chức buổi lễ","Schools hold a ceremony to raise the national flag in the morning."],
+["lucky money","tiền lì xì","Children receive lucky money in red envelopes."],
+["pay a visit to","đến thăm","We pay a visit to our grandparents on the first day of Tet."],
+["exchange gifts","trao đổi quà","Friends and colleagues exchange gifts before the holiday."],
+["a family get-together","buổi họp mặt gia đình","We have a big family get-together every Tet."],
+["national pride","niềm tự hào dân tộc","Sporting victories can increase national pride."],
+["preserve traditions","gìn giữ truyền thống","Young people should help preserve traditions."],
+["mark the occasion","đánh dấu dịp đặc biệt","The city held a concert to mark the occasion."],
+["take time off work","nghỉ làm","Many people take time off work to travel during the holiday."],
+["a long weekend","kỳ nghỉ cuối tuần dài","The holiday falls on a Monday, so we get a long weekend."],
+["wish someone good luck","chúc ai may mắn","People wish each other good luck and good health at Tet."],
+["spring cleaning","dọn dẹp nhà cửa (đón năm mới)","Families do spring cleaning before the New Year."]]},
+
+{name:"🏠 Home & House", words:[
+["apartment","n","căn hộ","I live in a small apartment on the tenth floor."],
+["spacious","adj","rộng rãi","The living room is bright and spacious."],
+["cosy","adj","ấm cúng","My bedroom is small but cosy."],
+["furniture","n","đồ nội thất","We bought new furniture for the living room."],
+["balcony","n","ban công","I grow herbs and flowers on my balcony."],
+["landlord","n","chủ nhà (cho thuê)","Our landlord has just increased the rent."],
+["tenant","n","người thuê nhà","Tenants must pay rent on the first day of each month."],
+["rent","n/v","tiền thuê nhà; thuê","Rent in the city centre is very high."],
+["mortgage","n","khoản vay mua nhà","It will take them 20 years to pay back the mortgage."],
+["renovate","v","cải tạo, sửa sang","We renovated the kitchen last year."],
+["decor","n","cách trang trí nội thất","I like the simple, modern decor of my room."],
+["appliance","n","thiết bị gia dụng","Modern appliances make housework much easier."],
+["household","n","hộ gia đình","The average household has three or four members."],
+["chore","n","việc vặt trong nhà","Washing the dishes is my least favourite chore."],
+["cramped","adj","chật chội","The flat was too cramped for a family of five."],
+["detached","adj","(nhà) riêng biệt, không chung tường","They live in a detached house with a large garden."],
+["storey","n","tầng (nhà)","My family lives in a three-storey townhouse."],
+["tidy","adj/v","gọn gàng; dọn dẹp","I try to keep my room tidy."],
+["location","n","vị trí","The best thing about my flat is its convenient location."],
+["garage","n","nhà để xe","We keep our motorbikes in the garage."]],
+cols:[
+["a studio apartment","căn hộ studio (1 phòng)","Many students rent a studio apartment near campus."],
+["move house","chuyển nhà","We moved house three times when I was a child."],
+["do the housework","làm việc nhà","My brother and I share the housework equally."],
+["a home away from home","nơi thân thuộc như nhà thứ hai","My grandparents' house is a home away from home for me."],
+["own a house","sở hữu một ngôi nhà","Owning a house is a dream for many young people."],
+["rent a flat","thuê căn hộ","Sharing the cost makes it cheaper to rent a flat."],
+["pay off a mortgage","trả hết khoản vay mua nhà","They hope to pay off their mortgage before retirement."],
+["a fully furnished apartment","căn hộ đầy đủ nội thất","The company provides a fully furnished apartment for new staff."],
+["a quiet residential area","khu dân cư yên tĩnh","I'd love to live in a quiet residential area."],
+["home-cooked meals","bữa ăn nấu tại nhà","What I miss most when I travel is home-cooked meals."],
+["feel at home","cảm thấy thoải mái như ở nhà","My host family made me feel at home immediately."],
+["the living room","phòng khách","We usually watch TV together in the living room."],
+["make yourself at home","cứ tự nhiên như ở nhà","Come in and make yourself at home!"],
+["get on the property ladder","mua được căn nhà đầu tiên","It is becoming harder for young people to get on the property ladder."],
+["natural light","ánh sáng tự nhiên","My room gets plenty of natural light in the morning."]]},
+
+{name:"🎨 Hobbies & Free Time", words:[
+["hobby","n","sở thích","My main hobby is playing the guitar."],
+["leisure","n","thời gian rảnh, giải trí","People have more leisure time than in the past."],
+["pastime","n","trò tiêu khiển","Reading is my favourite pastime."],
+["enthusiast","n","người đam mê","He is a football enthusiast and never misses a match."],
+["collect","v","sưu tầm","My father collects old coins."],
+["passionate","adj","đam mê","She is passionate about photography."],
+["relaxing","adj","thư giãn","I find gardening very relaxing."],
+["creative","adj","sáng tạo","Painting allows me to be creative."],
+["gardening","n","làm vườn","Gardening is popular among retired people."],
+["photography","n","nhiếp ảnh","I became interested in photography in high school."],
+["craft","n","đồ thủ công","My grandmother makes beautiful crafts from bamboo."],
+["instrument","n","nhạc cụ","Learning an instrument takes a lot of patience."],
+["amateur","adj/n","nghiệp dư","He plays for an amateur football team."],
+["unwind","v","thư giãn, xả hơi","I like to unwind by listening to music after work."],
+["recreational","adj","mang tính giải trí","The park offers many recreational activities."],
+["outdoor","adj","ngoài trời","I prefer outdoor activities like hiking and cycling."],
+["sketch","v/n","phác hoạ; bản phác thảo","I often sketch people in the park."],
+["fascinate","v","làm say mê","Astronomy has always fascinated me."],
+["chess","n","cờ vua","Playing chess improves concentration."],
+["volunteer","v/n","tình nguyện; tình nguyện viên","I volunteer at an animal shelter at weekends."]],
+cols:[
+["in my spare time","trong thời gian rảnh","In my spare time, I enjoy watching documentaries."],
+["take up a hobby","bắt đầu một sở thích","I decided to take up yoga last year to reduce stress."],
+["a keen interest in","rất quan tâm đến","She has a keen interest in traditional music."],
+["kill time","giết thời gian","I play mobile games to kill time on the bus."],
+["a great way to relax","cách tuyệt vời để thư giãn","Swimming is a great way to relax after a long day."],
+["recharge my batteries","nạp lại năng lượng","A weekend in the countryside helps me recharge my batteries."],
+["outdoor activities","các hoạt động ngoài trời","Children should spend more time on outdoor activities."],
+["be into something","thích, mê cái gì","I'm really into Korean dramas these days."],
+["get hooked on","bị nghiện, mê mẩn","It's easy to get hooked on puzzle games."],
+["have a passion for","có niềm đam mê với","Great chefs have a passion for cooking."],
+["play a musical instrument","chơi một nhạc cụ","Playing a musical instrument is good for the brain."],
+["join a club","tham gia câu lạc bộ","I joined a book club to meet people with similar interests."],
+["relieve stress","giải toả căng thẳng","Exercise is one of the best ways to relieve stress."],
+["a couch potato","người lười, suốt ngày nằm xem TV","At weekends, I turn into a couch potato."],
+["give up","từ bỏ","I had to give up the piano because I didn't have time to practise."]]},
+
+{name:"🚦 Transport & Traffic", words:[
+["vehicle","n","phương tiện giao thông","The number of private vehicles has doubled in ten years."],
+["commuter","n","người đi làm hằng ngày (bằng xe)","Thousands of commuters travel into the city every morning."],
+["fare","n","giá vé","Bus fares have gone up again this year."],
+["motorist","n","người lái xe ô tô","Motorists are being asked to avoid the city centre."],
+["accident","n","tai nạn","Most road accidents are caused by human error."],
+["collision","n","vụ va chạm","There was a collision between a bus and a motorbike."],
+["helmet","n","mũ bảo hiểm","Wearing a helmet is compulsory for motorbike riders."],
+["highway","n","đường cao tốc","A new highway connects the two cities."],
+["overpass","n","cầu vượt","An overpass was built to reduce delays at the junction."],
+["intersection","n","giao lộ, ngã tư","The accident happened at a busy intersection."],
+["toll","n","phí cầu đường","Drivers must pay a toll to use the bridge."],
+["gridlock","n","tình trạng kẹt xe hoàn toàn","Heavy rain caused gridlock across the city."],
+["cyclist","n","người đi xe đạp","Cyclists need safer roads to ride on."],
+["licence","n","giấy phép, bằng lái","You need a licence to ride a motorbike over 50cc."],
+["speeding","n","việc chạy quá tốc độ","Speeding is a major cause of fatal accidents."],
+["metro","n","tàu điện ngầm/đường sắt đô thị","The new metro line has reduced travel time significantly."],
+["fuel","n","nhiên liệu","Electric cars do not need any fuel."],
+["reckless","adj","liều lĩnh, bất cẩn","Reckless drivers put everyone at risk."],
+["jaywalk","v","băng qua đường ẩu","It is dangerous to jaywalk on busy roads."],
+["punctual","adj","đúng giờ","Trains in Japan are famous for being punctual."]],
+cols:[
+["road safety","an toàn giao thông","Schools should teach children about road safety."],
+["be stuck in a traffic jam","bị kẹt xe","I was stuck in a traffic jam for over an hour."],
+["private vehicles","phương tiện cá nhân","Cities should limit the use of private vehicles."],
+["a road accident","tai nạn giao thông","He was injured in a road accident last year."],
+["obey traffic rules","tuân thủ luật giao thông","Everyone must obey traffic rules to keep the roads safe."],
+["exceed the speed limit","vượt quá tốc độ cho phép","Drivers who exceed the speed limit should be fined."],
+["car ownership","việc sở hữu ô tô","Car ownership has increased rapidly in Vietnam."],
+["a cycle lane","làn đường dành cho xe đạp","The city has built new cycle lanes along the river."],
+["a dedicated bus lane","làn đường riêng cho xe buýt","A dedicated bus lane makes buses faster and more reliable."],
+["get a driving licence","lấy bằng lái xe","Young people are waiting longer to get a driving licence."],
+["drink-driving","lái xe khi say rượu","Penalties for drink-driving have become much stricter."],
+["rising fuel prices","giá xăng dầu tăng","Rising fuel prices encourage people to use public transport."],
+["a congestion charge","phí chống ùn tắc","London introduced a congestion charge for the city centre."],
+["run a red light","vượt đèn đỏ","Many accidents happen when drivers run a red light."],
+["share a ride","đi chung xe","Sharing a ride to work saves money and reduces traffic."]]},
+
+{name:"🫶 Social Welfare", words:[
+["welfare","n","phúc lợi, an sinh","The government spends a large part of its budget on welfare."],
+["poverty","n","sự nghèo đói","Millions of children still live in poverty."],
+["pension","n","lương hưu","Many retired people struggle to live on their pension."],
+["benefit","n","trợ cấp; lợi ích","She receives a monthly benefit because she cannot work."],
+["subsidy","n","khoản trợ giá","Farmers receive subsidies to keep food prices low."],
+["homeless","adj","vô gia cư","The charity provides meals for homeless people."],
+["disadvantaged","adj","thiệt thòi, kém may mắn","Scholarships should go to students from disadvantaged backgrounds."],
+["inequality","n","sự bất bình đẳng","Income inequality has grown in many countries."],
+["charity","n","tổ chức từ thiện","She works for a charity that helps orphans."],
+["donation","n","sự quyên góp","The hospital relies on donations from the public."],
+["elderly","adj","cao tuổi","The elderly need more support from society."],
+["disability","n","khuyết tật","Buildings should be accessible to people with disabilities."],
+["vulnerable","adj","dễ bị tổn thương","Children and the elderly are the most vulnerable groups."],
+["insurance","n","bảo hiểm","Unemployment insurance supports people who lose their jobs."],
+["allowance","n","khoản phụ cấp","Families with young children receive a monthly allowance."],
+["taxpayer","n","người đóng thuế","Public services are paid for by taxpayers."],
+["shelter","n","nơi trú ẩn","The city opened new shelters for homeless people."],
+["income","n","thu nhập","Families on a low income get free school meals."],
+["deprived","adj","nghèo khó, thiếu thốn","Crime is often higher in deprived areas."],
+["fund","v/n","cấp vốn; quỹ","The programme is funded by the government."]],
+cols:[
+["the welfare state","nhà nước phúc lợi","Scandinavian countries are known for their strong welfare state."],
+["social security","an sinh xã hội","The social security system protects people in old age."],
+["live below the poverty line","sống dưới mức nghèo","Around 5% of the population live below the poverty line."],
+["the gap between rich and poor","khoảng cách giàu nghèo","The gap between rich and poor is getting wider."],
+["provide financial support","hỗ trợ tài chính","The state should provide financial support to single parents."],
+["low-income families","các gia đình thu nhập thấp","Low-income families often cannot afford private healthcare."],
+["health insurance","bảo hiểm y tế","Everyone should have access to health insurance."],
+["unemployment benefits","trợ cấp thất nghiệp","Unemployment benefits help people while they look for work."],
+["an ageing population","dân số già hoá","An ageing population puts pressure on pension systems."],
+["equal opportunities","cơ hội bình đẳng","All children deserve equal opportunities in education."],
+["raise taxes","tăng thuế","The government may raise taxes to pay for better services."],
+["a social safety net","mạng lưới an sinh xã hội","A social safety net prevents people from falling into poverty."],
+["make ends meet","xoay xở đủ sống","Many workers struggle to make ends meet."],
+["universal healthcare","y tế toàn dân","Universal healthcare means everyone can see a doctor for free."],
+["give to charity","quyên góp từ thiện","Many people give to charity during the holiday season."]]},
+
+{name:"👨‍👩‍👧 Family", words:[
+["sibling","n","anh chị em ruột","I have two siblings, an older brother and a younger sister."],
+["relative","n","họ hàng","We visit our relatives during the holidays."],
+["upbringing","n","sự nuôi dạy","His strict upbringing made him very disciplined."],
+["generation","n","thế hệ","Three generations live together in my house."],
+["parenting","n","việc nuôi dạy con cái","Good parenting requires patience."],
+["spoil","v","làm hư, chiều chuộng","Grandparents tend to spoil their grandchildren."],
+["toddler","n","trẻ mới biết đi","Toddlers need constant supervision."],
+["adolescent","n","thanh thiếu niên","Adolescents often argue with their parents."],
+["obedient","adj","vâng lời","Obedient children usually follow their parents' advice."],
+["strict","adj","nghiêm khắc","My parents were quite strict about homework."],
+["nurture","v","nuôi dưỡng","Parents should nurture their children's talents."],
+["inherit","v","thừa hưởng","She inherited her mother's sense of humour."],
+["resemble","v","giống (ngoại hình)","He closely resembles his grandfather."],
+["divorce","n/v","ly hôn","Divorce rates have risen in many cities."],
+["marriage","n","hôn nhân","They have had a happy marriage for 30 years."],
+["spouse","n","vợ/chồng","Employees can bring their spouse to the company party."],
+["caregiver","n","người chăm sóc","She is the main caregiver for her elderly father."],
+["breadwinner","n","trụ cột kinh tế gia đình","My father was the only breadwinner in our family."],
+["orphan","n","trẻ mồ côi","The charity runs a home for orphans."],
+["independent","adj","độc lập, tự lập","Living abroad taught me to be independent."]],
+cols:[
+["a nuclear family","gia đình hạt nhân (bố mẹ và con)","The nuclear family is now the most common type in cities."],
+["an extended family","đại gia đình (nhiều thế hệ)","I grew up in an extended family with my grandparents."],
+["the generation gap","khoảng cách thế hệ","The generation gap is clear in our attitudes to technology."],
+["bring up children","nuôi dạy con cái","Bringing up children in a big city is expensive."],
+["take after","giống (tính cách, ngoại hình) ai đó","I take after my father; we are both quite shy."],
+["look after","chăm sóc","I sometimes look after my little cousin at weekends."],
+["a close-knit family","gia đình gắn bó","I come from a close-knit family."],
+["single-parent families","gia đình đơn thân","Single-parent families often need extra support."],
+["a role model","tấm gương","Parents should be a good role model for their children."],
+["set a good example","làm gương tốt","Older siblings should set a good example."],
+["sibling rivalry","sự ganh đua giữa anh chị em","Sibling rivalry is normal in many families."],
+["spend quality time","dành thời gian ý nghĩa","Busy parents should still spend quality time with their kids."],
+["family values","giá trị gia đình","Family values are very important in Vietnamese culture."],
+["start a family","lập gia đình, sinh con","Many couples wait until their thirties to start a family."],
+["working parents","bố mẹ đi làm","Working parents often rely on grandparents for childcare."]]},
+
+{name:"🍜 Food & Eating", words:[
+["ingredient","n","nguyên liệu","Fresh ingredients make all the difference."],
+["recipe","n","công thức nấu ăn","This is my grandmother's recipe for fish sauce."],
+["flavour","n","hương vị","Pho has a rich and delicate flavour."],
+["spicy","adj","cay","I love spicy food, especially Thai dishes."],
+["savoury","adj","mặn, đậm vị (không ngọt)","I prefer savoury snacks to sweets."],
+["bland","adj","nhạt nhẽo","Hospital food is often bland."],
+["organic","adj","hữu cơ","Organic vegetables are more expensive."],
+["vegetarian","n/adj","người ăn chay; chay","My sister has been a vegetarian for five years."],
+["takeaway","n","đồ ăn mang đi","We ordered a takeaway because nobody wanted to cook."],
+["appetite","n","sự thèm ăn","Exercise always gives me a big appetite."],
+["portion","n","khẩu phần","The portions at this restaurant are huge."],
+["dessert","n","món tráng miệng","We had ice cream for dessert."],
+["beverage","n","đồ uống","Sugary beverages are a major cause of obesity."],
+["seafood","n","hải sản","Coastal towns are famous for fresh seafood."],
+["dish","n","món ăn","Banh xeo is my favourite Vietnamese dish."],
+["grill","v","nướng","We grilled some pork and vegetables in the garden."],
+["nutritious","adj","bổ dưỡng","Children need nutritious meals to grow."],
+["craving","n","sự thèm (một món)","I often have a craving for chocolate at night."],
+["additive","n","chất phụ gia","Many snacks contain artificial additives."],
+["delicacy","n","đặc sản, món ngon quý","Bird's nest soup is considered a delicacy."]],
+cols:[
+["street food","đồ ăn đường phố","Ho Chi Minh City is a paradise for street food."],
+["fast food chains","chuỗi đồ ăn nhanh","Fast food chains are spreading quickly in Asia."],
+["eat out","ăn ngoài","We usually eat out on Friday evenings."],
+["have a sweet tooth","thích ăn đồ ngọt","I have a sweet tooth, so I can't resist cakes."],
+["mouth-watering dishes","những món ăn hấp dẫn","The market is full of mouth-watering dishes."],
+["follow a recipe","nấu theo công thức","I'm not a good cook, so I always follow a recipe."],
+["skip breakfast","bỏ bữa sáng","Students who skip breakfast find it hard to concentrate."],
+["a staple food","lương thực chính","Rice is a staple food in Vietnam."],
+["food safety","an toàn thực phẩm","Food safety is a big concern with street vendors."],
+["eat in moderation","ăn uống điều độ","You can eat anything as long as you eat in moderation."],
+["fresh produce","nông sản tươi","The local market sells fresh produce every morning."],
+["a light snack","bữa ăn nhẹ","I usually have a light snack in the afternoon."],
+["food waste","lãng phí thực phẩm","Restaurants should do more to reduce food waste."],
+["dietary requirements","yêu cầu về chế độ ăn","Please tell us about any dietary requirements before the event."],
+["an acquired taste","món phải ăn quen mới thích","Durian is definitely an acquired taste."]]},
+
+{name:"📺 Media & Advertising", words:[
+["advertisement","n","quảng cáo","The advertisement was shown during the football match."],
+["consumer","n","người tiêu dùng","Consumers are becoming more environmentally aware."],
+["commercial","n/adj","quảng cáo trên TV; thương mại","There are too many commercials on TV these days."],
+["journalism","n","nghề báo","Good journalism holds powerful people accountable."],
+["broadcast","v/n","phát sóng","The final will be broadcast live around the world."],
+["headline","n","tiêu đề báo","The story made the front-page headline."],
+["tabloid","n","báo lá cải","Tabloids are full of celebrity gossip."],
+["censorship","n","sự kiểm duyệt","Strict censorship limits what journalists can report."],
+["audience","n","khán giả","The show attracts a large young audience."],
+["influencer","n","người có sức ảnh hưởng (trên mạng)","Many brands now pay influencers to promote their products."],
+["sponsor","v/n","tài trợ; nhà tài trợ","The tournament is sponsored by a soft drink company."],
+["brand","n","thương hiệu","Teenagers are often influenced by famous brands."],
+["persuade","v","thuyết phục","Adverts are designed to persuade people to buy things."],
+["bias","n","sự thiên vị, thiên kiến","Some newspapers show a clear political bias."],
+["publicity","n","sự quảng bá, chú ý của công chúng","The scandal gave the film a lot of publicity."],
+["subscription","n","sự đăng ký (trả phí)","I pay a monthly subscription for a music app."],
+["viral","adj","lan truyền mạnh","The video became viral within hours."],
+["mislead","v","đánh lừa, gây hiểu lầm","Some adverts mislead consumers about health benefits."],
+["reputation","n","danh tiếng","The company's reputation was damaged by the scandal."],
+["documentary","n","phim tài liệu","I watched a documentary about ocean pollution."]],
+cols:[
+["target audience","đối tượng khán giả mục tiêu","The target audience for this advert is young mothers."],
+["the mass media","phương tiện truyền thông đại chúng","The mass media shapes public opinion."],
+["breaking news","tin nóng","I saw the breaking news on my phone."],
+["freedom of the press","tự do báo chí","Freedom of the press is essential in a democracy."],
+["go viral","lan truyền nhanh trên mạng","Her dance video went viral overnight."],
+["celebrity endorsement","người nổi tiếng quảng bá sản phẩm","Celebrity endorsement can increase sales dramatically."],
+["false advertising","quảng cáo sai sự thật","The company was fined for false advertising."],
+["a catchy slogan","khẩu hiệu dễ nhớ","A catchy slogan helps people remember the brand."],
+["brand loyalty","sự trung thành với thương hiệu","Apple has built strong brand loyalty."],
+["impulse buying","mua sắm bốc đồng","Discounts and flash sales encourage impulse buying."],
+["a consumer society","xã hội tiêu dùng","We live in a consumer society that values possessions."],
+["prime time","giờ vàng (truyền hình)","Adverts shown during prime time are very expensive."],
+["word of mouth","truyền miệng","The restaurant became popular through word of mouth."],
+["make headlines","trở thành tin nổi bật","Celebrity scandals often make headlines around the world."],
+["an advertising campaign","chiến dịch quảng cáo","The new advertising campaign targets teenagers."]]}
+];
+
+// ---------- data ----------
+const ALL = DATA.flatMap((t,ti)=>[
+  ...t.words.map((w,i)=>({id:ti+'w'+i,ti,kind:'word',term:w[0],pos:w[1],mean:w[2],ex:w[3]})),
+  ...t.cols.map((c,i)=>({id:ti+'c'+i,ti,kind:'col',term:c[0],pos:'',mean:c[1],ex:c[2]}))]);
+const BYID = Object.fromEntries(ALL.map(x=>[x.id,x]));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const $=id=>document.getElementById(id);
+
+function findMatch(ex,term){
+  const skip=['the',"one's","someone's",'something','with'];
+  const first=term.split(/[ ;\/]/).map(w=>w.replace(/'s$/,'')).find(w=>w.length>2&&!skip.includes(w.toLowerCase()))||'';
+  const base=first.slice(0,Math.max(4,first.length-2));
+  if(!base) return null;
+  const m=new RegExp('\\b'+base.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'[\\w-]*','i').exec(ex);
+  return m?{i:m.index,t:m[0]}:null;
+}
+function hlEx(ex,term){
+  const m=findMatch(ex,term); if(!m) return esc(ex);
+  return esc(ex.slice(0,m.i))+'<b>'+esc(m.t)+'</b>'+esc(ex.slice(m.i+m.t.length));
+}
+
+// ---------- storage ----------
+const KEY='ielts-vocab-arena-v1';
+let st={xp:0,streak:0,last:null,badges:[],modes:[],wrong:{},fixed:0,best:0,sound:true,topics:null};
+try{Object.assign(st,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}};
+const dayKey=(d=new Date())=>d.toLocaleDateString('sv');
+const yesterday=()=>{const d=new Date();d.setDate(d.getDate()-1);return dayKey(d)};
+const liveStreak=()=>(st.last===dayKey()||st.last===yesterday())?st.streak:0;
+
+// ---------- badges ----------
+const BADGES=[
+ {id:'first',e:'🚀',n:'Khởi động',d:'Hoàn thành lượt chơi đầu tiên'},
+ {id:'combo5',e:'🔥',n:'Nóng tay',d:'Đạt combo 5'},
+ {id:'combo10',e:'⚡',n:'Không thể cản',d:'Đạt combo 10'},
+ {id:'perfect',e:'💯',n:'Hoàn hảo',d:'Đúng 12/12 câu trong một lượt'},
+ {id:'allmodes',e:'🧠',n:'Toàn năng',d:'Chơi cả Quiz, Điền từ và Collocation'},
+ {id:'fixer',e:'🩹',n:'Sửa sai',d:'Trả lời đúng 10 từ từng làm sai'},
+ {id:'streak3',e:'📅',n:'Chăm chỉ',d:'Học 3 ngày liên tiếp'},
+ {id:'streak7',e:'🏆',n:'Kỷ luật thép',d:'Học 7 ngày liên tiếp'},
+ {id:'xp500',e:'⭐',n:'500 XP',d:'Tích luỹ 500 XP'},
+ {id:'xp2000',e:'👑',n:'Cao thủ',d:'Tích luỹ 2000 XP'},
+ {id:'boss1',e:'⚔️',n:'Thợ săn boss',d:'Hạ gục boss đầu tiên'},
+ {id:'stars3',e:'🌟',n:'Ba sao',d:'Thắng một màn với 3 sao'},
+ {id:'dragon',e:'🐲',n:'Huyền thoại',d:'Đánh bại Rồng IELTS Tối Thượng'}];
+function unlock(id){
+  if(st.badges.includes(id))return; st.badges.push(id); save();
+  const b=BADGES.find(x=>x.id===id); toast(`${b.e} Mở khoá huy hiệu: ${b.n}!`); confetti(60); beep('badge');
+}
+
+// ---------- fx ----------
+let toastT;
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600)}
+function confetti(n=30){
+  const cols=['#6d28d9','#db2777','#f59e0b','#16a34a','#0ea5e9'];
+  for(let i=0;i<n;i++){const c=document.createElement('i');c.className='cf';
+    c.style.left=Math.random()*100+'vw';c.style.background=pick(cols);
+    c.style.animationDuration=(1.2+Math.random()*1.3)+'s';c.style.animationDelay=Math.random()*.3+'s';
+    document.body.appendChild(c);setTimeout(()=>c.remove(),3000)}
+}
+function plus(txt,el){const r=el.getBoundingClientRect();const p=document.createElement('div');p.className='plus';p.textContent=txt;
+  p.style.left=(r.left+r.width/2-20)+'px';p.style.top=(r.top-10)+'px';document.body.appendChild(p);setTimeout(()=>p.remove(),900)}
+let actx;
+function beep(kind){
+  if(!st.sound)return;
+  try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    const seq={ok:[660,880],no:[220,170],badge:[523,659,784,1047],end:[392,523,659]}[kind];
+    seq.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain();o.type='triangle';o.frequency.value=f;
+      g.gain.setValueAtTime(.12,actx.currentTime+i*.09);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+i*.09+.18);
+      o.connect(g);g.connect(actx.destination);o.start(actx.currentTime+i*.09);o.stop(actx.currentTime+i*.09+.2)})}catch(e){}
+}
+
+// ---------- home ----------
+let sel=new Set(Array.isArray(st.topics)?st.topics:DATA.map((_,i)=>i));
+let useWrong=false;
+function renderChips(){
+  const c=$('chips');const allOn=sel.size===DATA.length&&!useWrong;
+  const wn=Object.keys(st.wrong).length;
+  c.innerHTML=`<button class="chip ${allOn?'on':''}" data-t="all">✨ Tất cả</button>`+
+    DATA.map((t,i)=>`<button class="chip ${sel.has(i)&&!useWrong?'on':''}" data-t="${i}">${esc(t.name)}</button>`).join('')+
+    (wn?`<button class="chip wrongbank ${useWrong?'on':''}" data-t="wrong">📕 Từ hay sai (${wn})</button>`:'');
+}
+$('chips').onclick=e=>{
+  const b=e.target.closest('.chip');if(!b)return;const t=b.dataset.t;
+  if(t==='wrong'){useWrong=!useWrong}
+  else{useWrong=false;
+    if(t==='all'){sel=sel.size===DATA.length?new Set():new Set(DATA.map((_,i)=>i))}
+    else{const i=+t;sel.has(i)?sel.delete(i):sel.add(i)}
+    st.topics=[...sel];save()}
+  renderChips();
+};
+function renderHome(){
+  if(useWrong&&!Object.keys(st.wrong).length)useWrong=false;
+  $('sStreak').textContent=liveStreak();$('sXp').textContent=st.xp;$('sWrong').textContent=Object.keys(st.wrong).length;
+  const lv=Math.floor(st.xp/300)+1, into=st.xp%300;
+  $('lvName').textContent=`Level ${lv}`;$('lvNext').textContent=`${into}/300 XP`;$('lvBar').style.width=(into/300*100)+'%';
+  $('soundBtn').textContent=st.sound?'🔊':'🔇';
+  $('badges').innerHTML=BADGES.map(b=>`<div class="badge ${st.badges.includes(b.id)?'':'locked'}"><div class="e">${b.e}</div><b>${b.n}</b><small>${b.d}</small></div>`).join('');
+  renderChips();
+}
+$('soundBtn').onclick=()=>{st.sound=!st.sound;save();renderHome()};
+
+// ---------- questions ----------
+const STOP=['the','and','with',"one's","someone's",'something','a','an'];
+function colTokens(term){return term.split(' ').map((w,i)=>({w,i})).filter(o=>o.w.replace(/[^a-z-]/gi,'').length>2&&!STOP.includes(o.w.toLowerCase()))}
+let poolOverride=null;
+const pool=()=>poolOverride||(useWrong?Object.keys(st.wrong).map(id=>BYID[id]).filter(Boolean):ALL.filter(x=>sel.has(x.ti)));
+function choose(list,used,fallback){
+  let c=list.filter(x=>!used.has(x.id)); if(!c.length)c=fallback.filter(x=>!used.has(x.id)); if(!c.length)c=fallback;
+  return pick(c);
+}
+function makeQuiz(used){
+  const P=pool(), it=choose(P,used,ALL); const enToVi=Math.random()<.6;
+  const same=shuffle([...P,...shuffle(ALL)].filter(x=>x.kind===it.kind&&x.id!==it.id));
+  const ds=[]; for(const x of same){const v=enToVi?x.mean:x.term; const cur=enToVi?it.mean:it.term;
+    if(v!==cur&&!ds.includes(v))ds.push(v); if(ds.length===3)break}
+  const ans=enToVi?it.mean:it.term;
+  return {type:'quiz',it,label:enToVi?'🎯 Nghĩa tiếng Việt là gì?':'🎯 Từ tiếng Anh nào?',
+    main:esc(enToVi?it.term:it.mean),sub:it.pos?`(${it.pos})`:(it.kind==='col'?'collocation':''),hint:'',
+    options:shuffle([ans,...ds]),answer:ans};
+}
+function makeFill(used){
+  const P=pool().filter(x=>x.kind==='word'&&findMatch(x.ex,x.term)); const F=ALL.filter(x=>x.kind==='word'&&findMatch(x.ex,x.term));
+  const it=choose(P,used,F); const m=findMatch(it.ex,it.term);
+  const sent=esc(it.ex.slice(0,m.i))+'<span class="blank">&nbsp;</span>'+esc(it.ex.slice(m.i+m.t.length));
+  return {type:'fill',it,label:'✍️ Điền từ còn thiếu',main:sent,sentence:true,sub:'Nghĩa: '+esc(it.mean),
+    hint:`Gợi ý: bắt đầu bằng “${esc(m.t[0].toLowerCase())}”, gồm ${m.t.length} ký tự`,answer:m.t};
+}
+function makeCol(used){
+  const ok=x=>x.kind==='col'&&x.term.includes(' ')&&colTokens(x.term).length;
+  const P=pool().filter(ok), F=ALL.filter(ok); const it=choose(P,used,F);
+  const tok=pick(colTokens(it.term)); const words=it.term.split(' ');
+  const shown=words.map((w,i)=>i===tok.i?'<span class="blank">&nbsp;</span>':esc(w)).join(' ');
+  const inPhrase=new Set(words.map(w=>w.toLowerCase()));
+  const ds=[];for(const x of shuffle(F)){for(const o of colTokens(x.term)){const w=o.w.toLowerCase();
+    if(!inPhrase.has(w)&&!ds.includes(w)&&w!==tok.w.toLowerCase())ds.push(w)} if(ds.length>=3)break}
+  return {type:'col',it,label:'🧩 Hoàn thành collocation',main:shown,sub:'Nghĩa: '+esc(it.mean),hint:'',
+    options:shuffle([tok.w.toLowerCase(),...ds.slice(0,3)]),answer:tok.w.toLowerCase()};
+}
+
+// ---------- game loop ----------
+const LEN=12;
+let G=null;
+function start(mode){
+  poolOverride=null;
+  if(!useWrong&&!sel.size){toast('Hãy chọn ít nhất 1 chủ đề nhé!');return}
+  G={mode,n:0,score:0,combo:0,maxCombo:0,correct:0,wrongList:[],used:new Set(),xp0:st.xp,typesPlayed:new Set()};
+  show('game');next();
+}
+function next(){
+  if(G.n>=LEN)return finish();
+  const t=G.mode==='mix'?pick(['quiz','fill','col']):G.mode;
+  const q=t==='quiz'?makeQuiz(G.used):t==='fill'?makeFill(G.used):makeCol(G.used);
+  G.q=q;G.used.add(q.it.id);G.answered=false;G.typesPlayed.add(q.type);
+  $('gBar').style.width=(G.n/LEN*100)+'%';
+  $('qType').textContent=q.label;$('qMain').innerHTML=q.main;$('qMain').classList.toggle('sentence',!!q.sentence);
+  $('qSub').innerHTML=q.sub;$('qHint').innerHTML=q.hint;
+  $('fb').className='feedback';
+  const o=$('opts');
+  if(q.options){
+    $('typeForm').style.display='none';$('skip').style.display='none';
+    o.innerHTML=q.options.map((v,i)=>`<button class="opt" data-v="${esc(v)}"><span class="k">${i+1}</span><span>${esc(v)}</span></button>`).join('');
+  }else{
+    o.innerHTML='';$('typeForm').style.display='flex';$('skip').style.display='inline-block';
+    const inp=$('typeIn');inp.value='';inp.className='';inp.disabled=false;setTimeout(()=>inp.focus(),50);
+  }
+}
+$('opts').onclick=e=>{const b=e.target.closest('.opt');if(!b||G.answered)return;answer(b.dataset.v,b)};
+$('typeForm').onsubmit=e=>{e.preventDefault();if(G.answered){goNext();return}const v=$('typeIn').value.trim();if(!v)return;answer(v,$('typeIn'))};
+$('skip').onclick=()=>{if(!G.answered)answer('',$('typeIn'))};
+function answer(v,el){
+  const q=G.q;G.answered=true;
+  const ok=v.toLowerCase().replace(/[’]/g,"'")===q.answer.toLowerCase();
+  if(q.options){document.querySelectorAll('.opt').forEach(b=>{b.disabled=true;
+    if(b.dataset.v===q.answer)b.classList.add('right'); else if(b===el)b.classList.add('wrong')})}
+  else{const i=$('typeIn');i.disabled=true;i.classList.add(ok?'right':'wrong');$('skip').style.display='none'}
+  const id=q.it.id;
+  if(ok){
+    G.combo++;G.correct++;G.maxCombo=Math.max(G.maxCombo,G.combo);
+    const mult=Math.min(4,1+Math.floor(G.combo/3)), pts=10*mult;
+    G.score+=pts;st.xp+=pts;plus('+'+pts,el);beep('ok');
+    if(st.wrong[id]){delete st.wrong[id];st.fixed=(st.fixed||0)+1;if(st.fixed>=10)unlock('fixer')}
+    if(G.combo%5===0)confetti(35);
+    if(G.combo>=5)unlock('combo5'); if(G.combo>=10)unlock('combo10');
+    $('combo').classList.add('pop');setTimeout(()=>$('combo').classList.remove('pop'),160);
+  }else{
+    G.combo=0;st.wrong[id]=(st.wrong[id]||0)+1;G.wrongList.push(q);beep('no');
+  }
+  save();
+  const mult=Math.min(4,1+Math.floor(G.combo/3));
+  $('combo').textContent=`🔥 Combo ${G.combo} · x${mult}`;$('score').textContent=G.score;
+  const praise=['Chuẩn luôn! 🎉','Xuất sắc! ✨','Quá đỉnh! 🚀','Giỏi lắm! 💪','Đúng rồi! 👏'];
+  $('fbT').textContent=ok?pick(praise):(v?'Chưa đúng rồi 😅':'Đáp án là:');
+  $('fbA').innerHTML=ok?'':`Đáp án đúng: <b>${esc(q.type==='col'?q.it.term:q.answer)}</b>`+(q.type==='quiz'?'':` (${esc(q.it.mean)})`);
+  $('fbEx').innerHTML=`<b>${esc(q.it.term)}</b>: ${esc(q.it.mean)}<br>📝 ${hlEx(q.it.ex,q.it.term)}`;
+  $('fb').className='feedback show '+(ok?'ok':'no');
+  setTimeout(()=>$('next').focus(),30);
+}
+function goNext(){G.n++;next()}
+$('next').onclick=goNext;
+$('quit').onclick=()=>{if(confirm('Thoát lượt chơi này? Điểm XP đã nhận vẫn được giữ.')){show('home');renderHome()}};
+
+function finish(){
+  $('gBar').style.width='100%';
+  const today=dayKey();
+  if(st.last!==today){st.streak=(st.last===yesterday())?st.streak+1:1;st.last=today}
+  const newBest=G.score>(st.best||0); if(newBest)st.best=G.score;
+  ['quiz','fill','col'].forEach(t=>{if(G.typesPlayed.has(t)&&!st.modes.includes(t))st.modes.push(t)});
+  save();
+  unlock('first');
+  if(G.correct===LEN)unlock('perfect');
+  if(st.modes.length>=3)unlock('allmodes');
+  if(st.streak>=3)unlock('streak3'); if(st.streak>=7)unlock('streak7');
+  if(st.xp>=500)unlock('xp500'); if(st.xp>=2000)unlock('xp2000');
+  const r=G.correct/LEN;
+  $('rEmoji').textContent=r===1?'🏆':r>=.75?'🎉':r>=.5?'👍':'💪';
+  $('rTitle').textContent=r===1?'Hoàn hảo tuyệt đối!':r>=.75?'Làm tốt lắm!':r>=.5?'Khá ổn, cố thêm chút nữa!':'Không sao, luyện tiếp nhé!';
+  $('rSub').textContent=`+${st.xp-G.xp0} XP · Chuỗi ${st.streak} ngày 🔥`+(newBest?' · Kỷ lục mới! 🥇':` · Kỷ lục: ${st.best}`);
+  $('rScore').textContent=G.score;$('rAcc').textContent=`${G.correct}/${LEN}`;$('rCombo').textContent=G.maxCombo;
+  $('review').innerHTML=G.wrongList.length?`<h2>📕 Từ cần ôn lại</h2>`+G.wrongList.map(q=>`<div class="it"><b>${esc(q.it.term)}</b>: ${esc(q.it.mean)}<br><span class="empty">${hlEx(q.it.ex,q.it.term)}</span></div>`).join(''):'';
+  show('result');beep('end');if(r>=.75)confetti(r===1?120:60);
+}
+$('again').onclick=()=>start(G.mode);
+$('toHome').onclick=()=>{show('home');renderHome()};
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('show',s.id===id));window.scrollTo(0,0)}
+document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>start(b.dataset.mode));
+document.addEventListener('keydown',e=>{
+  if(!$('game').classList.contains('show'))return;
+  if(G.answered&&e.key==='Enter'&&e.target.id!=='typeIn'){e.preventDefault();goNext();return}
+  if(!G.answered&&G.q.options&&/^[1-4]$/.test(e.key)){const b=document.querySelectorAll('.opt')[+e.key-1];if(b)b.click()}
+});
+// ================= BOSS ADVENTURE =================
+const BOSSES=[
+ {e:'🦉',n:'Cú Giáo Sư Khó Tính',l:'Ngươi đã học bài chưa mà dám vào lớp ta?'},
+ {e:'🌋',n:'Núi Lửa Ô Nhiễm',l:'Khói bụi của ta sẽ làm ngươi quên sạch từ vựng!'},
+ {e:'🤖',n:'Robot Hacker',l:'Đang tải virus... xoá sạch trí nhớ của ngươi!'},
+ {e:'🦠',n:'Virus Lười Biếng',l:'Nằm xuống đi, học làm gì cho mệt...'},
+ {e:'👔',n:'Sếp Deadline',l:'Báo cáo đâu? Hạn chót là 5 phút nữa!'},
+ {e:'🐙',n:'Bạch Tuộc Thất Lạc Hành Lý',l:'Vali của ngươi giờ là của ta!'},
+ {e:'🦹',n:'Siêu Trộm Bóng Đêm',l:'Ta sẽ trộm sạch điểm số của ngươi!'},
+ {e:'🗿',n:'Golem Bê Tông',l:'Thành phố này là của ta, kẻ lạ mặt!'},
+ {e:'👻',n:'Bóng Ma Cô Đơn',l:'Không ai làm bạn với ngươi đâu...'},
+ {e:'🦁',n:'Lân Tinh Nghịch',l:'Muốn lì xì thì phải thắng ta trước!'},
+ {e:'🕷️',n:'Nhện Bụi Bặm',l:'Nhà ngươi bừa quá, ta giăng tơ khắp nơi rồi!'},
+ {e:'🐼',n:'Gấu Trúc Lười Nhác',l:'Cứ nằm xem phim cả ngày như ta đi...'},
+ {e:'🦖',n:'Khủng Long Kẹt Xe',l:'Giờ cao điểm rồi, đừng hòng thoát!'},
+ {e:'🐍',n:'Rắn Bất Công',l:'Khoảng cách giàu nghèo là sức mạnh của ta!'},
+ {e:'🧌',n:'Troll Khoảng Cách Thế Hệ',l:'Thời của ta khác thời của ngươi!'},
+ {e:'👾',n:'Quái Vật Đồ Ăn Nhanh',l:'Ăn thêm miếng nữa đi... rồi ngủ quên!'},
+ {e:'🦊',n:'Cáo Tin Giả',l:'Tin ta đi, ta là nguồn tin đáng tin nhất!'},
+ {e:'🐲',n:'Rồng IELTS Tối Thượng',l:'Ta là trùm cuối. Không 6.5 thì đừng mơ qua!'}];
+const ITEMS={
+ potion:{e:'🧪',n:'Bình máu',d:'Hồi 40 HP',price:50},
+ shield:{e:'🛡️',n:'Khiên',d:'Chặn hoàn toàn đòn đánh kế tiếp của boss',price:60},
+ half:{e:'💡',n:'Gợi ý 50/50',d:'Loại 2 đáp án sai, hoặc hiện nửa số chữ',price:40},
+ rage:{e:'💢',n:'Thuốc cuồng nộ',d:'Đòn đúng kế tiếp gây x2 sát thương',price:70}};
+const DMG={quiz:20,col:26,fill:36}, DLABEL={quiz:'Dễ',col:'Vừa',fill:'Khó'};
+const RPG0={gold:50,cleared:{},inv:{potion:2,shield:1,half:1,rage:0},hpLv:0};
+st.rpg=Object.assign(JSON.parse(JSON.stringify(RPG0)),st.rpg||{});
+st.rpg.inv=Object.assign({...RPG0.inv},st.rpg.inv||{});
+const maxHp=()=>100+st.rpg.hpLv*15;
+const unlocked=i=>i===0||!!st.rpg.cleared[i-1];
+const LAST=DATA.length; // index of final boss
+function cfg(i){const final=i===LAST;return{i,final,b:BOSSES[i],topic:final?'Tất cả chủ đề':DATA[i].name,
+  hp:final?600:120+i*20,atk:final?34:Math.round(12+i*1.2),tq:Math.max(9,16-Math.floor(i/4)),tf:Math.max(16,28-Math.floor(i/3))}}
+function touchStreak(){const t=dayKey();if(st.last!==t){st.streak=(st.last===yesterday())?st.streak+1:1;st.last=t}
+  if(st.streak>=3)unlock('streak3');if(st.streak>=7)unlock('streak7')}
+function xpBadges(){if(st.xp>=500)unlock('xp500');if(st.xp>=2000)unlock('xp2000')}
+
+// ---------- map & shop ----------
+function openMap(){poolOverride=null;renderMap();show('map')}
+function renderMap(){
+  const r=st.rpg;
+  $('mapbar').innerHTML=`<span class="pill">💰 ${r.gold}</span><span class="pill">❤️ ${maxHp()} HP</span>`+
+    Object.entries(ITEMS).map(([k,v])=>`<span class="pill" title="${v.n}">${v.e} ${r.inv[k]}</span>`).join('');
+  let cur=-1;for(let i=0;i<=LAST;i++){if(unlocked(i)&&!r.cleared[i]){cur=i;break}}
+  let h='';for(let i=0;i<=LAST;i++){const c=cfg(i),lock=!unlocked(i),s=r.cleared[i]||0;
+    h+=`<button class="stage ${lock?'locked':''} ${c.final?'final':''} ${i===cur?'cur':''}" data-i="${i}" ${lock?'disabled':''}>
+      <div class="e">${lock?'🔒':c.b.e}</div><b>${c.final?'TRÙM CUỐI · ':'Màn '+(i+1)+' · '}${esc(c.b.n)}</b>
+      <small>${esc(c.topic)}</small><small>❤️ ${c.hp} HP · ⚔️ ${c.atk}</small>
+      <div class="stars">${'★'.repeat(s)}${'☆'.repeat(3-s)}</div></button>`}
+  $('stages').innerHTML=h;
+  const up=r.hpLv<5?120*(r.hpLv+1):null;
+  $('shop').innerHTML=Object.entries(ITEMS).map(([k,v])=>`<div class="shopit"><div class="e">${v.e}</div><div><b>${v.n}</b> <small>${v.d} · Đang có: ${r.inv[k]}</small></div><button class="btn" data-buy="${k}" ${r.gold<v.price?'disabled':''}>💰 ${v.price}</button></div>`).join('')+
+    `<div class="shopit"><div class="e">❤️</div><div><b>Bùa sinh lực</b> <small>+15 máu tối đa vĩnh viễn · Cấp ${r.hpLv}/5</small></div>${up?`<button class="btn" data-buy="hp" ${r.gold<up?'disabled':''}>💰 ${up}</button>`:'<span class="pill">MAX</span>'}</div>`;
+}
+$('advBtn').onclick=openMap;
+$('mapBack').onclick=()=>{show('home');renderHome()};
+$('stages').onclick=e=>{const b=e.target.closest('.stage');if(b&&!b.disabled)startBattle(+b.dataset.i)};
+$('shop').onclick=e=>{const b=e.target.closest('[data-buy]');if(!b||b.disabled)return;const k=b.dataset.buy,r=st.rpg;
+  if(k==='hp'){const p=120*(r.hpLv+1);if(r.gold<p||r.hpLv>=5)return;r.gold-=p;r.hpLv++;toast(`❤️ Máu tối đa tăng lên ${maxHp()}!`)}
+  else{const v=ITEMS[k];if(r.gold<v.price)return;r.gold-=v.price;r.inv[k]++;toast(`Đã mua ${v.e} ${v.n}`)}
+  save();beep('ok');renderMap()};
+
+// ---------- battle ----------
+let B=null;
+function startBattle(i){
+  const c=cfg(i);poolOverride=c.final?ALL:ALL.filter(x=>x.ti===i);
+  B={i,c,bossHp:c.hp,hp:maxHp(),max:maxHp(),combo:0,maxCombo:0,shield:false,rage:false,used:new Set(),
+     correct:0,total:0,wrongList:[],xp0:st.xp,over:false,answered:false,halfUsed:false};
+  $('bStage').textContent=(c.final?'Trùm cuối':'Màn '+(i+1))+' · '+c.topic;
+  $('bossE').textContent=c.b.e;$('bossE').className='boss';$('bossN').textContent=c.b.n;
+  $('bubble').textContent='💬 '+c.b.l;
+  show('battle');updB();nextB();
+}
+function updB(){
+  const c=B.c,enr=B.bossHp>0&&B.bossHp/c.hp<.3;
+  $('bossBar').style.width=(B.bossHp/c.hp*100)+'%';$('bossTxt').textContent=`${B.bossHp} / ${c.hp} HP`;
+  $('meBar').style.width=(B.hp/B.max*100)+'%';$('meTxt').textContent=`${B.hp} / ${B.max} HP`;
+  $('rageTag').classList.toggle('show',enr);$('bossE').classList.toggle('enraged',enr);
+  $('meStatus').textContent=(B.shield?'🛡️':'')+(B.rage?'💢':'');
+  $('bCombo').textContent=`🔥 ${B.combo}`;
+  $('items').innerHTML=Object.entries(ITEMS).map(([k,v])=>`<button class="itm" data-k="${k}" ${st.rpg.inv[k]?'':'disabled'} title="${v.d}">${v.e} ${st.rpg.inv[k]}<small>${v.n}</small></button>`).join('');
+}
+function nextB(){
+  if(B.over)return;clearTimeout(B.auto);
+  B.answered=false;B.halfUsed=false;
+  if(B.used.size>=poolOverride.length-4)B.used.clear();
+  const r=Math.random(),t=r<.4?'quiz':r<.7?'col':'fill';
+  const q=t==='quiz'?makeQuiz(B.used):t==='fill'?makeFill(B.used):makeCol(B.used);
+  B.q=q;B.used.add(q.it.id);
+  $('bqType').textContent=q.label;$('bqDiff').textContent=`⚔️ ${DMG[q.type]} sát thương · Độ khó: ${DLABEL[q.type]}`;
+  $('bqMain').innerHTML=q.main;$('bqMain').classList.toggle('sentence',!!q.sentence);
+  $('bqSub').innerHTML=q.sub;$('bqHint').innerHTML=q.hint;$('bFb').className='feedback';
+  if(q.options){$('bForm').style.display='none';
+    $('bOpts').innerHTML=q.options.map((v,i)=>`<button class="opt" data-v="${esc(v)}"><span class="k">${i+1}</span><span>${esc(v)}</span></button>`).join('');
+  }else{$('bOpts').innerHTML='';$('bForm').style.display='flex';const inp=$('bIn');inp.value='';inp.className='';inp.disabled=false;setTimeout(()=>inp.focus(),50)}
+  startTimer(q.type==='fill'?B.c.tf:B.c.tq);
+}
+function startTimer(sec){stopTimer();B.tMax=sec*1000;B.t0=Date.now();const bar=$('tBar');bar.style.width='100%';bar.classList.remove('low');
+  B.tick=setInterval(()=>{const left=Math.max(0,1-(Date.now()-B.t0)/B.tMax);bar.style.width=left*100+'%';bar.classList.toggle('low',left<.3);
+    if(left<=0){stopTimer();answerB('',null,true)}},100)}
+function stopTimer(){if(B)clearInterval(B.tick)}
+function floatAt(txt,color,x,y){const d=document.createElement('div');d.className='dmg';d.textContent=txt;d.style.color=color;d.style.left=x+'px';d.style.top=y+'px';$('arena').appendChild(d);setTimeout(()=>d.remove(),1000)}
+function anim(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);setTimeout(()=>el.classList.remove(cls),500)}
+function bossAttack(){
+  const enr=B.bossHp/B.c.hp<.3;const d=Math.round(B.c.atk*(enr?1.3:1)*(.85+Math.random()*.3));
+  anim($('bossE'),'atk');
+  if(B.shield){B.shield=false;floatAt('🛡️ Chặn!','var(--accent)',56,$('meE').offsetTop-8);return `🛡️ Khiên đã chặn đòn của boss!`}
+  B.hp=Math.max(0,B.hp-d);
+  setTimeout(()=>{$('flash').classList.add('on');anim($('meE'),'hurt');floatAt('-'+d,'var(--bad)',56,$('meE').offsetTop-8);setTimeout(()=>$('flash').classList.remove('on'),180)},200);
+  return `${B.c.b.e} Boss phản đòn: <b>-${d} HP</b>${enr?' (đang nổi điên!)':''}`;
+}
+function answerB(v,el,timeout){
+  if(!B||B.answered||B.over)return;B.answered=true;stopTimer();B.total++;
+  const q=B.q,id=q.it.id;
+  const ok=!timeout&&v.toLowerCase().replace(/[’]/g,"'")===q.answer.toLowerCase();
+  if(q.options){document.querySelectorAll('#bOpts .opt').forEach(b=>{b.disabled=true;if(b.dataset.v===q.answer)b.classList.add('right');else if(b===el)b.classList.add('wrong')})}
+  else{const i=$('bIn');i.disabled=true;i.classList.add(ok?'right':'wrong')}
+  if(!st.modes.includes(q.type)){st.modes.push(q.type);if(st.modes.length>=3)unlock('allmodes')}
+  let title,line='';
+  if(ok){
+    B.correct++;B.combo++;B.maxCombo=Math.max(B.maxCombo,B.combo);
+    let dmg=DMG[q.type]*(1+Math.min(.5,(B.combo-1)*.1));const tags=[];
+    if(B.combo>=3)tags.push(`Combo x${B.combo}`);
+    if(B.rage){dmg*=2;B.rage=false;tags.push('Cuồng nộ x2')}
+    dmg=Math.round(dmg);B.bossHp=Math.max(0,B.bossHp-dmg);st.xp+=10;
+    if(st.wrong[id]){delete st.wrong[id];st.fixed=(st.fixed||0)+1;if(st.fixed>=10)unlock('fixer')}
+    anim($('bossE'),'hit');floatAt('-'+dmg+(tags.length?' 💥':''),tags.length?'var(--yellow)':'var(--bad)',90,10);beep('ok');
+    if(B.combo>=5)unlock('combo5');if(B.combo>=10)unlock('combo10');
+    title=`💥 Trúng đòn! -${dmg} HP`+(tags.length?` (${tags.join(', ')})`:'');
+  }else{
+    B.combo=0;st.wrong[id]=(st.wrong[id]||0)+1;B.wrongList.push(q);beep('no');
+    line=bossAttack();
+    title=timeout?'⏰ Hết giờ!':(v?'❌ Sai rồi!':'🤷 Bỏ qua');
+  }
+  save();updB();xpBadges();
+  $('bFbT').textContent=title;
+  $('bFbA').innerHTML=(line?line+'<br>':'')+(ok?'':`Đáp án đúng: <b>${esc(q.type==='col'?q.it.term:q.answer)}</b>`);
+  $('bFbEx').innerHTML=`<b>${esc(q.it.term)}</b>: ${esc(q.it.mean)}<br>📝 ${hlEx(q.it.ex,q.it.term)}`;
+  $('bFb').className='feedback show '+(ok?'ok':'no');$('bNext').style.display='';
+  if(B.bossHp<=0){B.over=true;$('bNext').style.display='none';setTimeout(()=>$('bossE').classList.add('dead'),400);setTimeout(victory,1500)}
+  else if(B.hp<=0){B.over=true;$('bNext').style.display='none';setTimeout(defeat,1300)}
+  else{if(ok)B.auto=setTimeout(goNextB,1800);setTimeout(()=>$('bNext').focus(),30)}
+}
+function goNextB(){clearTimeout(B.auto);if(!B.over&&B.answered)nextB()}
+$('bOpts').onclick=e=>{const b=e.target.closest('.opt');if(b&&!b.disabled)answerB(b.dataset.v,b)};
+$('bForm').onsubmit=e=>{e.preventDefault();if(B.answered){goNextB();return}const v=$('bIn').value.trim();if(v)answerB(v,$('bIn'))};
+$('bNext').onclick=goNextB;
+$('bQuit').onclick=()=>{if(confirm('Bỏ chạy khỏi trận đánh? Tiến độ trận này sẽ mất.')){stopTimer();clearTimeout(B.auto);B.over=true;openMap()}};
+$('items').onclick=e=>{
+  const b=e.target.closest('.itm');if(!b||!B||B.over)return;const k=b.dataset.k,inv=st.rpg.inv;if(!inv[k])return;
+  if(k==='potion'){if(B.hp>=B.max){toast('Máu đang đầy rồi!');return}const h=Math.min(40,B.max-B.hp);B.hp+=h;floatAt('+'+h,'var(--good)',56,$('meE').offsetTop-8)}
+  if(k==='shield'){if(B.shield){toast('Khiên đang được kích hoạt rồi');return}B.shield=true}
+  if(k==='rage'){if(B.rage){toast('Cuồng nộ đang được kích hoạt rồi');return}B.rage=true}
+  if(k==='half'){if(B.answered||B.halfUsed){toast('Dùng khi đang trả lời câu hỏi nhé');return}B.halfUsed=true;const q=B.q;
+    if(q.options){shuffle([...document.querySelectorAll('#bOpts .opt')].filter(o=>o.dataset.v!==q.answer)).slice(0,2).forEach(o=>{o.classList.add('gone');o.disabled=true})}
+    else{const n=Math.ceil(q.answer.length/2);$('bqHint').innerHTML=`💡 ${esc(q.answer.slice(0,n))}${'_'.repeat(q.answer.length-n)} (${q.answer.length} ký tự)`}}
+  inv[k]--;save();beep('ok');updB();
+};
+
+// ---------- end of battle ----------
+function victory(){
+  stopTimer();const r=st.rpg,ratio=B.hp/B.max,stars=ratio>=.7?3:ratio>=.4?2:1;
+  const first=!r.cleared[B.i];r.cleared[B.i]=Math.max(stars,r.cleared[B.i]||0);
+  touchStreak();save();unlock('boss1');if(stars===3)unlock('stars3');if(B.c.final)unlock('dragon');xpBadges();
+  B.reward={stars,first,opened:false};
+  $('vTitle').textContent=`Đã hạ ${B.c.b.n}!`;
+  $('vStars').innerHTML=[1,2,3].map(n=>n<=stars?'★':'<span class="off">★</span>').join('');
+  $('vSub').textContent=`Đúng ${B.correct}/${B.total} câu · Combo cao nhất ${B.maxCombo} · Còn ${B.hp}/${B.max} HP · +${st.xp-B.xp0} XP`+(first?' · Lần đầu chiến thắng!':'');
+  const ch=$('chest');ch.className='chest'+(stars===3?' gold':'');ch.style.display='';
+  $('chestHint').style.display='';$('chestHint').textContent=stars===3?'✨ Rương vàng! Chạm để mở!':'Chạm vào rương để mở!';
+  $('rewards').innerHTML='';$('vActions').style.display='none';
+  $('vNext').style.display=B.i<LAST?'':'none';
+  show('victory');confetti(90);beep('badge');
+}
+$('chest').onclick=()=>{
+  const R=B.reward;if(!R||R.opened)return;R.opened=true;const r=st.rpg;
+  $('chest').classList.add('open');$('chestHint').style.display='none';
+  const gold=25+B.i*4+R.stars*10+(R.first?30:0);r.gold+=gold;
+  const got={};const n=R.stars+(R.first?1:0);
+  if(R.first)got.potion=1;
+  for(let j=0;j<n-(R.first?1:0);j++){const x=Math.random();const k=x<.4?'potion':x<.65?'shield':x<.9?'half':'rage';got[k]=(got[k]||0)+1}
+  Object.entries(got).forEach(([k,c])=>r.inv[k]+=c);save();
+  setTimeout(()=>{$('chest').style.display='none';
+    $('rewards').innerHTML=`<div class="reward"><span class="e">💰</span>+${gold} vàng</div>`+
+      Object.entries(got).map(([k,c],j)=>`<div class="reward" style="animation-delay:${(j+1)*.15}s"><span class="e">${ITEMS[k].e}</span>${ITEMS[k].n} x${c}</div>`).join('');
+    $('vActions').style.display='';confetti(50);beep('end')},450);
+};
+$('vNext').onclick=()=>startBattle(B.i+1);
+$('vMap').onclick=openMap;
+function defeat(){
+  stopTimer();st.rpg.gold+=10;touchStreak();save();
+  $('dSub').innerHTML=`${B.c.b.e} ${esc(B.c.b.n)} còn ${B.bossHp}/${B.c.hp} HP.<br>Bạn nhận 10 💰 an ủi và +${st.xp-B.xp0} XP. Mẹo: mua thêm 🧪 Bình máu hoặc 🛡️ Khiên trong cửa hàng, và ôn lại các từ bên dưới.`;
+  $('dReview').innerHTML=B.wrongList.length?`<h2>📕 Từ cần ôn lại</h2>`+B.wrongList.map(q=>`<div class="it"><b>${esc(q.it.term)}</b>: ${esc(q.it.mean)}<br><span class="empty">${hlEx(q.it.ex,q.it.term)}</span></div>`).join(''):'';
+  show('defeat');beep('no');
+}
+$('dRetry').onclick=()=>startBattle(B.i);
+$('dMap').onclick=openMap;
+document.addEventListener('keydown',e=>{
+  if(!B||!$('battle').classList.contains('show'))return;
+  if(B.answered&&e.key==='Enter'&&e.target.id!=='bIn'){e.preventDefault();goNextB();return}
+  if(!B.answered&&B.q&&B.q.options&&/^[1-4]$/.test(e.key)){const b=document.querySelectorAll('#bOpts .opt')[+e.key-1];if(b&&!b.disabled)b.click()}
+});
+
+renderHome();
+</script>
+</body>
+</html>
