@@ -148,7 +148,7 @@ $('deckList').onclick=e=>{
   else if(a==='study'){useWrong=false;sel=new Set(['u'+k]);st.topics=[...sel];save();show('home');renderHome();$('modes').scrollIntoView({behavior:'smooth'});toast(`Đã chọn "${d.n}", chọn trò chơi nhé!`)}
   else if(a==='add'){$('impTo').value=k;$('impName').hidden=true;previewImport();$('impText').focus()}
   else if(a==='view'){const ol=box.querySelector('.deck-items');ol.hidden=!ol.hidden;
-    if(!ol.hidden)ol.innerHTML=d.items.map(w=>`<li><b>${esc(w[0])}</b>${w[3]?` <span class="ipa">${esc(w[3])}</span>`:''}${spk(w[0])}: ${esc(w[1])}</li>`).join('')}
+    if(!ol.hidden)ol.innerHTML=d.items.map((w,i)=>`<li><span class="n">${i+1}</span><span class="t"><b>${esc(w[0])}</b>${w[3]?`<small class="ipa">${esc(w[3])}</small>`:''}</span><span class="m">${esc(w[1])}</span>${spk(w[0])}</li>`).join('')}
   else if(a==='rename'){const n=(prompt('Tên mới cho bộ từ:',d.n)||'').trim().replace(/\s+/g,' ').slice(0,40);if(n){d.n=n;d.t=Date.now();save();renderDecks()}}
   else if(a==='csv')download(d.n.replace(/[\\\/:*?"<>|]/g,'_')+'.csv',toCsv(d.items));
   else if(a==='del'&&confirm(`Xoá bộ "${d.n}"? Lịch ôn và từ hay sai của bộ này cũng bị xoá.`))deleteDeck(k);
