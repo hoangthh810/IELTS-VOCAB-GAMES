@@ -1,4 +1,5 @@
 // ---------- questions ----------
+const Q_TIME=15; // seconds to answer each question (practice, review and boss battles)
 const STOP=['the','and','with',"one's","someone's",'something','a','an'];
 function colTokens(term){return term.split(' ').map((w,i)=>({w,i})).filter(o=>o.w.replace(/[^a-z-]/gi,'').length>2&&!STOP.includes(o.w.toLowerCase()))}
 const canFill=x=>x.kind==='word'&&!!findMatch(x.ex,x.term), canCol=x=>x.kind==='col'&&x.term.includes(' ')&&colTokens(x.term).length>0;

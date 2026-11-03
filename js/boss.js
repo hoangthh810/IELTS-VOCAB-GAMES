@@ -34,7 +34,7 @@ const maxHp=()=>100+st.rpg.hpLv*15;
 const unlocked=i=>i===0||!!st.rpg.cleared[i-1]||isAdmin(); // admins can open any stage to test it
 const LAST=DATA.length; // index of final boss
 function cfg(i){const final=i===LAST,boss=!final&&!!BOSSES[i].boss;return{i,final,boss,b:BOSSES[i],topic:final?'Tất cả chủ đề':DATA[i].name,
-  hp:final?900:Math.round((120+i*20)*(boss?1.5:1)),atk:final?40:Math.round((12+i*1.2)*(boss?1.2:1)),tq:Math.max(9,16-Math.floor(i/4)),tf:Math.max(16,28-Math.floor(i/3))}}
+  hp:final?900:Math.round((120+i*20)*(boss?1.5:1)),atk:final?40:Math.round((12+i*1.2)*(boss?1.2:1))}}
 function touchStreak(){const t=dayKey();if(st.last!==t){st.streak=(st.last===yesterday())?st.streak+1:1;st.last=t}
   if(st.streak>=3)unlock('streak3');if(st.streak>=7)unlock('streak7')}
 function xpBadges(){if(st.xp>=500)unlock('xp500');if(st.xp>=2000)unlock('xp2000')}
@@ -97,7 +97,7 @@ function nextB(){
   if(q.options){$('bForm').style.display='none';
     $('bOpts').innerHTML=q.options.map((v,i)=>`<button class="opt" data-v="${esc(v)}"><span class="k">${i+1}</span><span>${esc(v)}</span></button>`).join('');
   }else{$('bOpts').innerHTML='';$('bForm').style.display='flex';const inp=$('bIn');inp.value='';inp.className='';inp.disabled=false;setTimeout(()=>inp.focus(),50)}
-  startTimer(q.type==='fill'?B.c.tf:B.c.tq);
+  startTimer(Q_TIME);
 }
 function startTimer(sec){stopTimer();B.tMax=sec*1000;B.t0=Date.now();const bar=$('tBar');bar.style.width='100%';bar.classList.remove('low');
   B.tick=setInterval(()=>{const left=Math.max(0,1-(Date.now()-B.t0)/B.tMax);bar.style.width=left*100+'%';bar.classList.toggle('low',left<.3);

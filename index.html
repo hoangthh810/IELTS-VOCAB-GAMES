@@ -52,13 +52,16 @@
   <h2>1. Chọn chủ đề</h2>
   <div class="chips" id="chips"></div>
 
-  <h2>2. Chọn trò chơi <small class="empty">(mỗi lượt 12 câu)</small></h2>
+  <h2>2. Chọn trò chơi <small class="empty">(mỗi lượt 12 câu · ⏱️ 15 giây mỗi câu)</small></h2>
   <div class="modes" id="modes">
     <button class="mode" data-mode="quiz"><div class="e">🎯</div><b>Quiz nghĩa</b><span>Chọn nghĩa đúng, Anh ↔ Việt</span></button>
     <button class="mode" data-mode="fill"><div class="e">✍️</div><b>Điền từ</b><span>Gõ từ còn thiếu trong câu, luyện chính tả</span></button>
     <button class="mode" data-mode="col"><div class="e">🧩</div><b>Collocation</b><span>Hoàn thành cụm từ đúng chuẩn IELTS</span></button>
     <button class="mode" data-mode="mix"><div class="e">🌀</div><b>Hỗn hợp</b><span>Trộn cả 3 dạng, khó đoán nhất</span></button>
   </div>
+
+  <h2>🎧 Luyện nghe</h2>
+  <button class="board-btn listen-btn" id="dictBtn"><span class="e">🎧</span><span><b>Nghe & viết chính tả</b><small>Nghe từ rồi gõ lại · chọn giọng đọc · không giới hạn thời gian</small></span><span class="go">›</span></button>
 
   <h2>🏅 Huy hiệu</h2>
   <div class="badges" id="badges"></div>
@@ -100,6 +103,41 @@
   <footer>Đấu trường luyện tập dùng bộ từ của bạn để đánh quái: nhận XP và một ít vàng, không tính sao và không mở màn trên bản đồ.</footer>
 </div>
 
+<!-- DICTATION -->
+<div class="screen" id="dict">
+  <div class="topbar"><button class="quit" id="dQuit" title="Về trang chủ">←</button><div class="bar"><i id="dBar"></i></div><span class="pill" id="dCount"></span></div>
+  <div id="dSetup">
+    <div class="logo" style="font-size:24px">🎧 <span>Nghe & viết</span></div>
+    <p class="empty">Nghe từ rồi gõ lại cho đúng chính tả. Không giới hạn thời gian, nghe lại bao nhiêu lần cũng được.</p>
+    <div class="srs dset">
+      <label><span>📚 Nguồn từ</span><select id="dSrc"></select></label>
+      <label><span>🔤 Loại từ</span><select id="dKind"><option value="all">Từ đơn và cụm từ</option><option value="word">Chỉ từ đơn</option><option value="col">Chỉ cụm từ</option></select></label>
+      <label><span>🔢 Số từ mỗi lượt</span><select id="dLen"><option>10</option><option>20</option><option>30</option></select></label>
+      <label><span>🗣️ Giọng đọc</span><select id="dVoice"></select></label>
+      <label><span>⏩ Tốc độ</span><select id="dRate"><option value=".7">🐢 Chậm</option><option value=".9" selected>Vừa</option><option value="1.05">🐇 Nhanh</option></select></label>
+      <small class="empty" id="dVoiceNote"></small>
+      <div class="srs-btns"><button class="btn ghost" id="dTry">🔊 Nghe thử giọng</button><button class="btn" id="dStart">▶ Bắt đầu</button></div>
+      <small class="empty" id="dAvail"></small>
+    </div>
+  </div>
+  <div id="dPlay" hidden>
+    <div class="qcard">
+      <div class="qtype">🎧 Nghe và viết lại · <span id="dKind2"></span></div>
+      <div class="dplay"><button class="dbig" id="dSay" title="Nghe lại (Ctrl + Enter)">🔊</button><button class="btn ghost" id="dSlow">🐢 Nghe chậm</button></div>
+      <div class="qhint" id="dHint"></div>
+    </div>
+    <form class="type" id="dForm" autocomplete="off"><input id="dIn" placeholder="Gõ từ bạn nghe được..." autocapitalize="off" autocorrect="off" spellcheck="false" lang="en"><button class="btn" type="submit">Kiểm tra</button></form>
+    <div class="actions"><button class="btn ghost" id="dHintBtn">💡 Gợi ý</button><button class="btn ghost" id="dSkip">Xem đáp án 🤷</button></div>
+    <div class="feedback" id="dFb"><div class="t" id="dFbT"></div><div id="dFbA"></div><div class="ex" id="dFbEx"></div><button class="btn" id="dNext">Tiếp tục →</button></div>
+  </div>
+  <div id="dDone" hidden>
+    <div class="result"><div class="big" id="dEmoji">🎉</div><h1 id="dTitle"></h1><div class="empty" id="dSub"></div></div>
+    <div class="review" id="dReview"></div>
+    <div class="actions"><button class="btn" id="dAgain">Luyện tiếp 🔁</button><button class="btn ghost" id="dSettings">⚙️ Đổi cài đặt</button><button class="btn ghost" id="dHome">Về trang chủ</button></div>
+  </div>
+  <footer>Đúng +10 XP (dùng gợi ý +5 XP). Từ viết sai vào "Từ hay sai" và lịch ôn tập.<br>Phím tắt: Enter để kiểm tra / sang từ tiếp, Ctrl + Enter để nghe lại.<br>Giọng đọc lấy từ trình duyệt và máy của bạn; Chrome và Edge thường có nhiều giọng nhất. Giọng bạn chọn cũng dùng cho mọi nút 🔊 trong app.</footer>
+</div>
+
 <!-- CLOSET -->
 <div class="screen" id="closet">
   <div class="topbar"><button class="quit" id="closetBack" title="Quay lại">←</button><div class="logo" style="font-size:24px;flex:1">🎀 <span>Tủ đồ mèo</span></div><span class="pill" id="closetGold"></span></div>
@@ -127,6 +165,7 @@
     <div class="qmain" id="qMain"></div>
     <div class="qsub" id="qSub"></div>
     <div class="qhint" id="qHint"></div>
+    <div class="timer"><i id="gtBar"></i></div>
   </div>
   <div class="opts" id="opts"></div>
   <form class="type" id="typeForm" style="display:none" autocomplete="off">
@@ -212,6 +251,7 @@
 <script src="js/questions.js"></script>
 <script src="js/practice.js"></script>
 <script src="js/srs.js"></script>
+<script src="js/dictation.js"></script>
 <script src="js/scene.js"></script>
 <script src="js/boss.js"></script>
 <script src="js/closet.js"></script>

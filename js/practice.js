@@ -68,12 +68,18 @@ function next(){
     o.innerHTML='';$('typeForm').style.display='flex';$('skip').style.display='inline-block';
     const inp=$('typeIn');inp.value='';inp.className='';inp.disabled=false;setTimeout(()=>inp.focus(),50);
   }
+  startQTimer();
 }
+// Q_TIME seconds per question; running out counts as a wrong answer (boss.js has its own timer with the same limit)
+function startQTimer(){stopQTimer();const t0=Date.now(),bar=$('gtBar');bar.style.width='100%';bar.classList.remove('low');
+  G.tick=setInterval(()=>{const left=Math.max(0,1-(Date.now()-t0)/(Q_TIME*1000));bar.style.width=left*100+'%';bar.classList.toggle('low',left<.3);
+    if(left<=0){stopQTimer();if(!G.answered)answer('',null,true)}},100)}
+const stopQTimer=()=>{if(G)clearInterval(G.tick)};
 $('opts').onclick=e=>{const b=e.target.closest('.opt');if(!b||G.answered)return;answer(b.dataset.v,b)};
 $('typeForm').onsubmit=e=>{e.preventDefault();if(G.answered){goNext();return}const v=$('typeIn').value.trim();if(!v)return;answer(v,$('typeIn'))};
 $('skip').onclick=()=>{if(!G.answered)answer('',$('typeIn'))};
-function answer(v,el){
-  const q=G.q;G.answered=true;
+function answer(v,el,timeout){
+  const q=G.q;G.answered=true;stopQTimer();
   const ok=v.toLowerCase().replace(/[’]/g,"'")===q.answer.toLowerCase();
   if(q.options){document.querySelectorAll('.opt').forEach(b=>{b.disabled=true;
     if(b.dataset.v===q.answer)b.classList.add('right'); else if(b===el)b.classList.add('wrong')})}
@@ -94,7 +100,7 @@ function answer(v,el){
   const mult=Math.min(4,1+Math.floor(G.combo/3));
   $('combo').textContent=`🔥 Combo ${G.combo} · x${mult}`;$('score').textContent=G.score;
   const praise=['Chuẩn luôn! 🎉','Xuất sắc! ✨','Quá đỉnh! 🚀','Giỏi lắm! 💪','Đúng rồi! 👏'];
-  $('fbT').textContent=ok?pick(praise):(v?'Chưa đúng rồi 😅':'Đáp án là:');
+  $('fbT').textContent=ok?pick(praise):timeout?'⏰ Hết giờ!':(v?'Chưa đúng rồi 😅':'Đáp án là:');
   $('fbA').innerHTML=ok?'':`Đáp án đúng: <b>${esc(q.type==='col'?q.it.term:q.answer)}</b>`+(q.type==='quiz'?'':` (${esc(q.it.mean)})`);
   $('fbEx').innerHTML=`${termHtml(q.it)}: ${esc(q.it.mean)}<br>${exLine(q.it)}`;
   $('fb').className='feedback show '+(ok?'ok':'no');
@@ -102,10 +108,10 @@ function answer(v,el){
 }
 function goNext(){G.n++;next()}
 $('next').onclick=goNext;
-$('quit').onclick=()=>{if(confirm('Thoát lượt chơi này? Điểm XP đã nhận vẫn được giữ.')){show('home');renderHome()}};
+$('quit').onclick=()=>{stopQTimer();if(confirm('Thoát lượt chơi này? Điểm XP đã nhận vẫn được giữ.')){show('home');renderHome()}else if(!G.answered)startQTimer()};
 
 function finish(){
-  $('gBar').style.width='100%';
+  stopQTimer();$('gBar').style.width='100%';
   const today=dayKey();
   if(st.last!==today){st.streak=(st.last===yesterday())?st.streak+1:1;st.last=today}
   const newBest=G.score>(st.best||0); if(newBest)st.best=G.score;

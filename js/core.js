@@ -23,12 +23,16 @@ function hlEx(ex,term){
 
 // ---------- pronunciation ----------
 const canSpeak='speechSynthesis' in window;
+const VOICE_KEY='ielts-vocab-arena-voice'; // voiceURI picked in "Nghe & viết" (per device: voices differ between devices)
 let enVoice=null;
-function pickVoice(){const vs=speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang));enVoice=vs.find(v=>/GB/i.test(v.lang))||vs[0]||null}
+const enVoices=()=>canSpeak?speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang)):[];
+function pickVoice(){let want=null;try{want=localStorage.getItem(VOICE_KEY)}catch(e){}
+  const vs=enVoices();enVoice=vs.find(v=>v.voiceURI===want)||vs.find(v=>/GB/i.test(v.lang))||vs[0]||null;
+  if(typeof renderVoices==='function')renderVoices()}
 if(canSpeak){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
-function speak(text){
+function speak(text,rate=.9){
   if(!canSpeak)return;speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(text);u.lang=enVoice?enVoice.lang.replace('_','-'):'en-GB';if(enVoice)u.voice=enVoice;u.rate=.9;
+  const u=new SpeechSynthesisUtterance(text);u.lang=enVoice?enVoice.lang.replace('_','-'):'en-GB';if(enVoice)u.voice=enVoice;u.rate=rate;
   speechSynthesis.speak(u);
 }
 const spk=text=>canSpeak?`<button class="spk" type="button" data-say="${esc(text)}" title="Nghe phát âm">🔊</button>`:'';
