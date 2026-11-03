@@ -2,7 +2,7 @@
 
 ## Mục đích & người dùng
 
-- Web game học từ vựng IELTS, mục tiêu **band 6.5**, dành cho **học viên Việt Nam**.
+- Web game học từ vựng IELTS, mục tiêu **band 9.0**, dành cho **học viên Việt Nam**.
 - Toàn bộ giao diện, thông báo, tên boss, mô tả vật phẩm đều bằng **tiếng Việt**; nội dung học (từ, collocation, câu ví dụ) bằng tiếng Anh, nghĩa bằng tiếng Việt.
 - Tên hiển thị trong app: **Vocab Arena** (`<title>` và logo).
 - Tác giả tự làm, không có backend, không có build step. Chạy hoàn toàn trên trình duyệt, tiến độ lưu ở `localStorage`.
@@ -106,7 +106,7 @@ Phím tắt: `1–4` chọn đáp án, `Enter` để sang câu tiếp.
 ### 🎀 Tủ đồ của mèo
 
 - Nhân vật chính là **chú mèo** (`drawCat` trong `scene.js`, gốc toạ độ = chân, quay mặt sang phải), dùng chung cho cảnh trận đánh và canvas xem trước `#closetCv`. Đồ mặc **chỉ để trang trí**, không đổi chỉ số trận.
-- `OUTFIT[slot][id] = {n, e, p, draw}` với 6 slot (`SLOTS`): `fur` bộ lông (màu trong `FURS`), `hat` mũ, `face` kính, `body` áo (`sleeve` = màu tay áo), `neck` cổ, `hand` vũ khí (`draw(c, casting)` tại bàn tay, chĩa theo trục x). Món `p: 0` (mướp, mũ tốt nghiệp, hoodie 6.5, bút chì) có sẵn. `WEAR0` là bộ mặc định.
+- `OUTFIT[slot][id] = {n, e, p, draw}` với 6 slot (`SLOTS`): `fur` bộ lông (màu trong `FURS`), `hat` mũ, `face` kính, `body` áo (`sleeve` = màu tay áo), `neck` cổ, `hand` vũ khí (`draw(c, casting)` tại bàn tay, chĩa theo trục x). Món `p: 0` (mướp, mũ tốt nghiệp, hoodie 9.0, bút chì) có sẵn. `WEAR0` là bộ mặc định.
 - Màn `#closet` mở từ trang chủ (`#homeClosetBtn`) và bản đồ (`#closetBtn`). Bấm món đã có → mặc luôn; món chưa có → mèo mặc thử (`tryOn`) và hiện nút mua bằng `st.rpg.gold`.
 - Thêm món: thêm vào `OUTFIT[slot]` một id mới với `draw` (toạ độ theo khung mèo: đầu tâm `(0,-102)`, mắt `(-8,-104)`/`(13,-104)`, cổ khoảng `y=-72`, thân `y` từ `-70` đến `-14`). Không đổi id cũ (đã lưu trong `own`/`wear`). Emoji biểu tượng phải hiện được trên Windows (tránh cờ quốc gia, emoji quá mới).
 
@@ -220,7 +220,7 @@ Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến đ
 ## 🎧 Nghe & viết chính tả
 
 - Màn `#dict`, mở bằng thẻ `#dictBtn` ở mục "🎧 Luyện nghe" trên trang chủ. **Không đếm giờ.**
-- Cài đặt (`#dSetup`): nguồn từ (`home` = chủ đề đang chọn ở trang chủ, `wrong` = từ hay sai, hoặc một chủ đề/bộ tự nhập theo `topicKeys`), loại (từ đơn / cụm từ / cả hai), số từ mỗi lượt (10/20/30), giọng đọc (mọi giọng `en-*` của máy), tốc độ (0,7 / 0,9 / 1,05). Chỉ lấy từ mà `dictOk` cho phép (chữ cái, khoảng trắng, `-`, `'`; ≤ 40 ký tự).
+- Cài đặt (`#dSetup`): nguồn từ (`home` = chủ đề đang chọn ở trang chủ, `wrong` = từ hay sai, hoặc một chủ đề/bộ tự nhập theo `topicKeys`), loại (từ đơn / cụm từ / cả hai), số từ mỗi lượt (10/20/30), giọng đọc (mọi giọng `en-*` của máy, nhóm theo vùng trong `ACCENTS`: Anh-Anh, Anh-Mỹ, Anh-Úc, Anh-Ấn, Anh-Singapore, Canada, Ireland…; `#dVoiceNote` nói vùng nào máy chưa có và gợi ý mở bằng Edge / cài thêm giọng — app không tự thêm giọng được, chỉ dùng giọng trình duyệt cung cấp), tốc độ (0,7 / 0,9 / 1,05). Chỉ lấy từ mà `dictOk` cho phép (chữ cái, khoảng trắng, `-`, `'`; ≤ 40 ký tự).
 - Mỗi lượt ưu tiên từ đang trong "Từ hay sai" và thẻ đến hạn ôn. Từ được đọc tự động; nút 🔊 nghe lại, 🐢 nghe chậm (0,6). Gợi ý lần 1 hiện nghĩa, lần 2 hiện chữ cái đầu + số chữ cái.
 - Chấm: so sánh sau `normT` (không phân biệt hoa thường, bỏ dấu câu cuối, gộp khoảng trắng). Đúng +10 XP (+5 nếu đã xem gợi ý), sai/xem đáp án thì vào `st.wrong`. Mọi câu đều gọi `srsGrade`. Sai thì `diffHtml` (so chữ theo dãy con chung dài nhất) gạch chữ gõ thừa và tô chữ bị thiếu.
 - Phím: Enter kiểm tra / sang từ tiếp, Ctrl + Enter nghe lại.

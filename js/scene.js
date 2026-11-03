@@ -260,8 +260,8 @@ const OUTFIT={
   heart:{n:'Kính trái tim',e:'💖',p:220,draw:c=>{c.fillStyle='rgba(240,101,149,.9)';for(const ex of[-8,13]){c.beginPath();c.moveTo(ex,-97);c.bezierCurveTo(ex-13,-106,ex-6,-115,ex,-108);c.bezierCurveTo(ex+6,-115,ex+13,-106,ex,-97);c.fill()}
     c.strokeStyle='#c2255c';c.lineWidth=2;c.beginPath();c.moveTo(-1,-106);c.lineTo(4,-106);c.stroke()}}},
  body:{
-  hoodie:{n:'Áo hoodie 6.5',e:'🟣',p:0,sleeve:'#5b21b6',draw:c=>{c.fillStyle='#6d28d9';rr(c,-21,-68,42,46,14);c.fill();c.fillStyle='#8b5cf6';rr(c,-21,-30,42,9,4);c.fill();
-    c.fillStyle='#ede9fe';c.font=`900 12px ${FONT}`;c.textAlign='center';c.fillText('6.5',2,-42)}},
+  hoodie:{n:'Áo hoodie 9.0',e:'🟣',p:0,sleeve:'#5b21b6',draw:c=>{c.fillStyle='#6d28d9';rr(c,-21,-68,42,46,14);c.fill();c.fillStyle='#8b5cf6';rr(c,-21,-30,42,9,4);c.fill();
+    c.fillStyle='#ede9fe';c.font=`900 12px ${FONT}`;c.textAlign='center';c.fillText('9.0',2,-42)}},
   sailor:{n:'Áo thuỷ thủ',e:'⚓',p:200,sleeve:'#f8f9fa',draw:c=>{c.fillStyle='#f8f9fa';rr(c,-21,-68,42,46,14);c.fill();c.fillStyle='#4dabf7';for(const yy of[-48,-38,-28])c.fillRect(-20,yy,40,3.5);
     c.fillStyle='#1971c2';c.beginPath();c.moveTo(-18,-68);c.lineTo(20,-68);c.lineTo(2,-50);c.closePath();c.fill();ell(c,2,-52,4,3,'#e03131')}},
   robe:{n:'Áo choàng phù thuỷ',e:'🔮',p:350,sleeve:'#364fc7',draw:(c,t)=>{c.fillStyle='#3b5bdb';c.beginPath();c.moveTo(-15,-70);c.lineTo(17,-70);c.lineTo(27,-12);c.quadraticCurveTo(2,-6,-24,-12);c.closePath();c.fill();
@@ -298,7 +298,7 @@ function bgSchool(c,i){
   // chalkboard with this stage's topic words
   c.fillStyle='#8b6b4a';rr(c,170,26,300,136,8);c.fill();c.fillStyle='#2f5d50';c.fillRect(180,36,280,116);
   c.fillStyle='rgba(255,255,255,.07)';c.fillRect(180,36,280,116);
-  c.fillStyle='rgba(255,255,255,.88)';c.font=`800 26px ${FONT}`;c.textAlign='center';c.fillText('IELTS 6.5 ✓',320,78);
+  c.fillStyle='rgba(255,255,255,.88)';c.font=`800 26px ${FONT}`;c.textAlign='center';c.fillText('IELTS 9.0 ✓',320,78);
   const T=DATA[i]||DATA[0],L=B&&B.c.board||[T.words.slice(0,3).map(w=>w[0]).join(' · '),T.cols[0][0]+' = '+T.cols[0][1]]; // arena: the deck's words
   c.font=`600 14px ${FONT}`;c.fillStyle='rgba(255,255,255,.55)';c.fillText(fitText(c,L[0],260),320,104);c.fillText(fitText(c,L[1],260),320,126);
   c.fillStyle='#a3825f';c.fillRect(176,150,288,7);c.fillStyle='#fff';c.fillRect(220,146,16,4);c.fillStyle='#fca5a5';c.fillRect(244,146,12,4);
@@ -499,7 +499,7 @@ function drawDragon(c,s,p,big){ // chapter 4: whelp (stage 19) and the final IEL
   const jaw=atk*16;c.fillStyle='#7f1d1d';c.beginPath();c.moveTo(-76,-38);c.lineTo(-36,-36);c.lineTo(-40,-30+jaw);c.lineTo(-72,-34+jaw);c.closePath();c.fill();
   c.fillStyle=body;rr(c,-76,-34+jaw,40,10,5);c.fill();c.fillStyle='#fff';for(let j=0;j<3;j++){c.beginPath();c.moveTo(-70+j*10,-38);c.lineTo(-66+j*10,-31);c.lineTo(-62+j*10,-38);c.fill()}
   if(big){c.fillStyle='#facc15';c.beginPath();c.moveTo(-40,-80);c.lineTo(-36,-104);c.lineTo(-26,-90);c.lineTo(-16,-108);c.lineTo(-6,-90);c.lineTo(4,-104);c.lineTo(8,-80);c.closePath();c.fill();
-    c.fillStyle='#7c2d12';c.font=`900 11px ${FONT}`;c.textAlign='center';c.fillText('6.5',-16,-84)}
+    c.fillStyle='#7c2d12';c.font=`900 11px ${FONT}`;c.textAlign='center';c.fillText('9.0',-16,-84)}
   c.restore();
   c.save();c.fillStyle=body;c.translate(-30,-90);c.rotate(.6-atk*.8);rr(c,-6,0,12,30,6);c.fill();c.restore();
   c.save();c.fillStyle=dark;c.globalAlpha=.9;c.translate(-10,-136);c.rotate(.15-flap*.25);c.beginPath();c.moveTo(0,0);c.lineTo(40,-96);c.lineTo(72,-60);c.quadraticCurveTo(52,-48,60,-24);c.quadraticCurveTo(36,-26,30,-4);c.closePath();c.fill();c.restore();

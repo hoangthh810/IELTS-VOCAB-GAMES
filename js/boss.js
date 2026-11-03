@@ -20,7 +20,7 @@ const BOSSES=[
  {e:'🪼',n:'Sứa Điện',k:'jelly',w:'ocean',l:'Tin nóng: ngươi sắp thua rồi!'},
  {e:'🐙',n:'Bạch Tuộc Quan Liêu',k:'octo',w:'ocean',boss:true,l:'Tám tay, tám con dấu. Thiếu một chữ ký là làm lại từ đầu!'},
  {e:'🐉',n:'Rồng Con Hiếu Chiến',k:'whelp',w:'castle',l:'Muốn gặp mẹ ta à? Thắng ta trước đã!'},
- {e:'🐲',n:'Rồng IELTS Tối Thượng',k:'dragon',w:'castle',l:'Ta là trùm cuối. Không 6.5 thì đừng mơ qua!'}];
+ {e:'🐲',n:'Rồng IELTS Tối Thượng',k:'dragon',w:'castle',l:'Ta là trùm cuối. Không 9.0 thì đừng mơ qua!'}];
 const ITEMS={
  potion:{e:'🧪',n:'Bình máu',d:'Hồi 40 HP',price:50},
  shield:{e:'🛡️',n:'Khiên',d:'Chặn hoàn toàn đòn đánh kế tiếp của boss',price:60},

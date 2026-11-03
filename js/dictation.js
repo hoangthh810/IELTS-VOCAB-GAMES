@@ -11,11 +11,20 @@ function dictPool(){
   const P=src==='home'?ALL.filter(x=>sel.has(x.ti)):src==='wrong'?wrongIds().map(id=>BYID[id]):ALL.filter(x=>String(x.ti)===src);
   return P.filter(x=>(k==='all'||x.kind===k)&&dictOk(x));
 }
+// accents by region code of the voice's lang (en-GB, en_IN...); the browser only offers the voices installed on the device
+const ACCENTS={GB:'Anh-Anh',US:'Anh-Mỹ',AU:'Anh-Úc',IN:'Anh-Ấn',SG:'Anh-Singapore',CA:'Anh-Canada',IE:'Anh-Ireland',NZ:'Anh-New Zealand',ZA:'Anh-Nam Phi',PH:'Anh-Philippines',HK:'Anh-Hồng Kông',NG:'Anh-Nigeria',KE:'Anh-Kenya',TZ:'Anh-Tanzania'};
+const accentOf=v=>((v.lang.split(/[-_]/)[1]||'').toUpperCase());
+const voiceName=v=>v.name.replace(/^(Microsoft|Google)\s+/,'').replace(/\s*[-–]\s*English.*$/,'').replace(/\s*Online \(Natural\)/,' ✨');
 function renderVoices(){
   const s=$('dVoice'),vs=enVoices();if(!s)return;
-  s.innerHTML=`<option value="">Tự động (ưu tiên Anh-Anh)</option>`+vs.map(v=>`<option value="${esc(v.voiceURI)}">${esc(v.name.replace(/^(Microsoft|Google)\s+/,''))} · ${esc(v.lang)}</option>`).join('');
+  const order=Object.keys(ACCENTS),groups={};for(const v of vs)(groups[accentOf(v)]=groups[accentOf(v)]||[]).push(v);
+  const keys=Object.keys(groups).sort((a,b)=>(order.indexOf(a)+1||99)-(order.indexOf(b)+1||99));
+  s.innerHTML=`<option value="">Tự động (ưu tiên Anh-Anh)</option>`+keys.map(k=>`<optgroup label="${esc(ACCENTS[k]||'Tiếng Anh '+k)}">`+
+    groups[k].map(v=>`<option value="${esc(v.voiceURI)}">${esc(ACCENTS[k]||k)} · ${esc(voiceName(v))}</option>`).join('')+'</optgroup>').join('');
   let want='';try{want=localStorage.getItem(VOICE_KEY)||''}catch(e){}s.value=vs.some(v=>v.voiceURI===want)?want:'';
-  $('dVoiceNote').textContent=vs.length?`Máy bạn có ${vs.length} giọng tiếng Anh.`:canSpeak?'Đang tải danh sách giọng…':'Trình duyệt này không đọc được tiếng Anh, hãy thử Chrome hoặc Edge.';
+  const missing=['US','GB','AU','IN','SG','CA'].filter(k=>!groups[k]).map(k=>ACCENTS[k]);
+  $('dVoiceNote').textContent=!vs.length?(canSpeak?'Đang tải danh sách giọng…':'Trình duyệt này không đọc được tiếng Anh, hãy thử Chrome hoặc Edge.')
+    :`Máy bạn có ${vs.length} giọng: ${keys.map(k=>ACCENTS[k]||k).join(', ')}.`+(missing.length?` Muốn thêm giọng ${missing.join(', ')}: mở web bằng Microsoft Edge (có sẵn rất nhiều giọng ✨ tự nhiên), hoặc cài thêm giọng tiếng Anh trong Cài đặt › Thời gian & ngôn ngữ › Giọng nói của Windows / điện thoại.`:'');
 }
 function openDict(){
   const p=dictPrefs(),o=[['home',`🏠 Chủ đề đang chọn ở trang chủ`],...(wrongIds().length?[['wrong',`📕 Từ hay sai (${wrongIds().length})`]]:[]),...topicKeys().map(k=>[String(k),topicName(k)])];
