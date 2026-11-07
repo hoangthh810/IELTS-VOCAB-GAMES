@@ -27,9 +27,16 @@ const ITEMS={
  half:{e:'💡',n:'Gợi ý 50/50',d:'Loại 2 đáp án sai, hoặc hiện nửa số chữ',price:40},
  rage:{e:'💢',n:'Thuốc cuồng nộ',d:'Đòn đúng kế tiếp gây x2 sát thương',price:70}};
 const DMG={quiz:20,col:26,fill:36}, DLABEL={quiz:'Dễ',col:'Vừa',fill:'Khó'};
-const RPG0={gold:50,cleared:{},inv:{potion:2,shield:1,half:1,rage:0},hpLv:0};
+const RPG0={gold:50,cleared:{},inv:{potion:2,shield:1,half:1,rage:0},hpLv:0,ge:{},gs:{}};
 st.rpg=Object.assign(JSON.parse(JSON.stringify(RPG0)),st.rpg||{});
 st.rpg.inv=Object.assign({...RPG0.inv},st.rpg.inv||{});
+// gold = g0 (gold from before this ledger) + everything earned - everything spent. ge/gs = {st.dev: total} so two devices
+// merge by max per device without undoing a purchase or doubling gold (sync.js). r.gold is a cache of the sum.
+const sumV=o=>Object.values(o||{}).reduce((a,b)=>a+b,0);
+const calcGold=r=>(r.g0||0)+sumV(r.ge)-sumV(r.gs);
+function addGold(n){const r=st.rpg,k=n>0?'ge':'gs';r[k][st.dev]=(r[k][st.dev]||0)+Math.abs(n);r.gold=calcGold(r)}
+if(st.rpg.g0==null)st.rpg.g0=st.rpg.gold;
+st.rpg.gold=calcGold(st.rpg);
 const maxHp=()=>100+st.rpg.hpLv*15;
 const unlocked=i=>i===0||!!st.rpg.cleared[i-1]||isAdmin(); // admins can open any stage to test it
 const LAST=DATA.length; // index of final boss
@@ -60,8 +67,8 @@ $('advBtn').onclick=openMap;
 $('mapBack').onclick=()=>{show('home');renderHome()};
 $('stages').onclick=e=>{const b=e.target.closest('.stage');if(b&&!b.disabled)startBattle(+b.dataset.i)};
 $('shop').onclick=e=>{const b=e.target.closest('[data-buy]');if(!b||b.disabled)return;const k=b.dataset.buy,r=st.rpg;
-  if(k==='hp'){const p=120*(r.hpLv+1);if(r.gold<p||r.hpLv>=5)return;r.gold-=p;r.hpLv++;toast(`❤️ Máu tối đa tăng lên ${maxHp()}!`)}
-  else{const v=ITEMS[k];if(r.gold<v.price)return;r.gold-=v.price;r.inv[k]++;toast(`Đã mua ${v.e} ${v.n}`)}
+  if(k==='hp'){const p=120*(r.hpLv+1);if(r.gold<p||r.hpLv>=5)return;addGold(-p);r.hpLv++;toast(`❤️ Máu tối đa tăng lên ${maxHp()}!`)}
+  else{const v=ITEMS[k];if(r.gold<v.price)return;addGold(-v.price);r.inv[k]++;toast(`Đã mua ${v.e} ${v.n}`)}
   save();beep('ok');renderMap()};
 
 // ---------- battle ----------
@@ -128,7 +135,7 @@ function answerB(v,el,timeout){
     let dmg=DMG[q.type]*(1+Math.min(.5,(B.combo-1)*.1));const tags=[];
     if(B.combo>=3)tags.push(`Combo x${B.combo}`);
     if(B.rage){dmg*=2;B.rage=false;tags.push('Cuồng nộ x2')}
-    dmg=Math.round(dmg);B.bossHp=Math.max(0,B.bossHp-dmg);st.xp+=10;
+    dmg=Math.round(dmg);B.bossHp=Math.max(0,B.bossHp-dmg);st.xp+=10;quest('answer');quest('combo',B.combo);
     if(st.wrong[id]){delete st.wrong[id];st.fixed=(st.fixed||0)+1;if(st.fixed>=10)unlock('fixer')}
     anim($('bossE'),'hit');beep('ok');
     if(SC)sceneHeroAttack(q.it.term,dmg,tags.includes('Cuồng nộ x2')?2:tags.length?1:0);else floatAt('-'+dmg+(tags.length?' 💥':''),tags.length?'var(--yellow)':'var(--bad)',90,10);
@@ -169,7 +176,7 @@ $('items').onclick=e=>{
 function victory(){
   stopTimer();const r=st.rpg,ratio=B.hp/B.max,stars=ratio>=.7?3:ratio>=.4?2:1,ar=!!B.c.arena;
   const first=!ar&&!r.cleared[B.i];if(!ar)r.cleared[B.i]=Math.max(stars,r.cleared[B.i]||0);
-  touchStreak();save();if(!ar){unlock('boss1');if(stars===3)unlock('stars3');if(B.c.final)unlock('dragon')}xpBadges();
+  quest('win');touchStreak();save();if(!ar){unlock('boss1');if(stars===3)unlock('stars3');if(B.c.final)unlock('dragon')}xpBadges();
   B.reward={stars,first,opened:false};
   $('vTitle').textContent=`Đã hạ ${B.c.b.n}!`;
   $('vStars').innerHTML=[1,2,3].map(n=>n<=stars?'★':'<span class="off">★</span>').join('');
@@ -183,7 +190,7 @@ function victory(){
 $('chest').onclick=()=>{
   const R=B.reward;if(!R||R.opened)return;R.opened=true;const r=st.rpg;
   $('chest').classList.add('open');$('chestHint').style.display='none';
-  const ar=!!B.c.arena,gold=ar?10+R.stars*5:25+B.i*4+R.stars*10+(R.first?30:0)+(B.c.boss?40:0);r.gold+=gold;
+  const ar=!!B.c.arena,gold=ar?10+R.stars*5:25+B.i*4+R.stars*10+(R.first?30:0)+(B.c.boss?40:0);addGold(gold);
   const got={};const n=ar?0:R.stars+(R.first?1:0); // arena: a little gold, no items
   if(R.first)got.potion=1;
   for(let j=0;j<n-(R.first?1:0);j++){const x=Math.random();const k=x<.4?'potion':x<.65?'shield':x<.9?'half':'rage';got[k]=(got[k]||0)+1}
@@ -197,7 +204,7 @@ $('vNext').onclick=()=>startBattle(B.i+1);
 const leaveBattle=()=>B&&B.c.arena?openDecks():openMap();
 $('vMap').onclick=leaveBattle;
 function defeat(){
-  stopTimer();const ar=!!B.c.arena;if(!ar)st.rpg.gold+=10;touchStreak();save();$('dMap').textContent=ar?'Bộ từ 📁':'Bản đồ 🗺️';
+  stopTimer();const ar=!!B.c.arena;if(!ar)addGold(10);touchStreak();save();$('dMap').textContent=ar?'Bộ từ 📁':'Bản đồ 🗺️';
   $('dSub').innerHTML=`${B.c.b.e} ${esc(B.c.b.n)} còn ${B.bossHp}/${B.c.hp} HP.<br>Bạn nhận ${ar?'':'10 💰 an ủi và '}+${st.xp-B.xp0} XP. Mẹo: mua thêm 🧪 Bình máu hoặc 🛡️ Khiên trong cửa hàng, và ôn lại các từ bên dưới.`;
   $('dReview').innerHTML=B.wrongList.length?`<h2>📕 Từ cần ôn lại</h2>`+B.wrongList.map(q=>`<div class="it">${termHtml(q.it)}: ${esc(q.it.mean)}<br><span class="empty">${exLine(q.it)}</span></div>`).join(''):'';
   show('defeat');beep('no');

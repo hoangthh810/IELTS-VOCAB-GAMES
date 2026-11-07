@@ -4,8 +4,11 @@ const ALL = DATA.flatMap((t,ti)=>[
   ...t.cols.map((c,i)=>({id:ti+'c'+i,ti,kind:'col',term:c[0],pos:'',mean:c[1],ex:c[2]}))]);
 const BYID = Object.fromEntries(ALL.map(x=>[x.id,x]));
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-const pick=a=>a[Math.floor(Math.random()*a.length)];
+// qrnd is swapped for a seeded generator while a challenge-able round makes its questions, so a friend gets the same ones
+let qrnd=Math.random;
+const seeded=s=>()=>{s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}; // mulberry32
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(qrnd()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=a=>a[Math.floor(qrnd()*a.length)];
 const $=id=>document.getElementById(id);
 
 function findMatch(ex,term){
@@ -38,15 +41,15 @@ function speak(text,rate=.9){
 const spk=text=>canSpeak?`<button class="spk" type="button" data-say="${esc(text)}" title="Nghe phát âm">🔊</button>`:'';
 const ipaTag=it=>it.ipa?` <span class="ipa">${esc(it.ipa)}</span>`:'';
 const termHtml=it=>`<b>${esc(it.term)}</b>${ipaTag(it)}${spk(it.term)}`;
-const exLine=it=>it.ex?`📝 ${hlEx(it.ex,it.term)}`:''; // imported words may have no example
+const exLine=it=>(it.ex?`📝 ${hlEx(it.ex,it.term)}`:'')+(synOf(it.term)?`${it.ex?'<br>':''}🔁 Đồng nghĩa: <i>${esc(synOf(it.term).join(', '))}</i>`:''); // imported words may have no example
 document.addEventListener('click',e=>{const b=e.target.closest('.spk');if(b)speak(b.dataset.say)});
 
 // ---------- storage ----------
 const KEY='ielts-vocab-arena-v1';
-let st={xp:0,streak:0,last:null,badges:[],modes:[],wrong:{},fixed:0,best:0,sound:true,topics:null,srs:{},wk:null,lb:null,decks:{},closet:{own:[],wear:{},t:0}};
+let st={xp:0,streak:0,last:null,badges:[],modes:[],wrong:{},fixed:0,best:0,sound:true,topics:null,srs:{},wk:null,lb:null,decks:{},closet:{own:[],wear:{},t:0},xl:{},dq:null,dev:''};
 try{Object.assign(st,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
 let onSaved=null; // set by sync.js while signed in, to push progress to the cloud
-const save=()=>{rollWeek();try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}if(onSaved)onSaved()};
+const save=()=>{rollWeek();logXp();try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}if(onSaved)onSaved()};
 const dayKey=(d=new Date())=>d.toLocaleDateString('sv');
 const yesterday=()=>{const d=new Date();d.setDate(d.getDate()-1);return dayKey(d)};
 const liveStreak=()=>(st.last===dayKey()||st.last===yesterday())?st.streak:0;
@@ -58,6 +61,11 @@ function weekKey(d=new Date()){
 function rollWeek(){const k=weekKey();if(!st.wk||st.wk.k!==k)st.wk={k,base:st.xp}}
 const weekXp=()=>{rollWeek();return st.xp-st.wk.base};
 rollWeek();
+// st.xl = {day: total XP at the end of that day} for the stats screen; XP gained on a day = its value minus the previous entry
+function logXp(){st.xl[dayKey()]=st.xp;const k=Object.keys(st.xl);if(k.length>400)k.sort().slice(0,k.length-400).forEach(d=>delete st.xl[d])}
+if(!Object.keys(st.xl).length)st.xl={[yesterday()]:st.xp}; // baseline, so today's gain shows
+// st.dev = id of this copy of the progress (new after a reset or sign-out); gold is counted per id, see addGold in boss.js
+if(!st.dev)st.dev=Math.random().toString(36).slice(2,10);
 
 // ---------- badges ----------
 const BADGES=[

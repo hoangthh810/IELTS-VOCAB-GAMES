@@ -51,7 +51,7 @@ function showCard(){
 }
 function flipCard(){if(!C||C.flipped)return;C.flipped=true;$('card').classList.add('flip');$('cBack').hidden=false;$('cFlipRow').hidden=true;$('cGrades').hidden=false}
 function gradeCard(g){
-  if(!C||!C.flipped)return;const it=C.q[C.n];srsGrade(it.id,g);
+  if(!C||!C.flipped)return;const it=C.q[C.n];srsGrade(it.id,g);quest('review');
   if(g===0){if(!C.again.has(it.id)){C.again.add(it.id);C.q.push(it)}st.wrong[it.id]=(st.wrong[it.id]||0)+1;beep('no')}
   else{if(!C.again.has(it.id))C.remembered++;st.xp+=5;beep('ok')}
   save();C.n++;showCard();

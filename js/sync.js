@@ -33,9 +33,13 @@ function mergeSt(a,b){
   r.modes=[...new Set([...(a.modes||[]),...(b.modes||[])])];
   r.wrong={...a.wrong};Object.entries(b.wrong||{}).forEach(([k,v])=>r.wrong[k]=mx(r.wrong[k],v));
   r.sound=b.sound;r.topics=b.topics; // device preferences
-  const cl={...ra.cleared};Object.entries(rb.cleared||{}).forEach(([k,v])=>cl[k]=mx(cl[k],v));
-  const inv={...ra.inv};Object.entries(rb.inv||{}).forEach(([k,v])=>inv[k]=mx(inv[k],v));
-  r.rpg={gold:mx(ra.gold,rb.gold),cleared:cl,inv,hpLv:mx(ra.hpLv,rb.hpLv)};
+  const gm=(x,y)=>{const o={...x};Object.entries(y||{}).forEach(([k,v])=>o[k]=mx(o[k],v));return o}; // max per key
+  const g0=x=>x.g0!=null?x.g0:x.gold; // copies saved before the gold ledger
+  r.rpg={g0:mx(g0(ra),g0(rb)),ge:gm(ra.ge,rb.ge),gs:gm(ra.gs,rb.gs),cleared:gm(ra.cleared,rb.cleared),inv:gm(ra.inv,rb.inv),hpLv:mx(ra.hpLv,rb.hpLv)};r.rpg.gold=calcGold(r.rpg);
+  r.dev=b.dev; // this device's id stays
+  r.xl=gm(a.xl,b.xl);
+  const qa=a.dq,qb=b.dq; // daily quests: same day adds up, otherwise the newer day
+  r.dq=qa&&qb&&qa.d===qb.d?{d:qa.d,p:gm(qa.p,qb.p),c:[...new Set([...qa.c,...qb.c])]}:(qb&&(!qa||qb.d>qa.d)?qb:qa)||null;
   r.srs={...a.srs};Object.entries(b.srs||{}).forEach(([k,v])=>{if(!r.srs[k]||(v.t||0)>(r.srs[k].t||0))r.srs[k]=v}); // newest review wins
   r.wk=a.wk&&b.wk&&a.wk.k===b.wk.k?{k:a.wk.k,base:Math.min(a.wk.base,b.wk.base)}:(b.wk&&(!a.wk||b.wk.k>a.wk.k)?b.wk:a.wk)||null;
   r.lb=(b.lb&&(!a.lb||(b.lb.t||0)>(a.lb.t||0))?b.lb:a.lb)||null;
@@ -54,7 +58,7 @@ async function pullAndMerge(u){
   try{
     const snap=await userRef(u.uid).get(),cloud=snap.exists?JSON.parse(snap.data().data):null;
     const owner=lsGet(OWNER_KEY),local=(!owner||owner===u.uid)?st:null; // never merge another account's progress
-    const merged=cloud?(local?mergeSt(cloud,local):cloud):st;
+    const merged=cloud?(local?mergeSt(cloud,local):{...cloud,dev:st.dev}):st; // keep this device's id (gold ledger)
     if(!cloud||canon(cloud)!==canon(merged))await upload(merged);
     lsSet(OWNER_KEY,u.uid);
     if(canon(merged)!==canon(st)&&lsSet(KEY,JSON.stringify(merged))){location.reload();return} // restart with the account's progress

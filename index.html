@@ -22,6 +22,7 @@
     <div class="hbtns"><button class="icon-btn" id="themeBtn" title="Đổi giao diện sáng / tối">🌙</button><button class="icon-btn" id="soundBtn" title="Âm thanh">🔊</button></div>
   </header>
   <div class="acct" id="acct"></div>
+  <div class="chbanner" id="chBanner" hidden></div>
   <section class="hero">
     <div class="stats">
       <div class="stat"><b id="sStreak">0</b><small>🔥 chuỗi ngày</small></div>
@@ -33,9 +34,12 @@
       <div class="bar"><i id="lvBar"></i></div>
     </div>
   </section>
+  <h2>🎯 Nhiệm vụ hôm nay <small class="empty" id="questSub"></small></h2>
+  <div class="srs quests" id="questBox"></div>
   <button class="adv" id="advBtn"><div class="e">⚔️</div><div><b>Phiêu lưu đánh Boss</b><span>20 màn · rương thưởng · bình máu · trùm cuối Rồng IELTS 🐲</span></div></button>
   <button class="board-btn closet-btn" id="homeClosetBtn"><span class="e">🎀</span><span><b>Tủ đồ & nhân vật</b><small>Dùng vàng mua nhân vật (Cún, Gấu trúc, Rồng…), mũ, áo, kính…</small></span><span class="go">›</span></button>
   <button class="board-btn" id="boardBtn"><span class="e">🏆</span><span><b>Bảng xếp hạng</b><small>XP tuần này và tổng XP</small></span><span class="go">›</span></button>
+  <button class="board-btn stats-btn" id="statsBtn"><span class="e">📊</span><span><b>Thống kê học tập</b><small>XP mỗi ngày, lịch học, tiến độ từng chủ đề, từ hay sai nhất</small></span><span class="go">›</span></button>
 
   <h2>📅 Ôn tập ngắt quãng</h2>
   <div class="srs" id="srsBox"></div>
@@ -57,11 +61,13 @@
     <button class="mode" data-mode="quiz"><div class="e">🎯</div><b>Quiz nghĩa</b><span>Chọn nghĩa đúng, Anh ↔ Việt</span></button>
     <button class="mode" data-mode="fill"><div class="e">✍️</div><b>Điền từ</b><span>Gõ từ còn thiếu trong câu, luyện chính tả</span></button>
     <button class="mode" data-mode="col"><div class="e">🧩</div><b>Collocation</b><span>Hoàn thành cụm từ đúng chuẩn IELTS</span></button>
+    <button class="mode" data-mode="syn"><div class="e">🔁</div><b>Đồng nghĩa</b><span>Chọn từ cùng nghĩa, luyện paraphrase band 9</span></button>
     <button class="mode" data-mode="mix"><div class="e">🌀</div><b>Hỗn hợp</b><span>Trộn cả 3 dạng, khó đoán nhất</span></button>
   </div>
 
-  <h2>🎧 Luyện nghe</h2>
+  <h2>🎧 Luyện nghe & nói</h2>
   <button class="board-btn listen-btn" id="dictBtn"><span class="e">🎧</span><span><b>Nghe & viết chính tả</b><small>Nghe từ rồi gõ lại · chọn giọng đọc · không giới hạn thời gian</small></span><span class="go">›</span></button>
+  <button class="board-btn speak-btn" id="speakBtn"><span class="e">🎤</span><span><b>Luyện nói</b><small>Đọc to từ vựng, máy chấm phát âm · cần micro, dùng Chrome / Edge</small></span><span class="go">›</span></button>
 
   <h2>🏅 Huy hiệu</h2>
   <div class="badges" id="badges"></div>
@@ -107,8 +113,8 @@
 <div class="screen" id="dict">
   <div class="topbar"><button class="quit" id="dQuit" title="Về trang chủ">←</button><div class="bar"><i id="dBar"></i></div><span class="pill" id="dCount"></span></div>
   <div id="dSetup">
-    <div class="logo" style="font-size:24px">🎧 <span>Nghe & viết</span></div>
-    <p class="empty">Nghe từ rồi gõ lại cho đúng chính tả. Không giới hạn thời gian, nghe lại bao nhiêu lần cũng được.</p>
+    <div class="logo" style="font-size:24px" id="dTitle0">🎧 <span>Nghe & viết</span></div>
+    <p class="empty" id="dIntro"></p>
     <div class="srs dset">
       <label><span>📚 Nguồn từ</span><select id="dSrc"></select></label>
       <label><span>🔤 Loại từ</span><select id="dKind"><option value="all">Từ đơn và cụm từ</option><option value="word">Chỉ từ đơn</option><option value="col">Chỉ cụm từ</option></select></label>
@@ -122,8 +128,10 @@
   </div>
   <div id="dPlay" hidden>
     <div class="qcard">
-      <div class="qtype">🎧 Nghe và viết lại · <span id="dKind2"></span></div>
-      <div class="dplay"><button class="dbig" id="dSay" title="Nghe lại (Ctrl + Enter)">🔊</button><button class="btn ghost" id="dSlow">🐢 Nghe chậm</button></div>
+      <div class="qtype"><span id="dQ">🎧 Nghe và viết lại</span> · <span id="dKind2"></span></div>
+      <div class="dword" id="dWord" hidden></div>
+      <div class="dplay"><button class="dbig" id="dSay" title="Nghe lại (Ctrl + Enter)">🔊</button><button class="dbig mic" id="dMic" title="Bấm rồi đọc to (Enter)" hidden>🎤</button><button class="btn ghost" id="dSlow">🐢 Nghe chậm</button></div>
+      <div class="dheard" id="dHeard" hidden></div>
       <div class="qhint" id="dHint"></div>
     </div>
     <form class="type" id="dForm" autocomplete="off"><input id="dIn" placeholder="Gõ từ bạn nghe được..." autocapitalize="off" autocorrect="off" spellcheck="false" lang="en"><button class="btn" type="submit">Kiểm tra</button></form>
@@ -131,11 +139,11 @@
     <div class="feedback" id="dFb"><div class="t" id="dFbT"></div><div id="dFbA"></div><div class="ex" id="dFbEx"></div><button class="btn" id="dNext">Tiếp tục →</button></div>
   </div>
   <div id="dDone" hidden>
-    <div class="result"><div class="big" id="dEmoji">🎉</div><h1 id="dTitle"></h1><div class="empty" id="dSub"></div></div>
-    <div class="review" id="dReview"></div>
+    <div class="result"><div class="big" id="dEmoji">🎉</div><h1 id="dTitle"></h1><div class="empty" id="dxSub"></div></div>
+    <div class="review" id="dxReview"></div>
     <div class="actions"><button class="btn" id="dAgain">Luyện tiếp 🔁</button><button class="btn ghost" id="dSettings">⚙️ Đổi cài đặt</button><button class="btn ghost" id="dHome">Về trang chủ</button></div>
   </div>
-  <footer>Đúng +10 XP (dùng gợi ý +5 XP). Từ viết sai vào "Từ hay sai" và lịch ôn tập.<br>Phím tắt: Enter để kiểm tra / sang từ tiếp, Ctrl + Enter để nghe lại.<br>Giọng đọc lấy từ trình duyệt và máy của bạn; Chrome và Edge thường có nhiều giọng nhất. Giọng bạn chọn cũng dùng cho mọi nút 🔊 trong app.</footer>
+  <footer id="dFoot"></footer>
 </div>
 
 <!-- CLOSET -->
@@ -145,6 +153,22 @@
   <div class="chips closet-tabs" id="closetTabs"></div>
   <div class="citems" id="closetItems"></div>
   <footer>Nhân vật và đồ mặc chỉ để trang trí, không thay đổi sức mạnh trong trận. Vàng kiếm được khi thắng các màn phiêu lưu. 💎 Hiếm từ 700 vàng, 🌟 Huyền thoại từ 1500 vàng.</footer>
+</div>
+
+<!-- STATS -->
+<div class="screen" id="stats">
+  <div class="topbar"><button class="quit" id="statsBack" title="Về trang chủ">←</button><div class="logo" style="font-size:24px">📊 <span>Thống kê</span></div></div>
+  <div class="sttiles" id="stTiles"></div>
+  <h2>📈 XP 14 ngày qua</h2>
+  <div class="srs"><div class="stbars" id="stBars"></div><small class="empty" id="stWeek"></small></div>
+  <h2>🗓️ Lịch học 18 tuần</h2>
+  <div class="srs"><div class="stcal-wrap"><div class="stdays"><small>T2</small><small></small><small>T4</small><small></small><small>T6</small><small></small><small>CN</small></div><div class="stcal" id="stCal"></div></div>
+    <div class="stlegend"><small>Ít</small><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><small>Nhiều XP</small></div></div>
+  <h2>📚 Tiến độ từng chủ đề</h2>
+  <div class="srs sttopics" id="stTopics"></div>
+  <h2>📕 Từ hay sai nhất</h2>
+  <div class="review" id="stWrong"></div>
+  <footer>"Đã thuộc" là từ đã nhớ đúng nhiều lần (hộp ôn tập từ 5 trở lên, khoảng 1 tháng mới cần ôn lại). XP theo ngày được ghi từ khi có tính năng này, trên mọi thiết bị đã đồng bộ.</footer>
 </div>
 
 <!-- LEADERBOARD -->
@@ -188,6 +212,7 @@
       <div class="stat"><b id="rCombo">0</b><small>combo cao nhất</small></div>
     </div>
   </div>
+  <div class="chbox" id="chBox"></div>
   <div class="review" id="review"></div>
   <div class="actions"><button class="btn" id="again">Chơi lại 🔁</button><button class="btn ghost" id="toHome">Về trang chủ</button></div>
 </div>
@@ -245,6 +270,7 @@
 </div>
 
 <script src="js/data.js"></script>
+<script src="js/syn.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/core.js"></script>
 <script src="js/decks.js"></script>
@@ -255,6 +281,9 @@
 <script src="js/scene.js"></script>
 <script src="js/boss.js"></script>
 <script src="js/closet.js"></script>
+<script src="js/quests.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/challenge.js"></script>
 <script src="js/sync.js"></script>
 <script src="js/board.js"></script>
 <script src="js/remind.js"></script>

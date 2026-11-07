@@ -13,15 +13,19 @@
 index.html          HTML khung: 7 màn hình .screen + nạp CSS/JS
 css/style.css       Toàn bộ CSS
 js/data.js          const DATA — dữ liệu 19 chủ đề
+js/syn.js           const SYN — từ đồng nghĩa của các word có sẵn, synOf(term)
 js/core.js          ALL/BYID, helper, lưu trữ st/save, huy hiệu, hiệu ứng, âm thanh, show()
 js/decks.js         Bộ từ tự nhập: đọc file/dán bảng, màn #decks, gắn từ vào ALL/BYID
 js/questions.js     pool(), makeQuiz / makeFill / makeCol
 js/practice.js      Trang chủ (chọn chủ đề) + chế độ luyện tập thường (cả lượt ôn bằng câu hỏi)
 js/srs.js           Ôn tập ngắt quãng (Leitner) + flashcard
-js/dictation.js     Nghe & viết chính tả (chọn nguồn từ, giọng đọc, tốc độ)
+js/dictation.js     Nghe & viết chính tả + Luyện nói (nhận giọng nói), chọn nguồn từ, giọng đọc, tốc độ
 js/scene.js         Cảnh đánh boss 2D trên canvas (bối cảnh + quái cho cả 20 màn, nhân vật mèo + đồ mặc)
 js/boss.js          Phiêu lưu đánh Boss
 js/closet.js        Tủ đồ của mèo: mua và mặc đồ cho nhân vật (chỉ trang trí)
+js/quests.js        Nhiệm vụ hằng ngày (3 nhiệm vụ/ngày, thưởng vàng)
+js/stats.js         Màn thống kê #stats
+js/challenge.js     Thách đấu bạn bè bằng link (cùng đề, so điểm)
 js/firebase-config.js  const FIREBASE_CONFIG (null = tắt đăng nhập/đồng bộ)
 js/board.js         Bảng xếp hạng (Firestore leaderboard)
 js/remind.js        Nhắc học mỗi ngày trên lịch (link Google Calendar / file .ics)
@@ -36,9 +40,10 @@ archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chi�
 
 | File | Nội dung chính |
 |---|---|
-| `index.html` | Các màn hình `.screen` — `#home`, `#decks` (bộ từ của tôi), `#closet` (tủ đồ mèo), `#dict` (nghe & viết), `#cards` (flashcard), `#board` (xếp hạng), `#game`, `#result`, `#map`, `#battle`, `#victory`, `#defeat` + `#toast`, `#flash` |
+| `index.html` | Các màn hình `.screen` — `#home`, `#decks` (bộ từ của tôi), `#closet` (tủ đồ mèo), `#dict` (nghe & viết / luyện nói), `#stats` (thống kê), `#cards` (flashcard), `#board` (xếp hạng), `#game`, `#result`, `#map`, `#battle`, `#victory`, `#defeat` + `#toast`, `#flash` |
 | `css/style.css` | Biến màu ở `:root` (sáng/tối theo `prefers-color-scheme` và `data-theme`), CSS cho home, game, result, phần Boss (từ comment `/* ===== boss adventure ===== */`) |
 | `js/data.js` | `const DATA = [...]` |
+| `js/syn.js` | `SYN` (`{term: [đồng nghĩa...]}`, viết dạng dòng `term=a\|b`), `synOf(term)` (dùng `Object.hasOwn`, vì từ tự nhập có thể là bất cứ chuỗi nào) |
 | `js/core.js` | Dữ liệu dẫn xuất (`ALL`, `BYID`), helper (`esc`, `shuffle`, `pick`, `$`, `findMatch`, `hlEx`), storage (`KEY`, `st`, `save`, `dayKey`, `yesterday`, `liveStreak`), phát âm (`speak`, `spk`, `ipaTag`, `termHtml`), `BADGES`/`unlock`, hiệu ứng (`toast`, `confetti`, `plus`), âm thanh tiếng mèo `beep(kind)` (`CAT` gồm `ok`/`no`/`badge`/`end`, tạo bằng WebAudio qua `meow`/`purr`, không có file âm thanh), chuyển màn `show` |
 | `js/decks.js` | `CORE_N`, `DECK_MAX`, `ST_MAX`, `isDeck`, `liveDecks`, `topicKeys`, `topicName`, `loadDecks`, `parseDeck`/`csvRow`/`guessSep`, `readText`, `download`/`toCsv`, `openDecks`, `renderDecks`, `previewImport`, `saveImport`, `deleteDeck` |
 | `js/questions.js` | `Q_TIME` (15 giây mỗi câu), `STOP`, `colTokens`, `canFill`/`canCol`/`poolTypes` (dạng câu mà một nguồn từ làm được), `poolOverride`, `pool`, `choose`, `makeQuiz`, `makeFill`, `makeCol` (dùng chung cho chế độ thường và Boss) |
@@ -46,6 +51,9 @@ archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chi�
 | `js/scene.js` | `sceneStart`, sự kiện `sceneHeroAttack/BossAttack/Heal/BossDie/HeroDie`, vòng lặp vẽ, hạt, đạn, HUD; `pose` (chuyển động chung của quái), `drawHero` → `drawCat` (nhân vật mèo), `FURS`, `OUTFIT`, `SLOTS`, `WEAR0`, `wearing()`; `WORLDS` (bối cảnh: `school`, `city`, `ocean`, `castle`) và `KINDS` (quái: `owl`, `book`, `slime`, `golem`, `jelly`, `octo`, `whelp`, `dragon`) |
 | `js/boss.js` | `BOSSES`, `ITEMS`, `DMG`, `RPG0`, `cfg`, map, shop, battle (`B`), item, victory/chest, defeat, phím tắt; đấu trường `startArena`, `leaveBattle` |
 | `js/dictation.js` | `DICT_KEY`, `D` (lượt đang chơi), `dictOk`, `normT`, `dictPool`, `renderVoices`, `openDict`, `startDict`, `nextDict`, `dictHint`, `diffHtml`, `checkDict`, `endDict` |
+| `js/quests.js` | `QUESTS`, `todayQuests`, `questDay`, `quest(k, v)`, `renderQuests` |
+| `js/stats.js` | `dayGains`, `dayAgo`, `renderStats` |
+| `js/challenge.js` | `MODE_N`, `b64u`, `chParse`, `chIn`, `renderChBanner`, `renderChResult`, `chShare` |
 | `js/closet.js` | `owns`, `openCloset`, `renderCloset`, `wearItem`, `closetLoop` (canvas xem trước), `tryOn` (món đang mặc thử) |
 | `js/srs.js` | `SRS_DAYS`, `srsGrade`, `srsDue`, `srsStats`, `srsSession`, `srsType`, `renderSrs`; flashcard: `C`, `startCards`, `showCard`, `flipCard`, `gradeCard`, `endCards` |
 | `js/board.js` | `lbOn`, `lbName`, `lbUpload`, `openBoard`, `renderBoard` |
@@ -57,7 +65,7 @@ archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chi�
 
 - Dùng `<script src>` **thường** (không `type="module"`, không build tool) để mở được bằng double-click `index.html` qua `file://`. ES module và `fetch` file JSON bị chặn trên `file://`, nên **không** dùng.
 - Mọi `const`/`let`/`function` khai báo ở top-level đều là biến toàn cục dùng chung giữa các file.
-- **Thứ tự nạp trong `index.html` là bắt buộc**: `data → firebase-config → core → decks → questions → practice → srs → dictation → scene → boss → closet → sync → board → remind → main`. Code chạy ngay khi nạp (top-level) chỉ được dùng thứ đã khai báo ở file trước, ví dụ `core.js` cần `DATA`, `practice.js` cần `st`, `boss.js` gán `st.rpg`. Tham chiếu "ngược" (ví dụ `pool()` trong `questions.js` dùng `sel`/`useWrong` của `practice.js`, `unlock` gọi `renderHome`) chỉ hợp lệ vì nằm trong thân hàm, chạy sau khi mọi file đã nạp.
+- **Thứ tự nạp trong `index.html` là bắt buộc**: `data → syn → firebase-config → core → decks → questions → practice → srs → dictation → scene → boss → closet → quests → stats → challenge → sync → board → remind → main`. Code chạy ngay khi nạp (top-level) chỉ được dùng thứ đã khai báo ở file trước, ví dụ `core.js` cần `DATA`, `practice.js` cần `st`, `boss.js` gán `st.rpg`. Tham chiếu "ngược" (ví dụ `pool()` trong `questions.js` dùng `sel`/`useWrong` của `practice.js`, `unlock` gọi `renderHome`) chỉ hợp lệ vì nằm trong thân hàm, chạy sau khi mọi file đã nạp.
 - Script đặt cuối `<body>` nên DOM đã sẵn sàng khi gắn sự kiện.
 - Không khai báo trùng tên top-level giữa các file (sẽ lỗi `Identifier has already been declared`).
 
@@ -72,13 +80,17 @@ Mỗi lượt chơi thường có **12 câu** (`LEN = 12`), ít hơn nếu ngu�
 | 🎯 Quiz nghĩa | `quiz` | `makeQuiz` | Trắc nghiệm 4 đáp án; 60% Anh→Việt, 40% Việt→Anh. Đáp án nhiễu lấy cùng loại (word/col). |
 | ✍️ Điền từ | `fill` | `makeFill` | Câu ví dụ bị che từ cần học, người chơi gõ đáp án. Chỉ dùng `words` mà `findMatch` tìm thấy từ trong câu ví dụ. Có gợi ý chữ cái đầu + số ký tự, nút "Bỏ qua". |
 | 🧩 Collocation | `col` | `makeCol` | Che một từ "có nghĩa" (bỏ stop-word, `colTokens`) trong cụm collocation, chọn 1 trong 4 từ. |
-| 🌀 Hỗn hợp | `mix` | ngẫu nhiên 1 trong 3 hàm trên mỗi câu | |
+| 🔁 Đồng nghĩa | `syn` | `makeSyn` | Chọn từ/cụm đồng nghĩa (từ `SYN`) với một word; đáp án nhiễu là đồng nghĩa của word khác, ưu tiên cùng từ loại. Chỉ word có trong `SYN` (`canSyn`), nên bộ tự nhập không chơi được. Không có trong Hỗn hợp và trận Boss. |
+| 🌀 Hỗn hợp | `mix` | ngẫu nhiên 1 trong 3 hàm Quiz/Điền từ/Collocation mỗi câu | |
 
 **Mỗi câu có `Q_TIME = 15` giây** (`questions.js`): thanh `#gtBar` trong thẻ câu hỏi, `startQTimer`/`stopQTimer` trong `practice.js`; hết giờ = trả lời sai ("⏰ Hết giờ!"). Áp dụng cho cả lượt ôn bằng câu hỏi và trận Boss; flashcard và Nghe & viết không đếm giờ.
 
 Điểm: mỗi câu đúng `10 × hệ số combo`, hệ số = `min(4, 1 + floor(combo/3))`. Điểm cộng thẳng vào XP. Level = `floor(xp/300) + 1`.
 Trả lời sai → từ vào `st.wrong`; trả lời đúng một từ đang có trong `st.wrong` → xoá khỏi đó và tăng `st.fixed`.
 Phím tắt: `1–4` chọn đáp án, `Enter` để sang câu tiếp.
+Phần đáp án (`exLine`) hiện thêm dòng "🔁 Đồng nghĩa" khi từ có trong `SYN`.
+
+**Lượt có seed**: lượt chơi thường chỉ gồm chủ đề có sẵn (không bộ tự nhập, không kho từ hay sai, không phải ôn tập) có `G.seed`. Trong `next()`, `qrnd` (dùng bởi `shuffle`/`pick`/`makeQuiz`) được thay bằng `seeded(G.seed)` và `qBase` = từ có sẵn (`ALL.slice(0, CORE_N)`), nên cùng seed + chế độ + chủ đề luôn ra cùng câu hỏi. Đổi thứ tự gọi random trong `make*` hay `DATA` sẽ làm link thách đấu cũ ra đề khác (chấp nhận được).
 
 ### ⚔️ Phiêu lưu đánh Boss
 
@@ -90,6 +102,7 @@ Phím tắt: `1–4` chọn đáp án, `Enter` để sang câu tiếp.
 - **Vật phẩm** (`ITEMS`): 🧪 `potion` hồi 40 HP (50 vàng), 🛡️ `shield` chặn 1 đòn (60), 💡 `half` loại 2 đáp án sai / hiện nửa số chữ (40), 💢 `rage` x2 sát thương đòn đúng kế tiếp (70).
 - **Cửa hàng**: mua vật phẩm bằng vàng; "Bùa sinh lực" +15 máu tối đa vĩnh viễn, tối đa cấp 5, giá `120 × (cấp+1)`. Máu người chơi = `100 + hpLv*15`.
 - **🏟️ Đấu trường luyện tập** (`startArena(did)`, nút trên bản đồ và nút "⚔️ Đấu" ở màn bộ từ): đánh quái bằng một bộ tự nhập. Ngoại hình lấy ngẫu nhiên từ `BOSSES` (trừ trùm cuối), độ khó theo số từ (`lv = min(18, floor(số từ / 8))`), câu khiêu khích trong `ARENA_LINES`, bảng đen lớp học hiện từ của bộ (`B.c.board`). Cấu hình trận có `arena` (id bộ) và `pool`. Thắng: XP như thường, vàng `10 + sao*5`, **không** vật phẩm, **không** ghi `cleared`, không mở huy hiệu boss; thua: không có vàng an ủi. Nút quay lại về màn bộ từ (`leaveBattle`).
+- **Vàng** chỉ cộng/trừ bằng `addGold(n)` (`boss.js`), **không** gán `st.rpg.gold` trực tiếp: vàng = `g0` (số vàng trước khi có sổ) + tổng `ge` (đã kiếm) − tổng `gs` (đã tiêu), `ge`/`gs` = `{st.dev: tổng}`; `st.rpg.gold` chỉ là bản tính sẵn (`calcGold`). Nhờ vậy gộp hai máy (max theo từng máy) không làm mất món đã mua hay nhân đôi vàng.
 - **Rương** sau khi thắng: vàng `25 + i*4 + sao*10 (+30 nếu lần đầu, +40 nếu là màn BOSS)`, số vật phẩm = số sao (+1 bình máu nếu lần đầu thắng). 3 sao → rương vàng. Thua được 10 vàng an ủi.
 
 ### 🔊 Phát âm & phiên âm
@@ -179,7 +192,8 @@ Lúc chạy, `DATA` được làm phẳng thành `ALL`, mỗi mục có dạng
 | `best` | number | Điểm cao nhất một lượt chơi thường |
 | `sound` | boolean | Bật/tắt âm thanh |
 | `topics` | number[] \| null | Index các chủ đề đang chọn (null = tất cả) |
-| `rpg.gold` | number | Vàng (mặc định 50) |
+| `rpg.gold` | number | Vàng hiện có = `calcGold(rpg)` (chỉ là bản tính sẵn) |
+| `rpg.g0`, `rpg.ge`, `rpg.gs` | number, `{dev: n}`, `{dev: n}` | Sổ vàng: vàng cũ trước khi có sổ (mặc định 50), tổng đã kiếm / đã tiêu theo từng `dev` |
 | `rpg.cleared` | `{[stageIndex]: 1\|2\|3}` | Số sao tốt nhất mỗi màn đã thắng |
 | `rpg.inv` | `{potion, shield, half, rage}` | Số lượng vật phẩm (mặc định 2/1/1/0) |
 | `rpg.hpLv` | number | Cấp Bùa sinh lực (0–5) |
@@ -187,6 +201,9 @@ Lúc chạy, `DATA` được làm phẳng thành `ALL`, mỗi mục có dạng
 | `wk` | `{k, base}` | Tuần ISO hiện tại (`2026W45`) và tổng XP lúc bắt đầu tuần → XP tuần = `xp - base` (`weekKey`, `rollWeek`, `weekXp` trong `core.js`) |
 | `lb` | `{name, on, t}` | null | Biệt danh trên bảng xếp hạng, có hiện trên bảng không, thời điểm đổi |
 | `closet` | `{own, wear, t}` | Tủ đồ mèo: `own` = món/nhân vật đã mua dạng `'slot:id'` (ví dụ `'pet:dragon'`) (món giá 0 luôn có, không lưu), `wear` = `{slot: id}` đang mặc (`''` = không mặc; thiếu slot thì lấy `WEAR0`), `t` = lần đổi đồ gần nhất (ms) |
+| `xl` | `{[YYYY-MM-DD]: xp}` | Tổng XP cuối mỗi ngày (ghi trong `save` qua `logXp`, giữ 400 ngày); XP của một ngày = giá trị đó trừ mục trước. Mục đầu tiên là mốc (hôm qua = XP lúc cài bản này) |
+| `dq` | `{d, p, c}` \| null | Nhiệm vụ hôm nay: ngày, tiến độ `{quest: số}`, các nhiệm vụ đã nhận thưởng |
+| `dev` | string | Id ngẫu nhiên của bản tiến độ trong máy này (tạo lại khi tiến độ trống, ví dụ sau khi đăng xuất). Không gộp: luôn giữ của máy đang dùng |
 | `decks` | `{[did]: {n, t, items}}` | Bộ từ tự nhập: tên, thời điểm sửa (ms), `items = [[từ, nghĩa, ví dụ, phiên âm, từ loại], ...]`; bộ đã xoá thành `{del:1, t}` |
 
 Streak được cập nhật khi kết thúc lượt chơi thường (`finish`) và khi thắng/thua trận Boss (`touchStreak`). Hiển thị dùng `liveStreak()` (về 0 nếu bỏ quá 1 ngày).
@@ -194,6 +211,8 @@ Streak được cập nhật khi kết thúc lượt chơi thường (`finish`) 
 Key phụ `ielts-vocab-arena-theme`: `light`/`dark` nếu người dùng bấm nút 🌙/☀️ (`#themeBtn`), không có = theo hệ thống. Chỉ lưu trên máy, không đồng bộ. Một `<script>` nhỏ trong `<head>` của `index.html` và `privacy.html` đặt `data-theme` trước khi trang vẽ (tránh nháy màu); `renderTheme`/`isDark` trong `practice.js` đổi icon nút và `<meta name=theme-color>`.
 
 Key phụ `ielts-vocab-arena-voice`: `voiceURI` của giọng đọc đã chọn (giọng khác nhau theo máy nên không đồng bộ). Key phụ `ielts-vocab-arena-dict`: cài đặt Nghe & viết `{src, kind, len, rate}`.
+
+Key phụ `ielts-vocab-arena-chname`: tên người chơi ghi trong link thách đấu.
 
 Key phụ `ielts-vocab-arena-remind`: giờ nhắc học đã chọn (`HH:MM`), chỉ lưu trên máy.
 
@@ -218,13 +237,30 @@ Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến đ
 - Giới hạn: `DECK_MAX = 2000` từ cho mọi bộ; `st` sau khi lưu phải ≤ `ST_MAX = 900000` byte (rules cho phép chuỗi `data` < 950000 ký tự, document Firestore tối đa 1 MiB).
 - XP từ bộ tự nhập tính vào bảng xếp hạng như bình thường.
 
-## 🎧 Nghe & viết chính tả
+## 🎧 Nghe & viết chính tả / 🎤 Luyện nói
 
 - Màn `#dict`, mở bằng thẻ `#dictBtn` ở mục "🎧 Luyện nghe" trên trang chủ. **Không đếm giờ.**
 - Cài đặt (`#dSetup`): nguồn từ (`home` = chủ đề đang chọn ở trang chủ, `wrong` = từ hay sai, hoặc một chủ đề/bộ tự nhập theo `topicKeys`), loại (từ đơn / cụm từ / cả hai), số từ mỗi lượt (10/20/30), giọng đọc (mọi giọng `en-*` của máy, nhóm theo vùng trong `ACCENTS`: Anh-Anh, Anh-Mỹ, Anh-Úc, Anh-Ấn, Anh-Singapore, Canada, Ireland…; `#dVoiceNote` nói vùng nào máy chưa có và gợi ý mở bằng Edge / cài thêm giọng — app không tự thêm giọng được, chỉ dùng giọng trình duyệt cung cấp), tốc độ (0,7 / 0,9 / 1,05). Chỉ lấy từ mà `dictOk` cho phép (chữ cái, khoảng trắng, `-`, `'`; ≤ 40 ký tự).
 - Mỗi lượt ưu tiên từ đang trong "Từ hay sai" và thẻ đến hạn ôn. Từ được đọc tự động; nút 🔊 nghe lại, 🐢 nghe chậm (0,6). Gợi ý lần 1 hiện nghĩa, lần 2 hiện chữ cái đầu + số chữ cái.
 - Chấm: so sánh sau `normT` (không phân biệt hoa thường, bỏ dấu câu cuối, gộp khoảng trắng). Đúng +10 XP (+5 nếu đã xem gợi ý), sai/xem đáp án thì vào `st.wrong`. Mọi câu đều gọi `srsGrade`. Sai thì `diffHtml` (so chữ theo dãy con chung dài nhất) gạch chữ gõ thừa và tô chữ bị thiếu.
 - Phím: Enter kiểm tra / sang từ tiếp, Ctrl + Enter nghe lại.
+- **🎤 Luyện nói** (`#speakBtn`, `openDict('say')`, `DM = 'say'`): cùng màn, cùng cài đặt; hiện từ + phiên âm + nghĩa, bấm 🎤 (`listen`) để trình duyệt nhận giọng nói (`SpeechRecognition`/`webkitSpeechRecognition`, `lang` theo giọng đọc đã chọn, 5 phương án). `sayCheck`: đúng nếu một phương án chứa đúng từ đó (so bằng `sayNorm`, gạch nối = khoảng trắng). Sai thì hiện "Máy nghe thành…", đọc lại tối đa 3 lần; đúng lần đầu +10 XP, sau đó +5. Cần Chrome/Edge, micro và mạng (Chrome gửi âm thanh lên máy chủ nhận giọng của Google); trình duyệt không hỗ trợ thì báo dùng Chrome/Edge. Enter = bắt đầu nói.
+- Kết quả cuối lượt dùng `#dxSub`/`#dxReview` (khác `#dSub`/`#dReview` của màn thua trận Boss).
+
+## 🎯 Nhiệm vụ hằng ngày
+
+- `QUESTS` (`quests.js`): mỗi ngày 3 nhiệm vụ chọn theo ngày (`todayQuests`, giống nhau trên mọi máy). Gọi `quest(k, v)` ở chỗ xảy ra việc đó (`answer`/`combo` trong luyện tập và trận Boss, `round` ở `finish`, `review` ở lượt ôn và flashcard, `dict` ở Nghe & viết, `syn` ở Đồng nghĩa, `win` ở `victory`); `max: 1` = tiến độ lấy giá trị lớn nhất (combo). Xong thì cộng vàng ngay (`addGold`) + toast. Hiện ở mục "🎯 Nhiệm vụ hôm nay" trên trang chủ (`renderQuests`).
+- Thêm nhiệm vụ: thêm vào `QUESTS` và gọi `quest(id)` ở chỗ phù hợp. Không đưa nhiệm vụ phụ thuộc thiết bị (ví dụ luyện nói cần micro) vào danh sách.
+- Hai máy cùng làm xong một nhiệm vụ trước khi đồng bộ thì cả hai đều nhận vàng (chấp nhận được).
+
+## 📊 Thống kê
+
+- Màn `#stats` (`#statsBtn` trên trang chủ): ô tổng quan, cột XP 14 ngày, lịch học 18 tuần (lưới 7 hàng, cột bắt đầu thứ Hai, màu theo XP ngày `l0`–`l4`), tiến độ từng chủ đề (đã thuộc = hộp ≥ 5 / đang học), 10 từ hay sai nhất. XP theo ngày lấy từ `st.xl`.
+
+## ⚔️ Thách đấu bạn bè
+
+- Ở màn kết quả của lượt có seed có nút "⚔️ Thách bạn bè cùng đề này" (`chShare`): hỏi tên, tạo link `?ch=<base64url JSON {s, m, t, n, p, c, l}>`, gửi bằng `navigator.share` hoặc copy. Không có máy chủ, điểm **không** được xác minh.
+- Mở link: `chParse` kiểm tra từng trường (link đến từ bất kỳ ai), trang chủ hiện thẻ `#chBanner`; "Nhận thách đấu" gọi `start(m, ch)` với đúng các chủ đề trong link, xong hiện so điểm trong `#chBox`. Tham số `ch` chỉ bị xoá khỏi URL khi nhận hoặc bỏ qua (để còn lại sau khi trang tự tải lại lúc đồng bộ).
 
 ## ⏰ Nhắc học trên lịch
 
@@ -244,7 +280,7 @@ Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến đ
 - Chỉ đăng nhập bằng **Google** (`signInWithPopup`, popup bị chặn thì chuyển sang `signInWithRedirect`).
 - Dữ liệu trên mây: document `users/{uid}` = `{data: JSON.stringify(st), xp, updatedAt}`. `firestore.rules` chỉ cho chính chủ đọc/ghi, chỉ chấp nhận đúng 3 trường đó, `data` là chuỗi < 950000 ký tự.
 - **Khi đăng nhập / mở app đang đăng nhập** (`pullAndMerge`): tải bản trên mây, gộp với tiến độ trong máy bằng `mergeSt` rồi tải lên nếu khác. Nếu kết quả khác `st` hiện tại thì ghi vào `localStorage` và **tải lại trang** (để `sel`, `st.rpg`… khởi tạo lại sạch sẽ).
-  - `mergeSt` dùng max/hợp: XP, best, fixed, vàng, cấp máu, số vật phẩm, số sao từng màn lấy max; huy hiệu, modes, từ hay sai lấy hợp; tủ đồ: `own` lấy hợp, `wear` theo `t` mới hơn; bộ từ lấy bản có `t` mới hơn của từng bộ (bộ đã xoá thắng nếu xoá sau), rồi bỏ `srs`/`wrong` của bộ đã xoá; streak lấy theo ngày `last` mới hơn; `sound`, `topics` lấy theo máy đang dùng. Gộp lại lần nữa không đổi gì (nên không bị vòng lặp reload, không nhân đôi vàng).
+  - `mergeSt` dùng max/hợp: XP, best, fixed, sổ vàng (`g0` max, `ge`/`gs` max theo từng máy, rồi tính lại `gold`), cấp máu, số vật phẩm, số sao từng màn lấy max; huy hiệu, modes, từ hay sai lấy hợp; tủ đồ: `own` lấy hợp, `wear` theo `t` mới hơn; bộ từ lấy bản có `t` mới hơn của từng bộ (bộ đã xoá thắng nếu xoá sau), rồi bỏ `srs`/`wrong` của bộ đã xoá; streak lấy theo ngày `last` mới hơn; `xl` max theo ngày; `dq` cùng ngày thì tiến độ max + đã nhận hợp, khác ngày lấy ngày mới hơn; `dev` luôn của máy đang dùng (kể cả khi bỏ tiến độ của tài khoản khác và lấy bản trên mây); `sound`, `topics` lấy theo máy đang dùng. Gộp lại lần nữa không đổi gì (nên không bị vòng lặp reload, không nhân đôi vàng).
   - Tiến độ trong máy chỉ được gộp nếu là của khách hoặc của chính tài khoản đó (`OWNER_KEY`); tiến độ của tài khoản khác thì bỏ qua và lấy bản trên mây.
 - **Khi đang đăng nhập**: `save()` gọi `onSaved` → `queueUpload` (gom 2 giây rồi tải lên); khi tab bị ẩn thì tải lên ngay.
 - **Đăng xuất**: tải lên lần cuối, rồi xoá tiến độ trong máy và tải lại → máy trở về khách mới (tránh người sau thấy/gộp nhầm tiến độ).

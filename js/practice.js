@@ -26,7 +26,7 @@ function renderHome(){
   $('soundBtn').textContent=st.sound?'🔊':'🔇';
   $('badges').innerHTML=BADGES.map(b=>`<div class="badge ${st.badges.includes(b.id)?'':'locked'}"><div class="e">${b.e}</div><b>${b.n}</b><small>${b.d}</small></div>`).join('');
   const nd=liveDecks().length;$('deckSub').textContent=nd?`${nd} bộ · ${deckCount()} từ · bấm để nhập thêm, đấu trường, tải về`:'Học từ vựng của bạn: dán từ Excel, Quizlet hoặc nhờ AI định dạng';
-  renderChips();renderSrs();
+  renderChips();renderSrs();renderQuests();renderChBanner();
 }
 $('soundBtn').onclick=()=>{st.sound=!st.sound;save();renderHome()};
 
@@ -41,20 +41,29 @@ darkMq.addEventListener('change',renderTheme);renderTheme();
 // ---------- game loop ----------
 const LEN=12;
 let G=null;
-function start(mode){
+// ch = a friend's challenge {s: seed, m: mode, t: topic indexes, n, p, c, l} (challenge.js)
+function start(mode,ch=null){
   poolOverride=null;let queue=null;
   if(mode==='srs'){queue=srsSession();if(!queue.length){toast('Chưa có từ nào để ôn, hãy chọn chủ đề nhé!');return}}
-  else if(!pool().length){toast('Hãy chọn ít nhất 1 chủ đề nhé!');return}
-  else if(mode!=='quiz'&&mode!=='mix'&&!poolTypes(pool()).includes(mode)){toast(mode==='fill'?'Các từ đã chọn chưa có câu ví dụ chứa từ đó, thử Quiz nhé!':'Các từ đã chọn chưa có cụm từ (collocation), thử Quiz nhé!');return}
-  const P=pool(),n=mode==='fill'?P.filter(canFill).length:mode==='col'?P.filter(canCol).length:P.length; // small decks: shorter round
-  G={mode,types:poolTypes(P),queue,len:queue?queue.length:Math.min(LEN,n),n:0,score:0,combo:0,maxCombo:0,correct:0,wrongList:[],used:new Set(),xp0:st.xp,typesPlayed:new Set()};
+  const P=ch?ALL.filter(x=>ch.t.includes(x.ti)):pool();
+  if(!queue){
+    if(!P.length){toast('Hãy chọn ít nhất 1 chủ đề nhé!');return}
+    if(mode==='syn'&&!P.some(canSyn)){toast('Từ đồng nghĩa chỉ có ở 19 chủ đề có sẵn, hãy chọn ít nhất 1 chủ đề đó nhé!');return}
+    if(mode!=='quiz'&&mode!=='mix'&&mode!=='syn'&&!poolTypes(P).includes(mode)){toast(mode==='fill'?'Các từ đã chọn chưa có câu ví dụ chứa từ đó, thử Quiz nhé!':'Các từ đã chọn chưa có cụm từ (collocation), thử Quiz nhé!');return}}
+  const n=mode==='fill'?P.filter(canFill).length:mode==='col'?P.filter(canCol).length:mode==='syn'?P.filter(canSyn).length:P.length; // small decks: shorter round
+  // rounds of built-in topics are seeded, so the same questions can be sent to a friend as a challenge
+  const seed=ch?ch.s:!queue&&!useWrong&&P.every(x=>!isDeck(x.ti))?Math.floor(Math.random()*2**31):null;
+  G={mode,types:poolTypes(P),queue,pool:queue?null:P,len:queue?queue.length:Math.min(LEN,n),n:0,score:0,combo:0,maxCombo:0,correct:0,wrongList:[],used:new Set(),xp0:st.xp,typesPlayed:new Set(),
+    seed,rng:seed==null?null:seeded(seed),topics:[...new Set(P.map(x=>x.ti))],ch};
   show('game');next();
 }
 function next(){
   if(G.n>=G.len)return finish();
-  if(G.queue)poolOverride=[G.queue[G.n]]; // review session: ask about this exact card
-  const t=G.queue?srsType(G.queue[G.n]):G.mode==='mix'?pick(G.types):G.mode;
-  const q=t==='quiz'?makeQuiz(G.used):t==='fill'?makeFill(G.used):makeCol(G.used);poolOverride=null;
+  poolOverride=G.queue?[G.queue[G.n]]:G.pool; // review session: ask about this exact card
+  if(G.rng){qrnd=G.rng;qBase=ALL.slice(0,CORE_N)}
+  let q;try{const t=G.queue?srsType(G.queue[G.n]):G.mode==='mix'?pick(G.types):G.mode;
+    q=t==='quiz'?makeQuiz(G.used):t==='fill'?makeFill(G.used):t==='syn'?makeSyn(G.used):makeCol(G.used)}
+  finally{poolOverride=null;qrnd=Math.random;qBase=null}
   G.q=q;G.used.add(q.it.id);G.answered=false;G.typesPlayed.add(q.type);
   $('gBar').style.width=(G.n/G.len*100)+'%';
   $('qType').textContent=q.label;$('qMain').innerHTML=q.main;$('qMain').classList.toggle('sentence',!!q.sentence);
@@ -84,14 +93,14 @@ function answer(v,el,timeout){
   if(q.options){document.querySelectorAll('.opt').forEach(b=>{b.disabled=true;
     if(b.dataset.v===q.answer)b.classList.add('right'); else if(b===el)b.classList.add('wrong')})}
   else{const i=$('typeIn');i.disabled=true;i.classList.add(ok?'right':'wrong');$('skip').style.display='none'}
-  const id=q.it.id;srsGrade(id,ok?1:0);
-  if(ok){
+  const id=q.it.id;srsGrade(id,ok?1:0);if(G.queue)quest('review');
+  if(ok){quest('answer');if(q.type==='syn')quest('syn');
     G.combo++;G.correct++;G.maxCombo=Math.max(G.maxCombo,G.combo);
     const mult=Math.min(4,1+Math.floor(G.combo/3)), pts=10*mult;
     G.score+=pts;st.xp+=pts;plus('+'+pts,el);beep('ok');
     if(st.wrong[id]){delete st.wrong[id];st.fixed=(st.fixed||0)+1;if(st.fixed>=10)unlock('fixer')}
     if(G.combo%5===0)confetti(35);
-    if(G.combo>=5)unlock('combo5'); if(G.combo>=10)unlock('combo10');
+    if(G.combo>=5)unlock('combo5'); if(G.combo>=10)unlock('combo10');quest('combo',G.combo);
     $('combo').classList.add('pop');setTimeout(()=>$('combo').classList.remove('pop'),160);
   }else{
     G.combo=0;st.wrong[id]=(st.wrong[id]||0)+1;G.wrongList.push(q);beep('no');
@@ -116,7 +125,7 @@ function finish(){
   if(st.last!==today){st.streak=(st.last===yesterday())?st.streak+1:1;st.last=today}
   const newBest=G.score>(st.best||0); if(newBest)st.best=G.score;
   ['quiz','fill','col'].forEach(t=>{if(G.typesPlayed.has(t)&&!st.modes.includes(t))st.modes.push(t)});
-  save();
+  quest('round');save();
   unlock('first');
   if(G.len>=LEN&&G.correct===G.len)unlock('perfect');
   if(st.modes.length>=3)unlock('allmodes');
@@ -128,7 +137,7 @@ function finish(){
   $('rSub').textContent=`+${st.xp-G.xp0} XP · Chuỗi ${st.streak} ngày 🔥`+(newBest?' · Kỷ lục mới! 🥇':` · Kỷ lục: ${st.best}`);
   $('rScore').textContent=G.score;$('rAcc').textContent=`${G.correct}/${G.len}`;$('rCombo').textContent=G.maxCombo;
   $('review').innerHTML=G.wrongList.length?`<h2>📕 Từ cần ôn lại</h2>`+G.wrongList.map(q=>`<div class="it">${termHtml(q.it)}: ${esc(q.it.mean)}<br><span class="empty">${exLine(q.it)}</span></div>`).join(''):'';
-  show('result');beep('end');if(r>=.75)confetti(r===1?120:60);
+  renderChResult();show('result');beep('end');if(r>=.75)confetti(r===1?120:60);
 }
 $('again').onclick=()=>start(G.mode);
 $('toHome').onclick=()=>{show('home');renderHome()};

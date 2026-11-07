@@ -19,7 +19,7 @@ function renderCloset(){
   if(!tryOn||tryOn.slot!==closetSlot){act.innerHTML=`<span class="empty">${closetSlot==='fur'&&pet.fur?`${esc(pn)} có bộ lông riêng, bộ lông chỉ đổi màu cho Mèo, Cún và Thỏ.`:'Bấm vào món đồ để mặc thử 😺'}</span>`;return}
   if(w[closetSlot]===cur)act.innerHTML=`<span class="empty">${closetSlot==='pet'?'Bạn đang chơi bằng':`${esc(pn)} đang mặc`} ${esc(name)}</span>`;
   else if(owns(closetSlot,cur))act.innerHTML=`<button class="btn" data-act="wear">👕 Mặc ${esc(name)}</button>`;
-  else act.innerHTML=`${tier(it.p)[1]?`<small class="tier-l">${tier(it.p)[1]}</small>`:''}<button class="btn" data-act="buy" ${st.rpg.gold<it.p?'disabled':''}>💰 Mua ${esc(name)} · ${it.p} vàng</button>${st.rpg.gold<it.p?`<small class="empty">Còn thiếu ${it.p-st.rpg.gold} vàng, đánh boss để kiếm thêm nhé!</small>`:''}`;
+  else act.innerHTML=`${tier(it.p)[1]?`<small class="tier-l">${tier(it.p)[1]}</small>`:''}<button class="btn" data-act="buy" ${st.rpg.gold<it.p?'disabled':''}>💰 Mua ${esc(name)} · ${it.p} vàng</button>${st.rpg.gold<it.p?`<small class="empty">Còn thiếu ${it.p-st.rpg.gold} vàng, đánh boss hoặc làm 🎯 nhiệm vụ hằng ngày để kiếm thêm nhé!</small>`:''}`;
 }
 function wearItem(slot,id){st.closet.wear={...st.closet.wear,[slot]:id};st.closet.t=Date.now();save()}
 // preview canvas: the cat in what it wears, plus the item being tried on
@@ -42,7 +42,7 @@ $('closetItems').onclick=e=>{const b=e.target.closest('[data-id]');if(!b)return;
   if(owns(closetSlot,tryOn.id)&&wearing()[closetSlot]!==tryOn.id){wearItem(closetSlot,tryOn.id);beep('ok')} // owned: wear right away
   renderCloset()};
 $('closetAct').onclick=e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled||!tryOn)return;const {slot,id}=tryOn,it=OUTFIT[slot][id];
-  if(b.dataset.act==='buy'){if(st.rpg.gold<it.p)return;st.rpg.gold-=it.p;st.closet.own=[...st.closet.own,slot+':'+id];toast(`🎉 Đã mua ${it.e} ${it.n}!`);confetti(40);beep('badge')}
+  if(b.dataset.act==='buy'){if(st.rpg.gold<it.p)return;addGold(-it.p);st.closet.own=[...st.closet.own,slot+':'+id];toast(`🎉 Đã mua ${it.e} ${it.n}!`);confetti(40);beep('badge')}
   wearItem(slot,id);renderCloset()};
 $('closetBack').onclick=()=>{tryOn=null;if(closetBack==='home'){show('home');renderHome()}else openMap()};
 $('closetBtn').onclick=()=>openCloset('map');
