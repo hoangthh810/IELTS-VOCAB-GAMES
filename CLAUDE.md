@@ -245,6 +245,7 @@ Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến đ
 - Chấm: so sánh sau `normT` (không phân biệt hoa thường, bỏ dấu câu cuối, gộp khoảng trắng). Đúng +10 XP (+5 nếu đã xem gợi ý), sai/xem đáp án thì vào `st.wrong`. Mọi câu đều gọi `srsGrade`. Sai thì `diffHtml` (so chữ theo dãy con chung dài nhất) gạch chữ gõ thừa và tô chữ bị thiếu.
 - Phím: Enter kiểm tra / sang từ tiếp, Ctrl + Enter nghe lại.
 - **🎤 Luyện nói** (`#speakBtn`, `openDict('say')`, `DM = 'say'`): cùng màn, cùng cài đặt; hiện từ + phiên âm + nghĩa, bấm 🎤 (`listen`) để trình duyệt nhận giọng nói (`SpeechRecognition`/`webkitSpeechRecognition`, `lang` theo giọng đọc đã chọn, 5 phương án). `sayCheck`: đúng nếu một phương án chứa đúng từ đó (so bằng `sayNorm`, gạch nối = khoảng trắng). Sai thì hiện "Máy nghe thành…", đọc lại tối đa 3 lần; đúng lần đầu +10 XP, sau đó +5. Cần Chrome/Edge, micro và mạng (Chrome gửi âm thanh lên máy chủ nhận giọng của Google); trình duyệt không hỗ trợ thì báo dùng Chrome/Edge. Enter = bắt đầu nói.
+- Lỗi `network` / `service-not-allowed` / `language-not-supported` hoặc không có API (`srFail`): thường gặp ở Cốc Cốc, Brave, Opera (có API nhưng không có dịch vụ nhận giọng của Google) hoặc mạng/VPN chặn. Khi đó `srOff = true`, hiện thông báo theo trình duyệt (`brName`) và hai nút tự chấm `#dSelf` (✅ đúng / 🔁 chưa chuẩn, +5 XP) cho cả các từ sau; nút 🎤 vẫn bấm thử lại được.
 - Kết quả cuối lượt dùng `#dxSub`/`#dxReview` (khác `#dSub`/`#dReview` của màn thua trận Boss).
 
 ## 🎯 Nhiệm vụ hằng ngày

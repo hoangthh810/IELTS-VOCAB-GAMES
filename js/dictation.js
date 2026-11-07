@@ -34,7 +34,7 @@ const DTXT={write:{t:'🎧 <span>Nghe & viết</span>',i:'Nghe từ rồi gõ l�
     f:'Đúng lần đầu +10 XP, đọc lại mới đúng +5 XP. Đọc sai 3 lần thì từ vào "Từ hay sai".<br>Cần micro và trình duyệt Chrome / Edge (có mạng). Phím tắt: Enter để bắt đầu nói / sang từ tiếp, Ctrl + Enter để nghe mẫu.'}};
 function openDict(mode='write'){
   DM=mode;$('dTitle0').innerHTML=DTXT[mode].t;$('dIntro').textContent=DTXT[mode].i;$('dFoot').innerHTML=DTXT[mode].f+'<br>Giọng đọc lấy từ trình duyệt và máy của bạn; Chrome và Edge thường có nhiều giọng nhất. Giọng bạn chọn cũng dùng cho mọi nút 🔊 trong app.';
-  const say=mode==='say';$('dForm').hidden=$('dHintBtn').hidden=say;$('dMic').hidden=$('dWord').hidden=$('dHeard').hidden=!say;
+  const say=mode==='say';$('dForm').hidden=$('dHintBtn').hidden=say;$('dMic').hidden=$('dWord').hidden=$('dHeard').hidden=!say;$('dSelf').hidden=true;
   $('dSkip').textContent=say?'Bỏ qua ⏭️':'Xem đáp án 🤷';$('dQ').textContent=say?'🎤 Đọc to từ này':'🎧 Nghe và viết lại';
   const p=dictPrefs(),o=[['home',`🏠 Chủ đề đang chọn ở trang chủ`],...(wrongIds().length?[['wrong',`📕 Từ hay sai (${wrongIds().length})`]]:[]),...topicKeys().map(k=>[String(k),topicName(k)])];
   $('dSrc').innerHTML=o.map(([v,n])=>`<option value="${esc(v)}">${esc(n)}</option>`).join('');
@@ -58,8 +58,8 @@ function nextDict(){
   $('dBar').style.width=(D.n/D.q.length*100)+'%';$('dCount').textContent=`${D.n+1}/${D.q.length}`;
   $('dKind2').textContent=it.kind==='col'?'Cụm từ':'Từ đơn';$('dHint').innerHTML='';$('dFb').className='feedback';
   const i=$('dIn');i.value='';i.className='';i.disabled=false;$('dHintBtn').disabled=false;$('dSkip').hidden=false;
-  if(DM==='say'){$('dWord').innerHTML=`<div class="qmain">${esc(it.term)}</div><div class="qsub">${ipaTag(it)}${it.pos?` (${esc(it.pos)})`:''} · ${esc(it.mean)}</div>`;
-    $('dHeard').textContent='Bấm 🎤 rồi đọc to từ trên nhé';$('dMic').disabled=false;setTimeout(()=>$('dMic').focus(),50);return}
+  if(DM==='say'){$('dWord').innerHTML=`<div class="qmain">${esc(it.term)}</div><div class="qsub">${[ipaTag(it)+(it.pos?` (${esc(it.pos)})`:''),esc(it.mean)].filter(Boolean).join(' · ')}</div>`;
+    $('dHeard').textContent=srOff?'🔊 Nghe mẫu, đọc to theo rồi tự chấm bên dưới nhé':'Bấm 🎤 rồi đọc to từ trên nhé';$('dSelf').hidden=!srOff;$('dMic').disabled=false;setTimeout(()=>$('dMic').focus(),50);return}
   setTimeout(()=>{i.focus();speak(it.term,dictRate())},250);
 }
 function dictHint(){
@@ -86,7 +86,7 @@ function checkDict(skip){
 }
 function settleDict(ok,typed,skip){
   const it=D.q[D.n],id=it.id,say=DM==='say';D.answered=true;stopListen();
-  const i=$('dIn');i.disabled=true;i.classList.add(ok?'right':'wrong');$('dHintBtn').disabled=true;$('dSkip').hidden=true;$('dMic').disabled=true;
+  const i=$('dIn');i.disabled=true;i.classList.add(ok?'right':'wrong');$('dHintBtn').disabled=true;$('dSkip').hidden=true;$('dMic').disabled=true;$('dSelf').hidden=true;
   srsGrade(id,ok?1:0);
   if(ok){const pts=D.hint||D.tries>1?5:10;D.correct++;st.xp+=pts;plus('+'+pts,say?$('dMic'):i);beep('ok');if(!say)quest('dict');if(st.wrong[id]){delete st.wrong[id];st.fixed=(st.fixed||0)+1;if(st.fixed>=10)unlock('fixer')}}
   else{st.wrong[id]=(st.wrong[id]||0)+1;D.missed.push(it);beep('no')}
@@ -115,6 +115,7 @@ $('dStart').onclick=startDict;
 $('dSay').onclick=()=>{if(D)speak(D.q[D.n].term,dictRate());if(DM==='write')$('dIn').focus()};
 $('dSlow').onclick=()=>{if(D)speak(D.q[D.n].term,.6);if(DM==='write')$('dIn').focus()};
 $('dMic').onclick=listen;
+$('dSelf').onclick=e=>{const b=e.target.closest('[data-self]');if(!b||!D||D.answered)return;D.tries=2;settleDict(b.dataset.self==='1','',false)}; // self-graded: +5 XP
 $('dHintBtn').onclick=dictHint;
 $('dSkip').onclick=()=>checkDict(true);
 $('dForm').onsubmit=e=>{e.preventDefault();D&&D.answered?($('dNext').click()):checkDict(false)};
@@ -133,17 +134,25 @@ document.addEventListener('keydown',e=>{
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 let rec=null;
 const sayNorm=s=>normT(s).replace(/-/g,' ');
+let srOff=false; // the browser has no working speech service: learners grade themselves (✅ / 🔁 buttons)
+const brName=()=>{const u=navigator.userAgent;return navigator.brave?'Brave':/coc_coc/i.test(u)?'Cốc Cốc':/OPR\//.test(u)?'Opera':/Edg\//.test(u)?'Edge':/Chrome\//.test(u)?'Chrome':''};
+function srFail(why){ // Chromium forks (Cốc Cốc, Brave, Opera…) expose the API but have no Google speech service: error "network"
+  srOff=true;const b=brName(),main=b==='Chrome'||b==='Edge';
+  $('dHeard').textContent=`${why} ${main?'Kiểm tra mạng / VPN / tường lửa rồi bấm 🎤 thử lại.':`${b||'Trình duyệt này'} thường không hỗ trợ nhận giọng nói, hãy mở web bằng Google Chrome hoặc Microsoft Edge.`} Tạm thời: nghe mẫu 🔊, đọc to theo rồi tự chấm bên dưới.`;
+  if(D&&!D.answered)$('dSelf').hidden=false;
+}
 const stopListen=()=>{if(rec){rec.onresult=rec.onerror=null;try{rec.abort()}catch(e){}rec=null}$('dMic').classList.remove('on')};
 function listen(){
   if(!D||D.answered||DM!=='say')return;
-  if(!SR){$('dHeard').textContent='😿 Trình duyệt này chưa nhận được giọng nói. Hãy mở web bằng Chrome hoặc Edge nhé.';return}
+  if(!SR)return srFail('😿 Trình duyệt này chưa nhận được giọng nói.');
   if(rec){stopListen();$('dHeard').textContent='Bấm 🎤 rồi đọc to từ trên nhé';return}
   if(canSpeak)speechSynthesis.cancel();
   const r=rec=new SR();r.lang=enVoice?enVoice.lang.replace('_','-'):'en-GB';r.maxAlternatives=5;r.interimResults=false;
   $('dMic').classList.add('on');$('dHeard').textContent='🎙️ Đang nghe… đọc to từ này nhé';
   r.onresult=e=>sayCheck([...e.results[0]].map(a=>a.transcript));
-  r.onerror=e=>{$('dHeard').textContent=e.error==='not-allowed'||e.error==='service-not-allowed'?'🔒 Hãy cho phép web dùng micro (bấm biểu tượng bên trái thanh địa chỉ) rồi thử lại.'
-    :e.error==='no-speech'?'🤫 Chưa nghe thấy gì, bấm 🎤 và đọc to hơn nhé.':e.error==='network'?'📶 Cần có mạng để nhận giọng nói.':`⚠️ Không nhận được giọng nói (${e.error}), thử lại nhé.`};
+  r.onerror=e=>{if(e.error==='network'||e.error==='service-not-allowed'||e.error==='language-not-supported')return srFail('📶 Không kết nối được dịch vụ nhận giọng nói của trình duyệt.');
+    $('dHeard').textContent=e.error==='not-allowed'?'🔒 Hãy cho phép web dùng micro (bấm biểu tượng bên trái thanh địa chỉ) rồi thử lại.'
+    :e.error==='no-speech'?'🤫 Chưa nghe thấy gì, bấm 🎤 và đọc to hơn nhé.':e.error==='aborted'?'':`⚠️ Không nhận được giọng nói (${e.error}), thử lại nhé.`};
   r.onend=()=>{if(rec===r){rec=null;$('dMic').classList.remove('on')}};
   try{r.start()}catch(e){rec=null;$('dMic').classList.remove('on')}
 }

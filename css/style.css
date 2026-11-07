@@ -372,3 +372,4 @@ input,select,textarea{accent-color:var(--accent)}
 .bar2{display:flex;height:9px;border-radius:999px;overflow:hidden;background:color-mix(in srgb,var(--line) 80%,var(--bg));margin-top:5px}
 .bar2 .k{background:var(--good)}.bar2 .l{background:var(--yellow)}
 .review .cnt{display:inline-block;min-width:34px;font-weight:900;color:var(--bad)}
+.dself{justify-content:center;margin-top:10px}
