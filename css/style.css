@@ -373,3 +373,23 @@ input,select,textarea{accent-color:var(--accent)}
 .bar2 .k{background:var(--good)}.bar2 .l{background:var(--yellow)}
 .review .cnt{display:inline-block;min-width:34px;font-weight:900;color:var(--bad)}
 .dself{justify-content:center;margin-top:10px}
+/* streak card: the cat charges an energy wave (blue, cyan-pink from 7 days, purple from 30) */
+.streak{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;margin-top:14px;padding:14px 16px;border-radius:20px;border:1px solid var(--line);background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 14%,var(--card)),var(--card) 60%);box-shadow:var(--shadow)}
+.streak .st b{font-size:16px}.streak .st .n{font-size:38px;font-weight:900;line-height:1;color:var(--accent);margin-right:4px;vertical-align:-4px}
+.streak .st small{display:block;color:var(--muted);font-size:13.5px;margin-top:4px}
+.scat{position:relative;width:76px;height:64px;border-radius:18px;background:radial-gradient(circle at 35% 50%,color-mix(in srgb,var(--accent) 30%,transparent),transparent 70%)}
+.scat .c{position:absolute;left:4px;top:12px;font-size:34px;z-index:2}
+.scat .orb{position:absolute;left:40px;top:24px;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle,#fff,#74c0fc 45%,#4dabf7 70%,transparent 72%);box-shadow:0 0 12px #4dabf7,0 0 22px #74c0fc;z-index:1}
+.scat .beam{position:absolute;left:50px;top:27px;height:10px;width:26px;border-radius:0 10px 10px 0;background:linear-gradient(90deg,#d0ebff,#4dabf7 60%,transparent);box-shadow:0 0 10px #4dabf7;transform-origin:left center}
+.streak.lit .orb{animation:orb 1.2s ease-in-out infinite}.streak.lit .beam{animation:beam 1.2s ease-in-out infinite}
+.streak.sl2 .orb,.streak.sl2 .beam{filter:hue-rotate(160deg) saturate(1.6)}.streak.sl3 .orb,.streak.sl3 .beam{filter:hue-rotate(250deg) saturate(2)}
+.streak.off .orb,.streak.off .beam{opacity:0}.streak.off .scat{filter:grayscale(.6)}
+@keyframes orb{50%{transform:scale(1.35)}}
+@keyframes beam{0%{transform:scaleX(.2);opacity:.4}55%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1.05);opacity:0}}
+.sweek{display:flex;gap:6px}
+.sd{display:grid;justify-items:center;gap:4px}.sd small{font-size:11px;font-weight:700;color:var(--muted)}.sd.today small{color:var(--ink);font-weight:900}
+.sd i{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;font-style:normal;font-size:16px;background:color-mix(in srgb,var(--line) 70%,var(--bg))}
+.sd i.on{background:color-mix(in srgb,var(--accent) 28%,var(--card));box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 55%,transparent)}
+.sd.today i{outline:2px solid var(--accent);outline-offset:2px}.sd.fut i{opacity:.45}
+@media (max-width:560px){.streak{grid-template-columns:auto 1fr}.sweek{grid-column:1/-1;justify-content:space-between}}
+@media (prefers-reduced-motion:reduce){.streak.lit .orb,.streak.lit .beam{animation:none}}

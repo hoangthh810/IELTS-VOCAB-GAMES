@@ -26,7 +26,19 @@ function renderHome(){
   $('soundBtn').textContent=st.sound?'🔊':'🔇';
   $('badges').innerHTML=BADGES.map(b=>`<div class="badge ${st.badges.includes(b.id)?'':'locked'}"><div class="e">${b.e}</div><b>${b.n}</b><small>${b.d}</small></div>`).join('');
   const nd=liveDecks().length;$('deckSub').textContent=nd?`${nd} bộ · ${deckCount()} từ · bấm để nhập thêm, đấu trường, tải về`:'Học từ vựng của bạn: dán từ Excel, Quizlet hoặc nhờ AI định dạng';
-  renderChips();renderSrs();renderQuests();renderChBanner();
+  renderChips();renderSrs();renderQuests();renderChBanner();renderStreak();
+}
+// streak card: the cat fires an energy wave once you have studied today; this week's study days get a paw
+function renderStreak(){
+  const n=liveStreak(),today=dayKey(),done=st.last===today,g=dayGains(),mon=dayAgo((new Date().getDay()+6)%7);
+  const from=n?dayKey(dayAgo(Math.round((new Date(today)-new Date(st.last))/864e5)+n)):'9'; // the streak covers (from, st.last]
+  const days=['T2','T3','T4','T5','T6','T7','CN'].map((l,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const k=dayKey(d),on=g[k]>0||(k>from&&k<=st.last);
+    return `<div class="sd ${k===today?'today':''} ${k>today?'fut':''}"><small>${l}</small><i class="${on?'on':''}">${on?'🐾':''}</i></div>`}).join('');
+  const lv=n>=30?3:n>=7?2:n?1:0;
+  $('streakBox').className=`streak ${done?'lit':'off'} sl${lv}`;
+  $('streakBox').innerHTML=`<div class="scat" aria-hidden="true"><span class="c">${done?'😼':n?'🐱':'😴'}</span><span class="orb"></span><span class="beam"></span></div>
+    <div class="st"><b><span class="n">${n}</span> ngày học liên tiếp</b><small>${done?`Mèo đã tung chưởng hôm nay! Mai học tiếp để chuỗi lên ${n+1} ngày.`:n?`Học 1 lượt hôm nay để giữ chuỗi ${n} ngày, không là mất đó!`:'Học 1 lượt để mèo tung chưởng, bắt đầu chuỗi mới nhé!'}</small></div>
+    <div class="sweek">${days}</div>`;
 }
 $('soundBtn').onclick=()=>{st.sound=!st.sound;save();renderHome()};
 

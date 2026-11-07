@@ -9,6 +9,7 @@
       "**/node_modules/**",
       "archive/**",
       "CLAUDE.md",
+      "README.md",
       "skills-lock.json"
     ],
     "cleanUrls": true,
