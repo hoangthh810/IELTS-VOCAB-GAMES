@@ -103,11 +103,12 @@ Phím tắt: `1–4` chọn đáp án, `Enter` để sang câu tiếp.
 - Một listener `click` chung trên `document` bắt mọi `.spk` (đọc `data-say`). Nút loa không phụ thuộc nút bật/tắt âm thanh hiệu ứng (`st.sound`).
 - Trong trận Boss, bấm loa ở phần đáp án sẽ huỷ tự chuyển câu sau 1,8 giây (`B.auto`) để kịp nghe; bấm "Tiếp tục" hoặc Enter để đi tiếp.
 
-### 🎀 Tủ đồ của mèo
+### 🎀 Tủ đồ & nhân vật
 
-- Nhân vật chính là **chú mèo** (`drawCat` trong `scene.js`, gốc toạ độ = chân, quay mặt sang phải), dùng chung cho cảnh trận đánh và canvas xem trước `#closetCv`. Đồ mặc **chỉ để trang trí**, không đổi chỉ số trận.
-- `OUTFIT[slot][id] = {n, e, p, draw}` với 6 slot (`SLOTS`): `fur` bộ lông (màu trong `FURS`), `hat` mũ, `face` kính, `body` áo (`sleeve` = màu tay áo), `neck` cổ, `hand` vũ khí (`draw(c, casting)` tại bàn tay, chĩa theo trục x). Món `p: 0` (mướp, mũ tốt nghiệp, hoodie 9.0, bút chì) có sẵn. `WEAR0` là bộ mặc định.
+- Nhân vật mặc định là **chú mèo**; mua thêm Cún (600), Thỏ (900), Cáo (1500), Gấu trúc (2500), Rồng (6000). Tất cả vẽ bằng một hàm `drawCat` (`scene.js`, gốc toạ độ = chân, quay mặt sang phải), khác nhau qua `PETS[id]` = `{ears, tail, wh (ria), nose (mũi chó), patch (mắt gấu trúc), wings (rồng), fur (bảng màu riêng; không có thì dùng bộ lông đang chọn)}` và `drawTail`. Dùng chung cho cảnh trận đánh và canvas xem trước `#closetCv`. Nhân vật và đồ mặc **chỉ để trang trí**, không đổi chỉ số trận.
+- `OUTFIT[slot][id] = {n, e, p, draw, back?}` với 7 slot (`SLOTS`): `pet` nhân vật, `fur` bộ lông (màu trong `FURS`; `shine` = lấp lánh), `hat` mũ, `face` kính, `body` áo (`sleeve` = màu tay áo, `back` = phần vẽ sau lưng như áo choàng), `neck` cổ, `hand` vũ khí (`draw(c, casting)` tại bàn tay, chĩa theo trục x). Món `p: 0` (mèo, lông mướp, mũ tốt nghiệp, hoodie 9.0, bút chì) có sẵn. `WEAR0` là bộ mặc định. Độ hiếm theo giá (`tier` trong `closet.js`): từ 700 vàng là 💎 Hiếm, từ 1500 là 🌟 Huyền thoại (thẻ có viền/nhãn riêng). Slot `pet` và `fur` không có "Không mặc".
 - Màn `#closet` mở từ trang chủ (`#homeClosetBtn`) và bản đồ (`#closetBtn`). Bấm món đã có → mặc luôn; món chưa có → mèo mặc thử (`tryOn`) và hiện nút mua bằng `st.rpg.gold`.
+- Thêm nhân vật: thêm `PETS[id]` (dùng lại kiểu tai/đuôi có sẵn hoặc thêm nhánh mới trong `drawCat`/`drawTail`) và `OUTFIT.pet[id]`.
 - Thêm món: thêm vào `OUTFIT[slot]` một id mới với `draw` (toạ độ theo khung mèo: đầu tâm `(0,-102)`, mắt `(-8,-104)`/`(13,-104)`, cổ khoảng `y=-72`, thân `y` từ `-70` đến `-14`). Không đổi id cũ (đã lưu trong `own`/`wear`). Emoji biểu tượng phải hiện được trên Windows (tránh cờ quốc gia, emoji quá mới).
 
 ### 🎬 Cảnh đánh boss 2D
@@ -185,7 +186,7 @@ Lúc chạy, `DATA` được làm phẳng thành `ALL`, mỗi mục có dạng
 | `srs` | `{[id]: {b, d, t}}` | Lịch ôn: hộp Leitner 0–7, ngày đến hạn `YYYY-MM-DD`, thời điểm chấm gần nhất (ms) |
 | `wk` | `{k, base}` | Tuần ISO hiện tại (`2026W45`) và tổng XP lúc bắt đầu tuần → XP tuần = `xp - base` (`weekKey`, `rollWeek`, `weekXp` trong `core.js`) |
 | `lb` | `{name, on, t}` | null | Biệt danh trên bảng xếp hạng, có hiện trên bảng không, thời điểm đổi |
-| `closet` | `{own, wear, t}` | Tủ đồ mèo: `own` = món đã mua dạng `'slot:id'` (món giá 0 luôn có, không lưu), `wear` = `{slot: id}` đang mặc (`''` = không mặc; thiếu slot thì lấy `WEAR0`), `t` = lần đổi đồ gần nhất (ms) |
+| `closet` | `{own, wear, t}` | Tủ đồ mèo: `own` = món/nhân vật đã mua dạng `'slot:id'` (ví dụ `'pet:dragon'`) (món giá 0 luôn có, không lưu), `wear` = `{slot: id}` đang mặc (`''` = không mặc; thiếu slot thì lấy `WEAR0`), `t` = lần đổi đồ gần nhất (ms) |
 | `decks` | `{[did]: {n, t, items}}` | Bộ từ tự nhập: tên, thời điểm sửa (ms), `items = [[từ, nghĩa, ví dụ, phiên âm, từ loại], ...]`; bộ đã xoá thành `{del:1, t}` |
 
 Streak được cập nhật khi kết thúc lượt chơi thường (`finish`) và khi thắng/thua trận Boss (`touchStreak`). Hiển thị dùng `liveStreak()` (về 0 nếu bỏ quá 1 ngày).

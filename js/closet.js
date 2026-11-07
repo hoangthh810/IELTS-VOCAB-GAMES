@@ -1,22 +1,25 @@
-// ---------- cat closet: buy outfits with gold and dress the hero cat (cosmetic only) ----------
+// ---------- closet: buy characters and outfits with gold and dress the hero (cosmetic only) ----------
 // st.closet = {own: ['slot:id', ...] bought items, wear: {slot: id} ('' = nothing), t: last change (ms, newest wins when merging)}.
 // Items, slots and drawings live in scene.js (OUTFIT, SLOTS, WEAR0, drawCat).
-let closetSlot='hat',tryOn=null,closetBack='map'; // tryOn: item previewed on the cat, not bought/worn yet
+let closetSlot='pet',tryOn=null,closetBack='map'; // tryOn: item previewed on the cat, not bought/worn yet
+const tier=p=>p>=1500?['legend','🌟 Huyền thoại']:p>=700?['rare','💎 Hiếm']:['','']; // rarity by price
 const owns=(slot,id)=>!id||OUTFIT[slot][id].p===0||st.closet.own.includes(slot+':'+id);
 function openCloset(from){closetBack=from||'map';tryOn=null;show('closet');renderCloset();closetLoop()}
 function renderCloset(){
   const w=wearing(),cur=tryOn&&tryOn.slot===closetSlot?tryOn.id:w[closetSlot],it=cur&&OUTFIT[closetSlot][cur];
   $('closetGold').textContent=`💰 ${st.rpg.gold}`;
   $('closetTabs').innerHTML=SLOTS.map(([k,e,n])=>`<button class="chip ${k===closetSlot?'on':''}" data-slot="${k}">${e} ${n}</button>`).join('');
-  const items=Object.entries(OUTFIT[closetSlot]),none=closetSlot!=='fur'; // every slot but fur can be left empty
+  const items=Object.entries(OUTFIT[closetSlot]),none=closetSlot!=='fur'&&closetSlot!=='pet'; // a hero always has a body and a fur
   $('closetItems').innerHTML=(none?[['',{n:'Không mặc',e:'🚫',p:0}],...items]:items).map(([id,o])=>{
     const on=w[closetSlot]===id,have=owns(closetSlot,id);
-    return `<button class="citem ${id===cur?'sel':''} ${on?'worn':''}" data-id="${id}"><span class="e">${o.e}</span><b>${esc(o.n)}</b><small>${on?'✅ Đang mặc':have?'Đã có':`💰 ${o.p}`}</small></button>`}).join('');
+    const [tc,tl]=tier(o.p);
+    return `<button class="citem ${tc} ${id===cur?'sel':''} ${on?'worn':''}" data-id="${id}">${tl?`<i class="tier">${tl}</i>`:''}<span class="e">${o.e}</span><b>${esc(o.n)}</b><small>${on?'✅ Đang mặc':have?'Đã có':`💰 ${o.p}`}</small></button>`}).join('');
   const act=$('closetAct'),name=it?it.n:'Không mặc';
-  if(!tryOn||tryOn.slot!==closetSlot){act.innerHTML=`<span class="empty">Bấm vào món đồ để mèo mặc thử 😺</span>`;return}
-  if(w[closetSlot]===cur)act.innerHTML=`<span class="empty">Mèo đang mặc ${esc(name)}</span>`;
+  const pet=PETS[w.pet],pn=OUTFIT.pet[w.pet].n;
+  if(!tryOn||tryOn.slot!==closetSlot){act.innerHTML=`<span class="empty">${closetSlot==='fur'&&pet.fur?`${esc(pn)} có bộ lông riêng, bộ lông chỉ đổi màu cho Mèo, Cún và Thỏ.`:'Bấm vào món đồ để mặc thử 😺'}</span>`;return}
+  if(w[closetSlot]===cur)act.innerHTML=`<span class="empty">${closetSlot==='pet'?'Bạn đang chơi bằng':`${esc(pn)} đang mặc`} ${esc(name)}</span>`;
   else if(owns(closetSlot,cur))act.innerHTML=`<button class="btn" data-act="wear">👕 Mặc ${esc(name)}</button>`;
-  else act.innerHTML=`<button class="btn" data-act="buy" ${st.rpg.gold<it.p?'disabled':''}>💰 Mua ${esc(name)} · ${it.p} vàng</button>${st.rpg.gold<it.p?`<small class="empty">Còn thiếu ${it.p-st.rpg.gold} vàng, đánh boss để kiếm thêm nhé!</small>`:''}`;
+  else act.innerHTML=`${tier(it.p)[1]?`<small class="tier-l">${tier(it.p)[1]}</small>`:''}<button class="btn" data-act="buy" ${st.rpg.gold<it.p?'disabled':''}>💰 Mua ${esc(name)} · ${it.p} vàng</button>${st.rpg.gold<it.p?`<small class="empty">Còn thiếu ${it.p-st.rpg.gold} vàng, đánh boss để kiếm thêm nhé!</small>`:''}`;
 }
 function wearItem(slot,id){st.closet.wear={...st.closet.wear,[slot]:id};st.closet.t=Date.now();save()}
 // preview canvas: the cat in what it wears, plus the item being tried on

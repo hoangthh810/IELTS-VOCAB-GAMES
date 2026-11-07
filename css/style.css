@@ -328,3 +328,8 @@ input,select,textarea{accent-color:var(--accent)}
 .ddiff{font-size:16px;margin:2px 0}.ddiff span{font-weight:800;font-size:18px;letter-spacing:.02em}
 .ddiff del{color:var(--bad);text-decoration:line-through 2px}.ddiff mark.miss{background:var(--yellow-soft);color:var(--yellow-ink);border-radius:4px;padding:0 1px;text-decoration:underline 2px}
 .pill:empty{display:none}
+.citem{position:relative}.citem .tier{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-style:normal;font-size:10.5px;font-weight:800;padding:1px 7px;border-radius:999px;white-space:nowrap;color:#fff}
+.citem.rare{border-color:#9775fa}.citem.rare .tier{background:#7048e8}
+.citem.legend{border-color:var(--yellow);background:linear-gradient(160deg,var(--yellow-soft),var(--card) 65%)}.citem.legend .tier{background:linear-gradient(90deg,#f08c00,#e64980)}
+.citems{padding-top:6px;row-gap:14px}
+.tier-l{font-weight:800;color:var(--yellow-ink)}
