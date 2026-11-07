@@ -32,6 +32,7 @@ js/remind.js        Nhắc học mỗi ngày trên lịch (link Google Calendar 
 js/sync.js          Đăng nhập Google + đồng bộ tiến độ lên Firestore (tuỳ chọn)
 js/main.js          renderHome(); initSync() — khởi động app
 privacy.html        Trang chính sách quyền riêng tư (link ở footer trang chủ)
+README.md           Hướng dẫn ngắn cho người mới (không deploy lên web)
 icon.svg            Logo mặt mèo (favicon + logo đầu trang chủ)
 firebase.json       Cấu hình Firebase Hosting + đường dẫn rules
 firestore.rules     Quy tắc bảo mật Firestore
@@ -82,6 +83,8 @@ Mỗi lượt chơi thường có **12 câu** (`LEN = 12`), ít hơn nếu ngu�
 | 🧩 Collocation | `col` | `makeCol` | Che một từ "có nghĩa" (bỏ stop-word, `colTokens`) trong cụm collocation, chọn 1 trong 4 từ. |
 | 🔁 Đồng nghĩa | `syn` | `makeSyn` | Chọn từ/cụm đồng nghĩa (từ `SYN`) với một word; đáp án nhiễu là đồng nghĩa của word khác, ưu tiên cùng từ loại. Chỉ word có trong `SYN` (`canSyn`), nên bộ tự nhập không chơi được. Không có trong Hỗn hợp và trận Boss. |
 | 🌀 Hỗn hợp | `mix` | ngẫu nhiên 1 trong 3 hàm Quiz/Điền từ/Collocation mỗi câu | |
+
+**Thẻ chuỗi ngày** (`#streakBox`, `renderStreak` trong `practice.js`): số ngày `liveStreak()`, mèo tung chưởng (CSS `.orb`/`.beam`, màu đổi ở 7 và 30 ngày) khi hôm nay đã học (`st.last` = hôm nay), dấu 🐾 cho ngày trong tuần đã có XP (`dayGains`) hoặc nằm trong chuỗi.
 
 **Mỗi câu có `Q_TIME = 15` giây** (`questions.js`): thanh `#gtBar` trong thẻ câu hỏi, `startQTimer`/`stopQTimer` trong `practice.js`; hết giờ = trả lời sai ("⏰ Hết giờ!"). Áp dụng cho cả lượt ôn bằng câu hỏi và trận Boss; flashcard và Nghe & viết không đếm giờ.
 
@@ -331,7 +334,7 @@ Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến đ
 - **Tự động (GitHub Actions)**: push lên `main` → `.github/workflows/firebase-hosting-merge.yml` deploy **hosting** lên kênh live (~1 phút). Mở Pull Request → `firebase-hosting-pull-request.yml` tạo link xem trước tạm thời và comment vào PR. Dùng secret `FIREBASE_SERVICE_ACCOUNT_IELTS_VOCAB_B4905` trong repo GitHub. Không có bước build/`npm ci` (app không có `package.json`).
 - Workflow **không** deploy `firestore.rules`. Sửa rules thì chạy tay: `npx firebase-tools deploy --only firestore:rules`.
 - Deploy tay toàn bộ: `npx firebase-tools deploy --only hosting,firestore:rules`.
-- `firebase.json` deploy cả thư mục gốc, trừ `archive/`, `CLAUDE.md`, `skills-lock.json`, mọi file/thư mục bắt đầu bằng dấu chấm (`**/.*` và `**/.*/**` — cần cả hai, nếu không `.git/` sẽ bị tải lên) và file cấu hình Firebase. File mới không phải của web đặt ở gốc repo thì phải thêm vào `ignore`. HTML/JS/CSS gửi kèm `Cache-Control: no-cache` để người dùng luôn nhận bản mới.
+- `firebase.json` deploy cả thư mục gốc, trừ `archive/`, `CLAUDE.md`, `README.md`, `skills-lock.json`, mọi file/thư mục bắt đầu bằng dấu chấm (`**/.*` và `**/.*/**` — cần cả hai, nếu không `.git/` sẽ bị tải lên) và file cấu hình Firebase. File mới không phải của web đặt ở gốc repo thì phải thêm vào `ignore`. HTML/JS/CSS gửi kèm `Cache-Control: no-cache` để người dùng luôn nhận bản mới.
 - Project: `ielts-vocab-b4905` → https://ielts-vocab-b4905.web.app
 
 ## Git
