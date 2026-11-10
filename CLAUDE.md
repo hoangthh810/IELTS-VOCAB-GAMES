@@ -22,7 +22,7 @@ js/srs.js           Ôn tập ngắt quãng (Leitner) + flashcard
 js/dictation.js     Nghe & viết chính tả + Luyện nói (nhận giọng nói), chọn nguồn từ, giọng đọc, tốc độ
 js/scene.js         Cảnh đánh boss 2D trên canvas (bối cảnh + quái cho cả 20 màn, nhân vật mèo + đồ mặc)
 js/boss.js          Phiêu lưu đánh Boss
-js/closet.js        Tủ đồ của mèo: mua và mặc đồ cho nhân vật (chỉ trang trí)
+js/closet.js        Tủ đồ của mèo: mua và mặc đồ cho nhân vật (chỉ trang trí) + thẻ mèo cưng trên trang chủ
 js/quests.js        Nhiệm vụ hằng ngày (3 nhiệm vụ/ngày, thưởng vàng)
 js/stats.js         Màn thống kê #stats
 js/challenge.js     Thách đấu bạn bè bằng link (cùng đề, so điểm)
@@ -55,7 +55,7 @@ archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chi�
 | `js/quests.js` | `QUESTS`, `todayQuests`, `questDay`, `quest(k, v)`, `renderQuests` |
 | `js/stats.js` | `dayGains`, `dayAgo`, `renderStats` |
 | `js/challenge.js` | `MODE_N`, `b64u`, `chParse`, `chIn`, `renderChBanner`, `renderChResult`, `chShare` |
-| `js/closet.js` | `owns`, `openCloset`, `renderCloset`, `wearItem`, `closetLoop` (canvas xem trước), `tryOn` (món đang mặc thử) |
+| `js/closet.js` | `owns`, `openCloset`, `renderCloset`, `wearItem`, `closetLoop` (canvas xem trước), `tryOn` (món đang mặc thử); mèo cưng: `TREAT_P`, `TREAT_MAX`, `petDay`, `PET_MOOD`, `PET_LV`, `petState`, `renderPet`, `petLoop` |
 | `js/srs.js` | `SRS_DAYS`, `srsGrade`, `srsDue`, `srsStats`, `srsSession`, `srsType`, `renderSrs`; flashcard: `C`, `startCards`, `showCard`, `flipCard`, `gradeCard`, `endCards` |
 | `js/board.js` | `lbOn`, `lbName`, `lbUpload`, `openBoard`, `renderBoard` |
 | `js/remind.js` | `gcalUrl`, `icsFile`, `renderRemind` |
@@ -84,7 +84,11 @@ Mỗi lượt chơi thường có **12 câu** (`LEN = 12`), ít hơn nếu ngu�
 | 🔁 Đồng nghĩa | `syn` | `makeSyn` | Chọn từ/cụm đồng nghĩa (từ `SYN`) với một word; đáp án nhiễu là đồng nghĩa của word khác, ưu tiên cùng từ loại. Chỉ word có trong `SYN` (`canSyn`), nên bộ tự nhập không chơi được. Không có trong Hỗn hợp và trận Boss. |
 | 🌀 Hỗn hợp | `mix` | ngẫu nhiên 1 trong 3 hàm Quiz/Điền từ/Collocation mỗi câu | |
 
-**Thẻ chuỗi ngày** (`#streakBox`, `renderStreak` trong `practice.js`): số ngày `liveStreak()`, mèo tung chưởng (CSS `.orb`/`.beam`, màu đổi ở 7 và 30 ngày) khi hôm nay đã học (`st.last` = hôm nay), dấu 🐾 cho ngày trong tuần đã có XP (`dayGains`) hoặc nằm trong chuỗi.
+**Thẻ chuỗi ngày** (`#streakBox`, `renderStreak` trong `practice.js`): số ngày `liveStreak()`, mèo tung chưởng (CSS `.orb`/`.beam`, màu đổi ở 7 và 30 ngày) khi hôm nay đã học (`st.last` = hôm nay), dấu 🐾 cho ngày trong tuần đã có XP (`dayGains`) hoặc nằm trong chuỗi. Nút `[data-frz]` mua 🧊 Bùa giữ chuỗi.
+
+**🧊 Bùa giữ chuỗi** (`boss.js`): vật phẩm `freeze` (không có trong `ITEMS` nên không hiện trong trận), giá `FREEZE_P = 150`, giữ tối đa `FREEZE_MAX = 2`, mua ở thẻ chuỗi ngày hoặc cửa hàng bản đồ (`buyFreeze`). `applyFreeze()` chạy đầu `renderHome`: nếu bỏ lỡ `n` ngày (từ `st.last` tới hôm qua) và có ≥ `n` bùa thì dùng `n` bùa và đặt `st.last` = hôm qua (chuỗi giữ nguyên, không tăng); thiếu bùa thì không dùng, chuỗi mất.
+
+**🐾 Mèo cưng** (`#petBox`, `closet.js`): vẽ nhân vật đang mặc (`drawCat` + `wearing()`) trên `#petCv`, vòng `petLoop` tự dừng khi rời trang chủ. Tim (0–5) = mức XP hôm nay (>0 / 50 / 100 / 200) + số lần cho ăn hôm nay; 0 tim = "Đói meo" (mắt nhắm, 💤), ≥ 3 tim thì nhảy và vẫy tay. Cho ăn 🐟 `TREAT_P = 20` vàng, tối đa `TREAT_MAX = 3` lần/ngày (`st.pet`). Cấp mèo = 1 + số ngày có học (`dayGains` > 0) / 5, tên trong `PET_LV`.
 
 **Mỗi câu có `Q_TIME = 15` giây** (`questions.js`): thanh `#gtBar` trong thẻ câu hỏi, `startQTimer`/`stopQTimer` trong `practice.js`; hết giờ = trả lời sai ("⏰ Hết giờ!"). Áp dụng cho cả lượt ôn bằng câu hỏi và trận Boss; flashcard và Nghe & viết không đếm giờ.
 
@@ -145,11 +149,11 @@ Phần đáp án (`exLine`) hiện thêm dòng "🔁 Đồng nghĩa" khi từ c�
 
 ## Dữ liệu `DATA`
 
-`DATA` (trong `js/data.js`) là mảng **19 chủ đề** (thứ tự hiện tại: Education, Environment, Technology, Health, Work & Career, Travel & Tourism, Crime & Law, City & Society, Friends, National Holidays & Festivals, Home & House, Hobbies & Free Time, Transport & Traffic, Social Welfare, Family, Food & Eating, Media & Advertising, Government, Sports). Mỗi chủ đề hiện có **20 words + 15 cols**.
+`DATA` (trong `js/data.js`) là mảng **19 chủ đề** (thứ tự hiện tại: Education, Environment, Technology, Health, Work & Career, Travel & Tourism, Crime & Law, City & Society, Friends, National Holidays & Festivals, Home & House, Hobbies & Free Time, Transport & Traffic, Social Welfare, Family, Food & Eating, Media & Advertising, Government, Sports). Mỗi chủ đề hiện có **30 words + 15 cols**: 20 từ đầu là từ cơ bản, 10 từ sau (index 20–29) là từ nâng cao band 7.5+ có cấp CEFR (`C1`/`C2`, phần tử thứ 6, hiện thành nhãn `.lvl` cạnh phiên âm qua `ipaTag`) và đều có trong `SYN`.
 
 ```js
 {name:"🎓 Education",          // emoji + tên tiếng Anh, hiển thị trên chip và bản đồ
- words:[                         // [từ, từ loại, nghĩa tiếng Việt, câu ví dụ, phiên âm IPA]
+ words:[                         // [từ, từ loại, nghĩa tiếng Việt, câu ví dụ, phiên âm IPA, cấp C1/C2 (không bắt buộc)]
   ["curriculum","n","chương trình học","The national curriculum includes compulsory science lessons.","/kəˈrɪkjələm/"],
   ...],
  cols:[                          // [cụm từ, nghĩa tiếng Việt, câu ví dụ]
@@ -158,7 +162,7 @@ Phần đáp án (`exLine`) hiện thêm dòng "🔁 Đồng nghĩa" khi từ c�
 ```
 
 Lúc chạy, `DATA` được làm phẳng thành `ALL`, mỗi mục có dạng
-`{id, ti, kind:'word'|'col', term, pos, mean, ex, ipa}` (collocation và word thiếu phiên âm có `ipa = ''`) với `id = ti + 'w' + i` hoặc `ti + 'c' + i` (ví dụ `"3w12"`). `BYID` tra ngược từ id.
+`{id, ti, kind:'word'|'col', term, pos, mean, ex, ipa, lvl}` (collocation và word thiếu phiên âm có `ipa = ''`) với `id = ti + 'w' + i` hoặc `ti + 'c' + i` (ví dụ `"3w12"`). `BYID` tra ngược từ id.
 
 ### Yêu cầu nội dung
 
@@ -198,7 +202,8 @@ Lúc chạy, `DATA` được làm phẳng thành `ALL`, mỗi mục có dạng
 | `rpg.gold` | number | Vàng hiện có = `calcGold(rpg)` (chỉ là bản tính sẵn) |
 | `rpg.g0`, `rpg.ge`, `rpg.gs` | number, `{dev: n}`, `{dev: n}` | Sổ vàng: vàng cũ trước khi có sổ (mặc định 50), tổng đã kiếm / đã tiêu theo từng `dev` |
 | `rpg.cleared` | `{[stageIndex]: 1\|2\|3}` | Số sao tốt nhất mỗi màn đã thắng |
-| `rpg.inv` | `{potion, shield, half, rage}` | Số lượng vật phẩm (mặc định 2/1/1/0) |
+| `rpg.inv` | `{potion, shield, half, rage, freeze}` | Số lượng vật phẩm = `calcInv(rpg)` (chỉ là bản tính sẵn, mặc định 2/1/1/0/0). **Chỉ đổi bằng `addItem(k, n)`** |
+| `rpg.i0`, `rpg.ib`, `rpg.iu` | `{item: n}`, `{dev: {item: n}}`, `{dev: {item: n}}` | Sổ vật phẩm: số lượng trước khi có sổ, đã nhận / đã dùng theo từng `dev` (giống sổ vàng) |
 | `rpg.hpLv` | number | Cấp Bùa sinh lực (0–5) |
 | `srs` | `{[id]: {b, d, t}}` | Lịch ôn: hộp Leitner 0–7, ngày đến hạn `YYYY-MM-DD`, thời điểm chấm gần nhất (ms) |
 | `wk` | `{k, base}` | Tuần ISO hiện tại (`2026W45`) và tổng XP lúc bắt đầu tuần → XP tuần = `xp - base` (`weekKey`, `rollWeek`, `weekXp` trong `core.js`) |
@@ -206,6 +211,7 @@ Lúc chạy, `DATA` được làm phẳng thành `ALL`, mỗi mục có dạng
 | `closet` | `{own, wear, t}` | Tủ đồ mèo: `own` = món/nhân vật đã mua dạng `'slot:id'` (ví dụ `'pet:dragon'`) (món giá 0 luôn có, không lưu), `wear` = `{slot: id}` đang mặc (`''` = không mặc; thiếu slot thì lấy `WEAR0`), `t` = lần đổi đồ gần nhất (ms) |
 | `xl` | `{[YYYY-MM-DD]: xp}` | Tổng XP cuối mỗi ngày (ghi trong `save` qua `logXp`, giữ 400 ngày); XP của một ngày = giá trị đó trừ mục trước. Mục đầu tiên là mốc (hôm qua = XP lúc cài bản này) |
 | `dq` | `{d, p, c}` \| null | Nhiệm vụ hôm nay: ngày, tiến độ `{quest: số}`, các nhiệm vụ đã nhận thưởng |
+| `pet` | `{d, fed}` \| null | Mèo cưng: ngày, số lần cho ăn hôm đó |
 | `dev` | string | Id ngẫu nhiên của bản tiến độ trong máy này (tạo lại khi tiến độ trống, ví dụ sau khi đăng xuất). Không gộp: luôn giữ của máy đang dùng |
 | `decks` | `{[did]: {n, t, items}}` | Bộ từ tự nhập: tên, thời điểm sửa (ms), `items = [[từ, nghĩa, ví dụ, phiên âm, từ loại], ...]`; bộ đã xoá thành `{del:1, t}` |
 
@@ -284,7 +290,7 @@ Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến đ
 - Chỉ đăng nhập bằng **Google** (`signInWithPopup`, popup bị chặn thì chuyển sang `signInWithRedirect`).
 - Dữ liệu trên mây: document `users/{uid}` = `{data: JSON.stringify(st), xp, updatedAt}`. `firestore.rules` chỉ cho chính chủ đọc/ghi, chỉ chấp nhận đúng 3 trường đó, `data` là chuỗi < 950000 ký tự.
 - **Khi đăng nhập / mở app đang đăng nhập** (`pullAndMerge`): tải bản trên mây, gộp với tiến độ trong máy bằng `mergeSt` rồi tải lên nếu khác. Nếu kết quả khác `st` hiện tại thì ghi vào `localStorage` và **tải lại trang** (để `sel`, `st.rpg`… khởi tạo lại sạch sẽ).
-  - `mergeSt` dùng max/hợp: XP, best, fixed, sổ vàng (`g0` max, `ge`/`gs` max theo từng máy, rồi tính lại `gold`), cấp máu, số vật phẩm, số sao từng màn lấy max; huy hiệu, modes, từ hay sai lấy hợp; tủ đồ: `own` lấy hợp, `wear` theo `t` mới hơn; bộ từ lấy bản có `t` mới hơn của từng bộ (bộ đã xoá thắng nếu xoá sau), rồi bỏ `srs`/`wrong` của bộ đã xoá; streak lấy theo ngày `last` mới hơn; `xl` max theo ngày; `dq` cùng ngày thì tiến độ max + đã nhận hợp, khác ngày lấy ngày mới hơn; `dev` luôn của máy đang dùng (kể cả khi bỏ tiến độ của tài khoản khác và lấy bản trên mây); `sound`, `topics` lấy theo máy đang dùng. Gộp lại lần nữa không đổi gì (nên không bị vòng lặp reload, không nhân đôi vàng).
+  - `mergeSt` dùng max/hợp: XP, best, fixed, sổ vàng (`g0` max, `ge`/`gs` max theo từng máy, rồi tính lại `gold`), sổ vật phẩm (`i0` max theo món, `ib`/`iu` max theo máy rồi theo món, rồi tính lại `inv`), cấp máu, số sao từng màn lấy max; `pet` cùng ngày lấy `fed` max, khác ngày lấy ngày mới hơn; huy hiệu, modes, từ hay sai lấy hợp; tủ đồ: `own` lấy hợp, `wear` theo `t` mới hơn; bộ từ lấy bản có `t` mới hơn của từng bộ (bộ đã xoá thắng nếu xoá sau), rồi bỏ `srs`/`wrong` của bộ đã xoá; streak lấy theo ngày `last` mới hơn; `xl` max theo ngày; `dq` cùng ngày thì tiến độ max + đã nhận hợp, khác ngày lấy ngày mới hơn; `dev` luôn của máy đang dùng (kể cả khi bỏ tiến độ của tài khoản khác và lấy bản trên mây); `sound`, `topics` lấy theo máy đang dùng. Gộp lại lần nữa không đổi gì (nên không bị vòng lặp reload, không nhân đôi vàng).
   - Tiến độ trong máy chỉ được gộp nếu là của khách hoặc của chính tài khoản đó (`OWNER_KEY`); tiến độ của tài khoản khác thì bỏ qua và lấy bản trên mây.
 - **Khi đang đăng nhập**: `save()` gọi `onSaved` → `queueUpload` (gom 2 giây rồi tải lên); khi tab bị ẩn thì tải lên ngay.
 - **Đăng xuất**: tải lên lần cuối, rồi xoá tiến độ trong máy và tải lại → máy trở về khách mới (tránh người sau thấy/gộp nhầm tiến độ).

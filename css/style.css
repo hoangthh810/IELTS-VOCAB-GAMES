@@ -393,3 +393,11 @@ input,select,textarea{accent-color:var(--accent)}
 .sd.today i{outline:2px solid var(--accent);outline-offset:2px}.sd.fut i{opacity:.45}
 @media (max-width:560px){.streak{grid-template-columns:auto 1fr}.sweek{grid-column:1/-1;justify-content:space-between}}
 @media (prefers-reduced-motion:reduce){.streak.lit .orb,.streak.lit .beam{animation:none}}
+.lvl{display:inline-block;font-size:11px;font-weight:800;padding:1px 6px;border-radius:6px;background:var(--yellow-soft);color:var(--yellow-ink);vertical-align:2px;font-family:inherit;letter-spacing:.3px}
+.frzbtn{margin-top:8px;border:1px dashed color-mix(in srgb,#4dabf7 60%,var(--line));background:color-mix(in srgb,#4dabf7 10%,var(--card));color:var(--ink);border-radius:999px;padding:4px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.frzbtn:hover{border-style:solid}
+.petcard{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:center;margin-top:12px;padding:10px 14px;border-radius:20px;border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow)}
+.petcard canvas{width:150px;height:150px}
+.pinfo b{font-size:16px}.pinfo .hearts{font-size:16px;letter-spacing:2px;margin:4px 0}.pinfo small{display:block;color:var(--muted);font-size:13px}.pinfo .plv{margin-top:4px;color:var(--yellow-ink);font-weight:700}
+.pinfo .srs-btns{margin:10px 0 2px}.pinfo .srs-btns .btn{flex:1 1 120px;padding:9px 10px;font-size:14px}
+@media (max-width:420px){.petcard{grid-template-columns:110px 1fr;padding:10px}.petcard canvas{width:110px;height:110px}}

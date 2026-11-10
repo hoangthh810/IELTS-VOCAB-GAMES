@@ -34,10 +34,13 @@ function mergeSt(a,b){
   r.wrong={...a.wrong};Object.entries(b.wrong||{}).forEach(([k,v])=>r.wrong[k]=mx(r.wrong[k],v));
   r.sound=b.sound;r.topics=b.topics; // device preferences
   const gm=(x,y)=>{const o={...x};Object.entries(y||{}).forEach(([k,v])=>o[k]=mx(o[k],v));return o}; // max per key
+  const gm2=(x,y)=>{const o={...x};Object.entries(y||{}).forEach(([k,v])=>o[k]=gm(o[k],v));return o}; // per device, then per key
   const g0=x=>x.g0!=null?x.g0:x.gold; // copies saved before the gold ledger
-  r.rpg={g0:mx(g0(ra),g0(rb)),ge:gm(ra.ge,rb.ge),gs:gm(ra.gs,rb.gs),cleared:gm(ra.cleared,rb.cleared),inv:gm(ra.inv,rb.inv),hpLv:mx(ra.hpLv,rb.hpLv)};r.rpg.gold=calcGold(r.rpg);
+  r.rpg={g0:mx(g0(ra),g0(rb)),ge:gm(ra.ge,rb.ge),gs:gm(ra.gs,rb.gs),cleared:gm(ra.cleared,rb.cleared),hpLv:mx(ra.hpLv,rb.hpLv),
+    i0:gm(ra.i0||ra.inv,rb.i0||rb.inv),ib:gm2(ra.ib,rb.ib),iu:gm2(ra.iu,rb.iu)};r.rpg.gold=calcGold(r.rpg);r.rpg.inv=calcInv(r.rpg); // items: same ledger as gold
   r.dev=b.dev; // this device's id stays
   r.xl=gm(a.xl,b.xl);
+  const pa=a.pet,pb=b.pet;r.pet=pa&&pb&&pa.d===pb.d?{d:pa.d,fed:mx(pa.fed,pb.fed)}:(pb&&(!pa||pb.d>pa.d)?pb:pa)||null;
   const qa=a.dq,qb=b.dq; // daily quests: same day adds up, otherwise the newer day
   r.dq=qa&&qb&&qa.d===qb.d?{d:qa.d,p:gm(qa.p,qb.p),c:[...new Set([...qa.c,...qb.c])]}:(qb&&(!qa||qb.d>qa.d)?qb:qa)||null;
   r.srs={...a.srs};Object.entries(b.srs||{}).forEach(([k,v])=>{if(!r.srs[k]||(v.t||0)>(r.srs[k].t||0))r.srs[k]=v}); // newest review wins

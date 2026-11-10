@@ -1,6 +1,6 @@
 # 🐱 Vocab Arena
 
-Web game học từ vựng IELTS (mục tiêu band 9.0) cho người Việt. Chơi ngay tại: **https://ielts-vocab-b4905.web.app**
+Web game học từ vựng IELTS (mục tiêu band 9.0) cho người Việt: 19 chủ đề, 570 từ (có 190 từ nâng cao C1/C2) và 285 collocation. Chơi ngay tại: **https://ielts-vocab-b4905.web.app**
 
 Không cần cài đặt hay tạo tài khoản. Tiến độ tự lưu trên trình duyệt; đăng nhập Google nếu muốn học tiếp trên máy khác.
 
@@ -14,7 +14,8 @@ Không cần cài đặt hay tạo tài khoản. Tiến độ tự lưu trên tr
 
 | Tính năng | Dùng để làm gì |
 |---|---|
-| 🔥 Chuỗi ngày học | Học mỗi ngày để mèo "tung chưởng" và giữ chuỗi |
+| 🔥 Chuỗi ngày học | Học mỗi ngày để mèo "tung chưởng" và giữ chuỗi; mua 🧊 Bùa giữ chuỗi phòng khi lỡ 1 ngày |
+| 🐾 Mèo cưng | Học càng nhiều mèo càng vui; cho mèo ăn bằng vàng, học đủ ngày để mèo lên cấp |
 | 🎯 Nhiệm vụ hôm nay | 3 nhiệm vụ mỗi ngày, xong được thưởng vàng |
 | 📅 Ôn tập ngắt quãng | Ôn đúng lúc sắp quên, bằng câu hỏi hoặc flashcard |
 | ⚔️ Phiêu lưu đánh Boss | 20 màn, trả lời đúng để tấn công, nhận vàng và vật phẩm |

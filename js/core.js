@@ -1,6 +1,6 @@
 // ---------- data ----------
 const ALL = DATA.flatMap((t,ti)=>[
-  ...t.words.map((w,i)=>({id:ti+'w'+i,ti,kind:'word',term:w[0],pos:w[1],mean:w[2],ex:w[3],ipa:w[4]||''})),
+  ...t.words.map((w,i)=>({id:ti+'w'+i,ti,kind:'word',term:w[0],pos:w[1],mean:w[2],ex:w[3],ipa:w[4]||'',lvl:w[5]||''})),
   ...t.cols.map((c,i)=>({id:ti+'c'+i,ti,kind:'col',term:c[0],pos:'',mean:c[1],ex:c[2]}))]);
 const BYID = Object.fromEntries(ALL.map(x=>[x.id,x]));
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -39,14 +39,14 @@ function speak(text,rate=.9){
   speechSynthesis.speak(u);
 }
 const spk=text=>canSpeak?`<button class="spk" type="button" data-say="${esc(text)}" title="Nghe phát âm">🔊</button>`:'';
-const ipaTag=it=>it.ipa?` <span class="ipa">${esc(it.ipa)}</span>`:'';
+const ipaTag=it=>(it.ipa?` <span class="ipa">${esc(it.ipa)}</span>`:'')+(it.lvl?` <span class="lvl" title="Từ nâng cao (band 7.5+)">${esc(it.lvl)}</span>`:'');
 const termHtml=it=>`<b>${esc(it.term)}</b>${ipaTag(it)}${spk(it.term)}`;
 const exLine=it=>(it.ex?`📝 ${hlEx(it.ex,it.term)}`:'')+(synOf(it.term)?`${it.ex?'<br>':''}🔁 Đồng nghĩa: <i>${esc(synOf(it.term).join(', '))}</i>`:''); // imported words may have no example
 document.addEventListener('click',e=>{const b=e.target.closest('.spk');if(b)speak(b.dataset.say)});
 
 // ---------- storage ----------
 const KEY='ielts-vocab-arena-v1';
-let st={xp:0,streak:0,last:null,badges:[],modes:[],wrong:{},fixed:0,best:0,sound:true,topics:null,srs:{},wk:null,lb:null,decks:{},closet:{own:[],wear:{},t:0},xl:{},dq:null,dev:''};
+let st={xp:0,streak:0,last:null,badges:[],modes:[],wrong:{},fixed:0,best:0,sound:true,topics:null,srs:{},wk:null,lb:null,decks:{},closet:{own:[],wear:{},t:0},xl:{},dq:null,dev:'',pet:null};
 try{Object.assign(st,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
 let onSaved=null; // set by sync.js while signed in, to push progress to the cloud
 const save=()=>{rollWeek();logXp();try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}if(onSaved)onSaved()};

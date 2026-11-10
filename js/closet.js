@@ -47,3 +47,43 @@ $('closetAct').onclick=e=>{const b=e.target.closest('[data-act]');if(!b||b.disab
 $('closetBack').onclick=()=>{tryOn=null;if(closetBack==='home'){show('home');renderHome()}else openMap()};
 $('closetBtn').onclick=()=>openCloset('map');
 $('homeClosetBtn').onclick=()=>openCloset('home');
+
+// ---------- pet cat on the home screen: happier the more you study today, treats bought with gold add a heart ----------
+// st.pet = {d: day, fed: treats given that day}. Mood hearts = today's XP level + treats (max 5); cat level = days studied.
+const TREAT_P=20,TREAT_MAX=3;
+const petDay=()=>{const d=dayKey();if(!st.pet||st.pet.d!==d)st.pet={d,fed:0};return st.pet};
+const PET_MOOD=[['😿','Đói meo','Meo… cả ngày chưa học gì, mèo đói quá!'],['🐱','Hơi buồn','Học thêm chút nữa cho mèo vui nhé.'],['🐱','Bình thường','Mèo thấy ổn, học thêm để mèo vui hơn!'],
+  ['😺','Vui vẻ','Hôm nay học chăm ghê, mèo vui lắm!'],['😸','Rất vui','Bạn giỏi quá, mèo muốn nhảy múa!'],['😻','Hạnh phúc','Mèo hạnh phúc tột đỉnh, band 9.0 tới nơi rồi!']];
+const PET_LV=['Mèo con','Mèo nhỏ','Mèo tinh nghịch','Mèo học giả','Mèo thông thái','Mèo IELTS 9.0'];
+function petState(){
+  const x=dayGains()[dayKey()]||0,base=x>=200?4:x>=100?3:x>=50?2:x>0?1:0,h=Math.min(5,base+petDay().fed);
+  const days=Object.values(dayGains()).filter(v=>v>0).length,lv=Math.floor(days/5);
+  return{h,lv:lv+1,title:PET_LV[Math.min(lv,PET_LV.length-1)],next:5-days%5};
+}
+function renderPet(){
+  const s=petState(),m=PET_MOOD[s.h],fed=petDay().fed,name=OUTFIT.pet[wearing().pet].n;
+  $('petInfo').innerHTML=`<b>${m[0]} ${esc(name)} · ${m[1]}</b><div class="hearts" aria-label="${s.h}/5 tim">${'❤️'.repeat(s.h)}${'🤍'.repeat(5-s.h)}</div>
+    <small>“${m[2]}”</small><small class="plv">🏅 Cấp ${s.lv} · ${s.title} · thêm ${s.next} ngày học để lên cấp</small>
+    <div class="srs-btns"><button class="btn" data-pet="feed" ${fed>=TREAT_MAX||st.rpg.gold<TREAT_P?'disabled':''}>🐟 Cho ăn ${TREAT_P} 💰 (${fed}/${TREAT_MAX})</button><button class="btn ghost" data-pet="closet">🎀 Thay đồ</button></div>`;
+  petLoop();
+}
+let petRun=false,petJump=0;
+function petLoop(){
+  if(petRun)return;petRun=true;
+  const cv=$('petCv'),dpr=Math.min(2,window.devicePixelRatio||1),W=150,H=150;cv.width=W*dpr;cv.height=H*dpr;
+  const c=cv.getContext('2d'),t0=performance.now();
+  const frame=now=>{
+    if(!$('home').classList.contains('show')){petRun=false;return}
+    const t=(now-t0)/1000,h=petState().h,happy=h>=3,j=Math.max(0,petJump-now)/600;
+    c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,W,H);
+    ell(c,W/2,H-12,34,7,'rgba(15,23,42,.14)');
+    c.save();c.translate(W/2-4,H-12-(happy?Math.abs(Math.sin(t*4))*6:0)-Math.sin(j*Math.PI)*24);c.scale(.82,.82*(1+Math.sin(t*(h?3:1.5))*.015));
+    drawCat(c,{t,arm:happy?-.9+Math.sin(t*6)*.3:-.25,casting:happy?(t%2)>1.2:j>0,blink:!h||(t%3.6)<.12},wearing());c.restore();
+    if(!h){c.font='16px sans-serif';c.fillText('💤',W/2+22,34-(t%2)*6)}
+    requestAnimationFrame(frame)};
+  requestAnimationFrame(frame);
+}
+$('petBox').onclick=e=>{const b=e.target.closest('[data-pet]');if(!b||b.disabled)return;
+  if(b.dataset.pet==='closet')return openCloset('home');
+  const p=petDay();if(p.fed>=TREAT_MAX||st.rpg.gold<TREAT_P)return;
+  addGold(-TREAT_P);p.fed++;save();beep('ok');petJump=performance.now()+600;plus('❤️',b);toast('🐟 Mèo ăn ngon lành, thêm 1 tim!');renderPet()};

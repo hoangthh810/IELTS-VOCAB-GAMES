@@ -27,7 +27,7 @@ const ITEMS={
  half:{e:'💡',n:'Gợi ý 50/50',d:'Loại 2 đáp án sai, hoặc hiện nửa số chữ',price:40},
  rage:{e:'💢',n:'Thuốc cuồng nộ',d:'Đòn đúng kế tiếp gây x2 sát thương',price:70}};
 const DMG={quiz:20,col:26,fill:36}, DLABEL={quiz:'Dễ',col:'Vừa',fill:'Khó'};
-const RPG0={gold:50,cleared:{},inv:{potion:2,shield:1,half:1,rage:0},hpLv:0,ge:{},gs:{}};
+const RPG0={gold:50,cleared:{},inv:{potion:2,shield:1,half:1,rage:0},hpLv:0,ge:{},gs:{},ib:{},iu:{}};
 st.rpg=Object.assign(JSON.parse(JSON.stringify(RPG0)),st.rpg||{});
 st.rpg.inv=Object.assign({...RPG0.inv},st.rpg.inv||{});
 // gold = g0 (gold from before this ledger) + everything earned - everything spent. ge/gs = {st.dev: total} so two devices
@@ -37,6 +37,21 @@ const calcGold=r=>(r.g0||0)+sumV(r.ge)-sumV(r.gs);
 function addGold(n){const r=st.rpg,k=n>0?'ge':'gs';r[k][st.dev]=(r[k][st.dev]||0)+Math.abs(n);r.gold=calcGold(r)}
 if(st.rpg.g0==null)st.rpg.g0=st.rpg.gold;
 st.rpg.gold=calcGold(st.rpg);
+// items use the same kind of ledger: i0 = counts before the ledger, ib/iu = {dev: {item: n}} gained / used. Only change them with addItem.
+const ITEM_KEYS=[...Object.keys(ITEMS),'freeze'];
+const calcInv=r=>Object.fromEntries(ITEM_KEYS.map(k=>[k,((r.i0||{})[k]||0)+Object.values(r.ib||{}).reduce((a,d)=>a+(d[k]||0),0)-Object.values(r.iu||{}).reduce((a,d)=>a+(d[k]||0),0)]));
+function addItem(k,n){const r=st.rpg,s=n>0?'ib':'iu',d=r[s][st.dev]=r[s][st.dev]||{};d[k]=(d[k]||0)+Math.abs(n);r.inv=calcInv(r)}
+if(!st.rpg.i0)st.rpg.i0={...st.rpg.inv};
+st.rpg.inv=calcInv(st.rpg);
+// 🧊 streak freeze: one charm covers one missed day; used automatically when the home screen opens (renderHome)
+const FREEZE_P=150,FREEZE_MAX=2;
+function buyFreeze(){if(st.rpg.gold<FREEZE_P||st.rpg.inv.freeze>=FREEZE_MAX)return false;addGold(-FREEZE_P);addItem('freeze',1);save();toast('🧊 Đã mua Bùa giữ chuỗi! Lỡ quên 1 ngày, chuỗi vẫn được giữ.');beep('ok');return true}
+function applyFreeze(){
+  if(!st.last||!st.streak||st.last>=yesterday())return;
+  const miss=Math.round((new Date(dayKey())-new Date(st.last))/864e5)-1;
+  if(miss<1||miss>(st.rpg.inv.freeze||0))return; // not enough charms: the streak is lost
+  addItem('freeze',-miss);st.last=yesterday();save();toast(`🧊 Bùa giữ chuỗi đã cứu chuỗi ${st.streak} ngày của bạn! (dùng ${miss} bùa)`);
+}
 const maxHp=()=>100+st.rpg.hpLv*15;
 const unlocked=i=>i===0||!!st.rpg.cleared[i-1]||isAdmin(); // admins can open any stage to test it
 const LAST=DATA.length; // index of final boss
@@ -61,14 +76,16 @@ function renderMap(){
   $('stages').innerHTML=h;
   const up=r.hpLv<5?120*(r.hpLv+1):null;
   $('shop').innerHTML=Object.entries(ITEMS).map(([k,v])=>`<div class="shopit"><div class="e">${v.e}</div><div><b>${v.n}</b> <small>${v.d} · Đang có: ${r.inv[k]}</small></div><button class="btn" data-buy="${k}" ${r.gold<v.price?'disabled':''}>💰 ${v.price}</button></div>`).join('')+
-    `<div class="shopit"><div class="e">❤️</div><div><b>Bùa sinh lực</b> <small>+15 máu tối đa vĩnh viễn · Cấp ${r.hpLv}/5</small></div>${up?`<button class="btn" data-buy="hp" ${r.gold<up?'disabled':''}>💰 ${up}</button>`:'<span class="pill">MAX</span>'}</div>`;
+    `<div class="shopit"><div class="e">❤️</div><div><b>Bùa sinh lực</b> <small>+15 máu tối đa vĩnh viễn · Cấp ${r.hpLv}/5</small></div>${up?`<button class="btn" data-buy="hp" ${r.gold<up?'disabled':''}>💰 ${up}</button>`:'<span class="pill">MAX</span>'}</div>`+
+    `<div class="shopit"><div class="e">🧊</div><div><b>Bùa giữ chuỗi</b> <small>Tự dùng khi bạn lỡ 1 ngày không học, chuỗi ngày vẫn giữ nguyên · Đang có: ${r.inv.freeze}/${FREEZE_MAX}</small></div>${r.inv.freeze<FREEZE_MAX?`<button class="btn" data-buy="freeze" ${r.gold<FREEZE_P?'disabled':''}>💰 ${FREEZE_P}</button>`:'<span class="pill">MAX</span>'}</div>`;
 }
 $('advBtn').onclick=openMap;
 $('mapBack').onclick=()=>{show('home');renderHome()};
 $('stages').onclick=e=>{const b=e.target.closest('.stage');if(b&&!b.disabled)startBattle(+b.dataset.i)};
 $('shop').onclick=e=>{const b=e.target.closest('[data-buy]');if(!b||b.disabled)return;const k=b.dataset.buy,r=st.rpg;
-  if(k==='hp'){const p=120*(r.hpLv+1);if(r.gold<p||r.hpLv>=5)return;addGold(-p);r.hpLv++;toast(`❤️ Máu tối đa tăng lên ${maxHp()}!`)}
-  else{const v=ITEMS[k];if(r.gold<v.price)return;addGold(-v.price);r.inv[k]++;toast(`Đã mua ${v.e} ${v.n}`)}
+  if(k==='freeze'){if(!buyFreeze())return}
+  else if(k==='hp'){const p=120*(r.hpLv+1);if(r.gold<p||r.hpLv>=5)return;addGold(-p);r.hpLv++;toast(`❤️ Máu tối đa tăng lên ${maxHp()}!`)}
+  else{const v=ITEMS[k];if(r.gold<v.price)return;addGold(-v.price);addItem(k,1);toast(`Đã mua ${v.e} ${v.n}`)}
   save();beep('ok');renderMap()};
 
 // ---------- battle ----------
@@ -169,7 +186,7 @@ $('items').onclick=e=>{
   if(k==='half'){if(B.answered||B.halfUsed){toast('Dùng khi đang trả lời câu hỏi nhé');return}B.halfUsed=true;const q=B.q;
     if(q.options){shuffle([...document.querySelectorAll('#bOpts .opt')].filter(o=>o.dataset.v!==q.answer)).slice(0,2).forEach(o=>{o.classList.add('gone');o.disabled=true})}
     else{const n=Math.ceil(q.answer.length/2);$('bqHint').innerHTML=`💡 ${esc(q.answer.slice(0,n))}${'_'.repeat(q.answer.length-n)} (${q.answer.length} ký tự)`}}
-  inv[k]--;save();beep('ok');updB();
+  addItem(k,-1);save();beep('ok');updB();
 };
 
 // ---------- end of battle ----------
@@ -194,7 +211,7 @@ $('chest').onclick=()=>{
   const got={};const n=ar?0:R.stars+(R.first?1:0); // arena: a little gold, no items
   if(R.first)got.potion=1;
   for(let j=0;j<n-(R.first?1:0);j++){const x=Math.random();const k=x<.4?'potion':x<.65?'shield':x<.9?'half':'rage';got[k]=(got[k]||0)+1}
-  Object.entries(got).forEach(([k,c])=>r.inv[k]+=c);save();
+  Object.entries(got).forEach(([k,c])=>addItem(k,c));save();
   setTimeout(()=>{$('chest').style.display='none';
     $('rewards').innerHTML=`<div class="reward"><span class="e">💰</span>+${gold} vàng</div>`+
       Object.entries(got).map(([k,c],j)=>`<div class="reward" style="animation-delay:${(j+1)*.15}s"><span class="e">${ITEMS[k].e}</span>${ITEMS[k].n} x${c}</div>`).join('');
