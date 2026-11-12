@@ -90,6 +90,8 @@ Mỗi lượt chơi thường có **12 câu** (`LEN = 12`), ít hơn nếu ngu�
 
 **🐾 Mèo cưng** (`#petBox`, `closet.js`): vẽ nhân vật đang mặc (`drawCat` + `wearing()`) trên `#petCv`, vòng `petLoop` tự dừng khi rời trang chủ. Tim (0–5) = mức XP hôm nay (>0 / 50 / 100 / 200) + số lần cho ăn hôm nay; 0 tim = "Đói meo" (mắt nhắm, 💤), ≥ 3 tim thì nhảy và vẫy tay. Cho ăn 🐟 `TREAT_P = 20` vàng, tối đa `TREAT_MAX = 3` lần/ngày (`st.pet`). Cấp mèo = 1 + số ngày có học (`dayGains` > 0) / 5, tên trong `PET_LV`.
 
+**🌟 Từ của ngày** (`#wotdBox`, `wotd`/`renderWotd` trong `practice.js`): một từ nâng cao (`lvl`) trong từ có sẵn, chọn theo ngày (giống nhau trên mọi máy); nút "📅 Thêm vào ôn tập" tạo thẻ `st.srs` hộp 0 đến hạn hôm nay.
+
 **Mỗi câu có `Q_TIME = 15` giây** (`questions.js`): thanh `#gtBar` trong thẻ câu hỏi, `startQTimer`/`stopQTimer` trong `practice.js`; hết giờ = trả lời sai ("⏰ Hết giờ!"). Áp dụng cho cả lượt ôn bằng câu hỏi và trận Boss; flashcard và Nghe & viết không đếm giờ.
 
 Điểm: mỗi câu đúng `10 × hệ số combo`, hệ số = `min(4, 1 + floor(combo/3))`. Điểm cộng thẳng vào XP. Level = `floor(xp/300) + 1`.

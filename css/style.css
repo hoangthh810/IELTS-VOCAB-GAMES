@@ -401,3 +401,6 @@ input,select,textarea{accent-color:var(--accent)}
 .pinfo b{font-size:16px}.pinfo .hearts{font-size:16px;letter-spacing:2px;margin:4px 0}.pinfo small{display:block;color:var(--muted);font-size:13px}.pinfo .plv{margin-top:4px;color:var(--yellow-ink);font-weight:700}
 .pinfo .srs-btns{margin:10px 0 2px}.pinfo .srs-btns .btn{flex:1 1 120px;padding:9px 10px;font-size:14px}
 @media (max-width:420px){.petcard{grid-template-columns:110px 1fr;padding:10px}.petcard canvas{width:110px;height:110px}}
+.wotd{margin-top:12px;display:grid;gap:10px;border-left:4px solid var(--yellow)}
+.wotd small{color:var(--muted);font-size:12.5px;font-weight:700}.wotd .ww{font-size:20px;margin-top:2px}.wotd .ww b{color:var(--accent-ink)}
+.wotd .wm{font-weight:700}.wotd .ex{color:var(--muted);font-size:14px}.wotd .btn{justify-self:start}

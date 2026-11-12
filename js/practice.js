@@ -27,8 +27,18 @@ function renderHome(){
   $('soundBtn').textContent=st.sound?'🔊':'🔇';
   $('badges').innerHTML=BADGES.map(b=>`<div class="badge ${st.badges.includes(b.id)?'':'locked'}"><div class="e">${b.e}</div><b>${b.n}</b><small>${b.d}</small></div>`).join('');
   const nd=liveDecks().length;$('deckSub').textContent=nd?`${nd} bộ · ${deckCount()} từ · bấm để nhập thêm, đấu trường, tải về`:'Học từ vựng của bạn: dán từ Excel, Quizlet hoặc nhờ AI định dạng';
-  renderChips();renderSrs();renderQuests();renderChBanner();renderStreak();renderPet();
+  renderChips();renderSrs();renderQuests();renderChBanner();renderStreak();renderPet();renderWotd();
 }
+// word of the day: one advanced (C1/C2) built-in word picked from the date, the same on every device
+const wotd=()=>{const P=ALL.slice(0,CORE_N).filter(x=>x.lvl);let h=0;for(const ch of dayKey())h=(h*131+ch.charCodeAt(0))>>>0;return P[h%P.length]};
+function renderWotd(){
+  const it=wotd(),has=!!st.srs[it.id];
+  $('wotdBox').innerHTML=`<div class="wt"><small>🌟 Từ của ngày · ${esc(topicName(it.ti))}</small><div class="ww">${termHtml(it)}${it.pos?` <small>(${esc(it.pos)})</small>`:''}</div>
+    <div class="wm">${esc(it.mean)}</div><div class="ex">${exLine(it)}</div></div>
+    <button class="btn ${has?'ghost':''}" data-wotd ${has?'disabled':''}>${has?'✅ Đã có trong lịch ôn':'📅 Thêm vào ôn tập'}</button>`;
+}
+$('wotdBox').onclick=e=>{if(!e.target.closest('[data-wotd]'))return;const it=wotd();if(st.srs[it.id])return;
+  st.srs[it.id]={b:0,d:dayKey(),t:Date.now()};save();beep('ok');toast(`📅 Đã thêm "${it.term}" vào lịch ôn hôm nay!`);renderHome()};
 $('streakBox').onclick=e=>{if(!e.target.closest('[data-frz]'))return;
   if(st.rpg.inv.freeze>=FREEZE_MAX)toast(`Bạn đang có tối đa ${FREEZE_MAX} bùa rồi 🧊`);
   else if(st.rpg.gold<FREEZE_P)toast(`Cần ${FREEZE_P} vàng (đang có ${st.rpg.gold}), làm 🎯 nhiệm vụ hằng ngày để kiếm thêm nhé!`);

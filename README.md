@@ -20,6 +20,7 @@ Web game học từ vựng IELTS (mục tiêu **band 9.0**) cho người Việt,
 |---|---|
 | 🔥 Chuỗi ngày học | Học mỗi ngày để mèo "tung chưởng"; 🧊 Bùa giữ chuỗi (150 vàng, tối đa 2) tự cứu chuỗi khi lỡ 1 ngày |
 | 🐾 Mèo cưng | Học càng nhiều mèo càng vui; cho mèo ăn bằng vàng; học đủ ngày để mèo lên cấp |
+| 🌟 Từ của ngày | Mỗi ngày một từ nâng cao C1/C2, bấm để thêm vào lịch ôn |
 | 🎯 Nhiệm vụ hôm nay | 3 nhiệm vụ mỗi ngày, xong được thưởng vàng |
 | 📅 Ôn tập ngắt quãng | Ôn đúng lúc sắp quên, bằng câu hỏi hoặc flashcard |
 | ⚔️ Phiêu lưu đánh Boss | 20 màn, trả lời đúng để tấn công, nhận vàng và vật phẩm, trùm cuối Rồng IELTS 🐲 |
