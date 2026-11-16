@@ -564,3 +564,4 @@ prowess=skill|expertise
 commentator=broadcaster|announcer
 exhilarating=thrilling|exciting`.split('\n').map(l=>{const [k,v]=l.split('=');return [k,v.split('|')]}));
 const synOf=t=>Object.hasOwn(SYN,t)?SYN[t]:null; // terms of imported decks can be anything, e.g. "constructor"
+const synsOf=it=>it.syn&&it.syn.length?it.syn:synOf(it.term); // own synonyms of a notebook word first

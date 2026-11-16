@@ -25,6 +25,7 @@ Web game học từ vựng IELTS (mục tiêu **band 9.0**) cho người Việt,
 | 📅 Ôn tập ngắt quãng | Ôn đúng lúc sắp quên, bằng câu hỏi hoặc flashcard |
 | ⚔️ Phiêu lưu đánh Boss | 20 màn, trả lời đúng để tấn công, nhận vàng và vật phẩm, trùm cuối Rồng IELTS 🐲 |
 | 🎀 Tủ đồ & nhân vật | Dùng vàng mua đồ và nhân vật mới: mèo, cún, thỏ, cáo, gấu trúc, rồng |
+| ⭐ Sổ tay từ vựng | Tự thêm từng từ kèm nghĩa, phiên âm IPA, từ đồng nghĩa, câu ví dụ; học bằng mọi trò chơi |
 | 📁 Bộ từ của riêng bạn | Dán từ Excel / Quizlet hoặc nhờ AI định dạng, tối đa 2000 từ |
 | 🎧 Nghe & viết | Nghe từ rồi gõ lại, chọn giọng Anh-Anh, Anh-Mỹ, Anh-Úc… |
 | 🎤 Luyện nói | Đọc to, máy chấm phát âm (cần micro, dùng Chrome hoặc Edge) |

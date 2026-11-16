@@ -76,7 +76,7 @@ function start(mode,ch=null){
   const P=ch?ALL.filter(x=>ch.t.includes(x.ti)):pool();
   if(!queue){
     if(!P.length){toast('Hãy chọn ít nhất 1 chủ đề nhé!');return}
-    if(mode==='syn'&&!P.some(canSyn)){toast('Từ đồng nghĩa chỉ có ở 19 chủ đề có sẵn, hãy chọn ít nhất 1 chủ đề đó nhé!');return}
+    if(mode==='syn'&&!P.some(canSyn)){toast('Chủ đề đã chọn chưa có từ đồng nghĩa: chọn 1 chủ đề có sẵn, hoặc ghi đồng nghĩa khi thêm từ vào ⭐ Sổ tay nhé!');return}
     if(mode!=='quiz'&&mode!=='mix'&&mode!=='syn'&&!poolTypes(P).includes(mode)){toast(mode==='fill'?'Các từ đã chọn chưa có câu ví dụ chứa từ đó, thử Quiz nhé!':'Các từ đã chọn chưa có cụm từ (collocation), thử Quiz nhé!');return}}
   const n=mode==='fill'?P.filter(canFill).length:mode==='col'?P.filter(canCol).length:mode==='syn'?P.filter(canSyn).length:P.length; // small decks: shorter round
   // rounds of built-in topics are seeded, so the same questions can be sent to a friend as a challenge

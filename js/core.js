@@ -41,7 +41,7 @@ function speak(text,rate=.9){
 const spk=text=>canSpeak?`<button class="spk" type="button" data-say="${esc(text)}" title="Nghe phát âm">🔊</button>`:'';
 const ipaTag=it=>(it.ipa?` <span class="ipa">${esc(it.ipa)}</span>`:'')+(it.lvl?` <span class="lvl" title="Từ nâng cao (band 7.5+)">${esc(it.lvl)}</span>`:'');
 const termHtml=it=>`<b>${esc(it.term)}</b>${ipaTag(it)}${spk(it.term)}`;
-const exLine=it=>(it.ex?`📝 ${hlEx(it.ex,it.term)}`:'')+(synOf(it.term)?`${it.ex?'<br>':''}🔁 Đồng nghĩa: <i>${esc(synOf(it.term).join(', '))}</i>`:''); // imported words may have no example
+const exLine=it=>(it.ex?`📝 ${hlEx(it.ex,it.term)}`:'')+(synsOf(it)?`${it.ex?'<br>':''}🔁 Đồng nghĩa: <i>${esc(synsOf(it).join(', '))}</i>`:''); // imported words may have no example
 document.addEventListener('click',e=>{const b=e.target.closest('.spk');if(b)speak(b.dataset.say)});
 
 // ---------- storage ----------

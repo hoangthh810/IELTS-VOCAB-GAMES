@@ -46,7 +46,7 @@ archive/ielts-vocab-games.html   Bản gốc một-file, chỉ để đối chi�
 | `js/data.js` | `const DATA = [...]` |
 | `js/syn.js` | `SYN` (`{term: [đồng nghĩa...]}`, viết dạng dòng `term=a\|b`), `synOf(term)` (dùng `Object.hasOwn`, vì từ tự nhập có thể là bất cứ chuỗi nào) |
 | `js/core.js` | Dữ liệu dẫn xuất (`ALL`, `BYID`), helper (`esc`, `shuffle`, `pick`, `$`, `findMatch`, `hlEx`), storage (`KEY`, `st`, `save`, `dayKey`, `yesterday`, `liveStreak`), phát âm (`speak`, `spk`, `ipaTag`, `termHtml`), `BADGES`/`unlock`, hiệu ứng (`toast`, `confetti`, `plus`), âm thanh tiếng mèo `beep(kind)` (`CAT` gồm `ok`/`no`/`badge`/`end`, tạo bằng WebAudio qua `meow`/`purr`, không có file âm thanh), chuyển màn `show` |
-| `js/decks.js` | `CORE_N`, `DECK_MAX`, `ST_MAX`, `isDeck`, `liveDecks`, `topicKeys`, `topicName`, `loadDecks`, `parseDeck`/`csvRow`/`guessSep`, `readText`, `download`/`toCsv`, `openDecks`, `renderDecks`, `previewImport`, `saveImport`, `deleteDeck` |
+| `js/decks.js` | `CORE_N`, `DECK_MAX`, `ST_MAX`, `NOTE_ID`/`NOTE_NAME`, `renderNote`/`openNote`/`noteFill`/`addNote` (sổ tay), `isDeck`, `liveDecks`, `topicKeys`, `topicName`, `loadDecks`, `parseDeck`/`csvRow`/`guessSep`, `readText`, `download`/`toCsv`, `openDecks`, `renderDecks`, `previewImport`, `saveImport`, `deleteDeck` |
 | `js/questions.js` | `Q_TIME` (15 giây mỗi câu), `STOP`, `colTokens`, `canFill`/`canCol`/`poolTypes` (dạng câu mà một nguồn từ làm được), `poolOverride`, `pool`, `choose`, `makeQuiz`, `makeFill`, `makeCol` (dùng chung cho chế độ thường và Boss) |
 | `js/practice.js` | `sel`, `useWrong`, `renderChips`, `renderHome`, nút âm thanh; `LEN`, `G`, `start`, `next`, `answer`, `finish`, phím tắt |
 | `js/scene.js` | `sceneStart`, sự kiện `sceneHeroAttack/BossAttack/Heal/BossDie/HeroDie`, vòng lặp vẽ, hạt, đạn, HUD; `pose` (chuyển động chung của quái), `drawHero` → `drawCat` (nhân vật mèo), `FURS`, `OUTFIT`, `SLOTS`, `WEAR0`, `wearing()`; `WORLDS` (bối cảnh: `school`, `city`, `ocean`, `castle`) và `KINDS` (quái: `owl`, `book`, `slime`, `golem`, `jelly`, `octo`, `whelp`, `dragon`) |
@@ -215,7 +215,7 @@ Lúc chạy, `DATA` được làm phẳng thành `ALL`, mỗi mục có dạng
 | `dq` | `{d, p, c}` \| null | Nhiệm vụ hôm nay: ngày, tiến độ `{quest: số}`, các nhiệm vụ đã nhận thưởng |
 | `pet` | `{d, fed}` \| null | Mèo cưng: ngày, số lần cho ăn hôm đó |
 | `dev` | string | Id ngẫu nhiên của bản tiến độ trong máy này (tạo lại khi tiến độ trống, ví dụ sau khi đăng xuất). Không gộp: luôn giữ của máy đang dùng |
-| `decks` | `{[did]: {n, t, items}}` | Bộ từ tự nhập: tên, thời điểm sửa (ms), `items = [[từ, nghĩa, ví dụ, phiên âm, từ loại], ...]`; bộ đã xoá thành `{del:1, t}` |
+| `decks` | `{[did]: {n, t, items}}` | Bộ từ tự nhập: tên, thời điểm sửa (ms), `items = [[từ, nghĩa, ví dụ, phiên âm, từ loại, đồng nghĩa?], ...]` (`did = 'my'` là ⭐ Sổ tay); bộ đã xoá thành `{del:1, t}` |
 
 Streak được cập nhật khi kết thúc lượt chơi thường (`finish`) và khi thắng/thua trận Boss (`touchStreak`). Hiển thị dùng `liveStreak()` (về 0 nếu bỏ quá 1 ngày).
 
@@ -247,6 +247,7 @@ Key phụ `ielts-vocab-arena-owner`: uid của tài khoản sở hữu tiến đ
 - Xoá bộ: thành `{del:1, t}` (giữ để máy khác không gộp bộ cũ trở lại), xoá luôn `st.srs`/`st.wrong` của bộ đó. Chỗ hiển thị số từ hay sai / thẻ ôn đều lọc theo `BYID` nên id mồ côi không bị đếm.
 - Giới hạn: `DECK_MAX = 2000` từ cho mọi bộ; `st` sau khi lưu phải ≤ `ST_MAX = 900000` byte (rules cho phép chuỗi `data` < 950000 ký tự, document Firestore tối đa 1 MiB).
 - XP từ bộ tự nhập tính vào bảng xếp hạng như bình thường.
+- **⭐ Sổ tay từ vựng** (`NOTE_ID = 'my'`, tên mặc định `NOTE_NAME`): một bộ từ cố định, người dùng thêm **từng từ** qua form `#noteForm` ở đầu màn `#decks` (mở từ thẻ `#noteBtn` trên trang chủ hoặc nút ➕ Thêm từ của bộ đó; `openNote`, `addNote`). Ô: từ *, nghĩa / định nghĩa *, từ loại, IPA (tự thêm `/.../`), đồng nghĩa (phân cách dấu phẩy), câu ví dụ. Gõ từ có sẵn trong 19 chủ đề thì `noteFill` điền sẵn các ô còn trống. Trùng từ (không phân biệt hoa thường) thì báo, không thêm. Phần tử thứ 6 của item là chuỗi đồng nghĩa `'a, b'`, `loadDecks` tách thành `it.syn`; `synsOf(it)` (`syn.js`) ưu tiên `it.syn` rồi mới tới `SYN`, nên từ trong sổ tay có đồng nghĩa chơi được 🔁 Đồng nghĩa và hiện dòng đồng nghĩa trong đáp án. Hai máy cùng thêm từ trước khi đồng bộ thì bản sửa sau thắng (giống mọi bộ từ).
 
 ## 🎧 Nghe & viết chính tả / 🎤 Luyện nói
 

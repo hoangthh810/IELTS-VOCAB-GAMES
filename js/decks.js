@@ -1,18 +1,20 @@
 // ---------- custom decks (imported vocabulary) ----------
-// st.decks[did] = {n: name, t: last change (ms, newest wins when merging), items: [[term, mean, ex, ipa, pos], ...]}
+// st.decks[did] = {n: name, t: last change (ms, newest wins when merging), items: [[term, mean, ex, ipa, pos, syn?], ...]} (syn = 'a, b')
+// did 'my' is the ⭐ notebook the learner fills one word at a time (NOTE_ID).
 // or {del: 1, t} once deleted (kept so another device's copy is not merged back). Items are only appended, never removed,
 // because item ids are 'u<did>.<index>' (st.srs / st.wrong use them). Topic key (it.ti) of a deck is 'u<did>'.
 const CORE_N=ALL.length; // built-in items come first in ALL, deck items after them
 const DECK_MAX=2000, ST_MAX=900000; // items across all decks; max size of the saved progress in bytes (rules allow 950000 chars, a Firestore doc max 1 MiB)
 const isDeck=ti=>typeof ti==='string';
+const NOTE_ID='my',NOTE_NAME='Sổ tay từ vựng';
 const liveDecks=()=>Object.entries(st.decks).filter(([,d])=>!d.del).sort((a,b)=>a[1].n.localeCompare(b[1].n,'vi'));
 const topicKeys=()=>[...DATA.map((_,i)=>i),...liveDecks().map(([k])=>'u'+k)];
-const topicName=ti=>isDeck(ti)?'📁 '+((st.decks[ti.slice(1)]||{}).n||'Bộ từ'):DATA[ti].name;
+const topicName=ti=>isDeck(ti)?(ti==='u'+NOTE_ID?'⭐ ':'📁 ')+((st.decks[ti.slice(1)]||{}).n||'Bộ từ'):DATA[ti].name;
 const deckCount=()=>liveDecks().reduce((n,[,d])=>n+d.items.length,0);
 function loadDecks(){
   ALL.slice(CORE_N).forEach(x=>delete BYID[x.id]);ALL.length=CORE_N;
   for(const [k,d] of liveDecks())d.items.forEach((w,i)=>{const ti='u'+k,term=w[0],col=term.includes(' ');
-    const x={id:ti+'.'+i,ti,kind:col?'col':'word',term,pos:col?'':w[4]||'',mean:w[1],ex:w[2]||'',ipa:col?'':w[3]||''};ALL.push(x);BYID[x.id]=x});
+    const x={id:ti+'.'+i,ti,kind:col?'col':'word',term,pos:col?'':w[4]||'',mean:w[1],ex:w[2]||'',ipa:col?'':w[3]||'',syn:w[5]?w[5].split(/\s*[,;|]\s*/).filter(Boolean):null};ALL.push(x);BYID[x.id]=x});
 }
 loadDecks();
 
@@ -61,7 +63,7 @@ function download(name,text,type='text/csv'){
   a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);
 }
 const csvCell=s=>/[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
-const toCsv=items=>['term,meaning,example,ipa,pos',...items.map(w=>[0,1,2,3,4].map(j=>csvCell(w[j]||'')).join(','))].join('\r\n');
+const toCsv=items=>['term,meaning,example,ipa,pos,synonyms',...items.map(w=>[0,1,2,3,4,5].map(j=>csvCell(w[j]||'')).join(','))].join('\r\n');
 const SAMPLE=[["mitigate","giảm nhẹ","Governments must act to mitigate the effects of climate change.","/ˈmɪtɪɡeɪt/","v"],
   ["sustainable","bền vững","Cycling is a sustainable way to travel.","/səˈsteɪnəbl/","adj"],
   ["take into account","cân nhắc, tính đến","Planners should take into account the needs of elderly people.","",""]];
@@ -72,14 +74,14 @@ function openDecks(){show('decks');renderDecks()}
 function renderDecks(){
   const ds=liveDecks();
   $('deckList').innerHTML=ds.length?ds.map(([k,d])=>{const w=d.items.filter(x=>!x[0].includes(' ')).length;
-    return `<div class="deck" data-d="${k}"><div class="deck-h"><div><b>📁 ${esc(d.n)}</b><small>${w} từ đơn · ${d.items.length-w} cụm từ</small></div>
+    return `<div class="deck" data-d="${k}"><div class="deck-h"><div><b>${k===NOTE_ID?'⭐':'📁'} ${esc(d.n)}</b><small>${w} từ đơn · ${d.items.length-w} cụm từ</small></div>
       <button class="btn" data-a="fight">⚔️ Đấu</button></div>
       <div class="deck-acts"><button class="chip" data-a="study">🎯 Luyện tập</button><button class="chip" data-a="add">➕ Thêm từ</button><button class="chip" data-a="view">👁️ Xem</button><button class="chip" data-a="rename">✏️ Đổi tên</button><button class="chip" data-a="csv">⬇️ Tải về</button><button class="chip" data-a="del">🗑️ Xoá</button></div>
       <ol class="deck-items" hidden></ol></div>`}).join('')
     :'<div class="empty">Chưa có bộ từ nào. Nhập bộ đầu tiên ở bên dưới nhé 👇</div>';
   $('impTo').innerHTML='<option value="">➕ Bộ mới</option>'+ds.map(([k,d])=>`<option value="${k}">Thêm vào: ${esc(d.n)}</option>`).join('');
   $('impName').hidden=!!$('impTo').value;$('deckUsed').textContent=`Đã dùng ${deckCount()}/${DECK_MAX} từ`;
-  previewImport();
+  previewImport();renderNote();
 }
 function previewImport(){
   const to=$('impTo').value,d=to&&st.decks[to];
@@ -146,10 +148,46 @@ $('deckList').onclick=e=>{
   const k=box.dataset.d,d=st.decks[k],a=b.dataset.a;
   if(a==='fight')startArena(k);
   else if(a==='study'){useWrong=false;sel=new Set(['u'+k]);st.topics=[...sel];save();show('home');renderHome();$('modes').scrollIntoView({behavior:'smooth'});toast(`Đã chọn "${d.n}", chọn trò chơi nhé!`)}
+  else if(a==='add'&&k===NOTE_ID)openNote();
   else if(a==='add'){$('impTo').value=k;$('impName').hidden=true;previewImport();$('impText').focus()}
   else if(a==='view'){const ol=box.querySelector('.deck-items');ol.hidden=!ol.hidden;
-    if(!ol.hidden)ol.innerHTML=d.items.map((w,i)=>`<li><span class="n">${i+1}</span><span class="t" lang="en"><b>${esc(w[0])}</b>${w[3]?`<small class="ipa">${esc(w[3])}</small>`:''}</span><span class="m">${esc(w[1])}</span>${spk(w[0])}</li>`).join('')}
+    if(!ol.hidden)ol.innerHTML=d.items.map((w,i)=>`<li><span class="n">${i+1}</span><span class="t" lang="en"><b>${esc(w[0])}</b>${w[3]?`<small class="ipa">${esc(w[3])}</small>`:''}</span><span class="m">${esc(w[1])}${w[5]?`<small class="syn">🔁 ${esc(w[5])}</small>`:''}</span>${spk(w[0])}</li>`).join('')}
   else if(a==='rename'){const n=(prompt('Tên mới cho bộ từ:',d.n)||'').trim().replace(/\s+/g,' ').slice(0,40);if(n){d.n=n;d.t=Date.now();save();renderDecks()}}
   else if(a==='csv')download(d.n.replace(/[\\\/:*?"<>|]/g,'_')+'.csv',toCsv(d.items));
   else if(a==='del'&&confirm(`Xoá bộ "${d.n}"? Lịch ôn và từ hay sai của bộ này cũng bị xoá.`))deleteDeck(k);
 };
+
+// ---------- ⭐ notebook: add one word at a time with meaning, IPA, synonyms, example ----------
+const NOTE_F=['nTerm','nMean','nPos','nIpa','nSyn','nEx'];
+const noteVal=id=>$(id).value.trim().replace(/\s+/g,' ');
+function renderNote(){const d=st.decks[NOTE_ID],n=d&&!d.del?d.items.length:0;
+  $('noteCount').textContent=n?`Sổ tay đang có ${n} từ`:'Sổ tay còn trống, thêm từ đầu tiên nhé ✍️'}
+function openNote(){openDecks();$('noteBox').scrollIntoView({behavior:'smooth'});setTimeout(()=>$('nTerm').focus(),300)}
+function noteFill(){ // typed a built-in word: fill the empty fields from the app's data
+  const t=noteVal('nTerm').toLowerCase(),it=t&&ALL.slice(0,CORE_N).find(x=>x.term.toLowerCase()===t);
+  if(!it){$('noteHint').textContent='';return}
+  const v={nMean:it.mean,nPos:it.pos,nIpa:it.ipa,nSyn:(synOf(it.term)||[]).join(', '),nEx:it.ex};let n=0;
+  for(const [id,x] of Object.entries(v))if(x&&!$(id).value.trim()){if(id==='nPos'&&![...$(id).options].some(o=>o.value===x))continue;$(id).value=x;n++}
+  $('noteHint').textContent=n?`✨ "${it.term}" có trong ${topicName(it.ti)}, đã điền sẵn ${n} ô, sửa lại nếu muốn.`:'';
+}
+function addNote(){
+  const term=noteVal('nTerm').slice(0,60),mean=noteVal('nMean').slice(0,80);
+  if(!term||!/[a-z]/i.test(term)){toast('Nhập từ hoặc cụm từ tiếng Anh nhé');$('nTerm').focus();return}
+  if(!mean){toast('Nhập nghĩa / định nghĩa của từ nhé');$('nMean').focus();return}
+  let ipa=noteVal('nIpa').slice(0,50);if(ipa&&!/^[\/\[]/.test(ipa))ipa='/'+ipa.replace(/^\/|\/$/g,'')+'/';
+  const syn=noteVal('nSyn').split(/\s*[,;|]\s*/).filter(Boolean).join(', ').slice(0,120);
+  const d=st.decks[NOTE_ID]&&!st.decks[NOTE_ID].del?st.decks[NOTE_ID]:{n:NOTE_NAME,items:[]};
+  if(d.items.some(w=>w[0].toLowerCase()===term.toLowerCase())){toast(`"${term}" đã có trong sổ tay rồi`);return}
+  if(deckCount()+1>DECK_MAX){toast(`Tối đa ${DECK_MAX} từ cho tất cả bộ từ`);return}
+  const prev=JSON.stringify(st.decks),first=!d.items.length;
+  st.decks[NOTE_ID]={n:d.n,t:Date.now(),items:[...d.items,[term,mean,noteVal('nEx').slice(0,200),ipa,$('nPos').value,syn]]};
+  if(new TextEncoder().encode(JSON.stringify(st)).length>ST_MAX){st.decks=JSON.parse(prev);toast('Dữ liệu quá lớn để đồng bộ, hãy bớt câu ví dụ dài');return}
+  if(first){sel.add('u'+NOTE_ID);st.topics=[...sel]}
+  loadDecks();save();beep('ok');toast(`⭐ Đã thêm "${term}" vào sổ tay!`);
+  NOTE_F.forEach(id=>$(id).value='');$('noteHint').textContent='';renderDecks();$('nTerm').focus();
+}
+$('noteForm').onsubmit=e=>{e.preventDefault();addNote()};
+$('nTerm').onchange=noteFill;
+$('noteSay').onclick=()=>{const t=noteVal('nTerm');if(t)speak(t);else $('nTerm').focus()};
+$('noteClear').onclick=()=>{NOTE_F.forEach(id=>$(id).value='');$('noteHint').textContent='';$('nTerm').focus()};
+$('noteBtn').onclick=openNote;

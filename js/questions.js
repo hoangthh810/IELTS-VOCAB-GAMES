@@ -8,7 +8,7 @@ const poolTypes=P=>['quiz',...(P.some(canFill)?['fill']:[]),...(P.some(canCol)?[
 let poolOverride=null;
 let qBase=null; // words to borrow distractors from; built-in words only in a challenge-able round (a friend has no copy of your decks)
 const base=()=>qBase||ALL;
-const canSyn=x=>x.kind==='word'&&!!synOf(x.term);
+const canSyn=x=>!!synsOf(x);
 const pool=()=>poolOverride||(useWrong?Object.keys(st.wrong).map(id=>BYID[id]).filter(Boolean):ALL.filter(x=>sel.has(x.ti)));
 function choose(list,used,fallback){
   let c=list.filter(x=>!used.has(x.id)); if(!c.length)c=list; // small pools (imported decks) repeat instead of borrowing other topics
@@ -43,9 +43,9 @@ function makeCol(used){
     options:shuffle([tok.w.toLowerCase(),...ds.slice(0,3)]),answer:tok.w.toLowerCase()};
 }
 function makeSyn(used){ // pick the synonym; distractors are synonyms of other words, same part of speech first
-  const P=pool().filter(canSyn),F=base().filter(canSyn),it=choose(P,used,F),mine=synOf(it.term),ans=pick(mine),ds=[];
+  const P=pool().filter(canSyn),F=base().filter(canSyn),it=choose(P,used,F),mine=synsOf(it),ans=pick(mine),ds=[];
   for(const x of shuffle([...P,...F]).sort((a,b)=>(b.pos===it.pos)-(a.pos===it.pos))){if(x.term===it.term)continue;
-    const w=pick(synOf(x.term));if(!mine.includes(w)&&!ds.includes(w))ds.push(w);if(ds.length===3)break}
+    const w=pick(synsOf(x));if(!mine.includes(w)&&!ds.includes(w))ds.push(w);if(ds.length===3)break}
   return {type:'syn',it,label:'🔁 Từ / cụm nào đồng nghĩa?',main:esc(it.term)+spk(it.term),sub:ipaTag(it)+(it.pos?` (${esc(it.pos)})`:''),hint:'',
     options:shuffle([ans,...ds]),answer:ans};
 }

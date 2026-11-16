@@ -54,6 +54,7 @@
   </div>
 
   <h2>📁 Bộ từ của riêng bạn</h2>
+  <button class="board-btn note-btn" id="noteBtn"><span class="e">⭐</span><span><b>Sổ tay từ vựng</b><small>Tự thêm từng từ: nghĩa, phiên âm IPA, từ đồng nghĩa, câu ví dụ</small></span><span class="go">›</span></button>
   <button class="board-btn deck-btn" id="deckBtn"><span class="e">📥</span><span><b>Nhập & quản lý bộ từ</b><small id="deckSub">Học từ vựng của bạn: dán từ Excel, Quizlet hoặc nhờ AI định dạng</small></span><span class="go">›</span></button>
 
   <h2>1. Chọn chủ đề</h2>
@@ -95,6 +96,18 @@
 <div class="screen" id="decks">
   <div class="topbar"><button class="quit" id="decksBack" title="Về trang chủ">←</button><div class="logo" style="font-size:24px">📁 <span>Bộ từ của tôi</span></div></div>
   <p class="empty">Học từ vựng của riêng bạn: luyện 4 trò chơi, ôn ngắt quãng, flashcard và ⚔️ đấu trường luyện tập. <span id="deckUsed"></span></p>
+  <h2>⭐ Sổ tay từ vựng <small class="empty" id="noteCount"></small></h2>
+  <div class="srs note" id="noteBox"><form id="noteForm" autocomplete="off">
+    <div class="nrow"><label class="nfull"><span>Từ / cụm từ tiếng Anh *</span><div class="nterm"><input id="nTerm" maxlength="60" lang="en" spellcheck="false" autocapitalize="off" placeholder="ví dụ: resilient"><button type="button" class="btn ghost" id="noteSay" title="Nghe phát âm">🔊</button></div></label></div>
+    <small class="empty" id="noteHint"></small>
+    <div class="nrow"><label class="nfull"><span>Nghĩa / định nghĩa *</span><input id="nMean" maxlength="80" placeholder="ví dụ: kiên cường, mau phục hồi"></label></div>
+    <div class="nrow"><label><span>Từ loại</span><select id="nPos"><option value="">—</option><option value="n">n (danh từ)</option><option value="v">v (động từ)</option><option value="adj">adj (tính từ)</option><option value="adv">adv (trạng từ)</option><option value="prep">prep (giới từ)</option><option value="phr">phr (cụm từ)</option><option value="idiom">idiom (thành ngữ)</option></select></label>
+      <label><span>Phiên âm IPA</span><input id="nIpa" maxlength="50" lang="en" spellcheck="false" placeholder="/rɪˈzɪliənt/"></label></div>
+    <div class="nrow"><label class="nfull"><span>Từ đồng nghĩa <small>(ngăn cách bằng dấu phẩy)</small></span><input id="nSyn" maxlength="120" lang="en" spellcheck="false" placeholder="tough, hardy, strong"></label></div>
+    <div class="nrow"><label class="nfull"><span>Câu ví dụ <small>(có chứa từ đó để chơi được ✍️ Điền từ)</small></span><input id="nEx" maxlength="200" lang="en" placeholder="Children are often more resilient than adults."></label></div>
+    <div class="srs-btns"><button class="btn" type="submit">➕ Thêm vào sổ tay</button><button class="btn ghost" type="button" id="noteClear">🧹 Xoá các ô</button></div>
+  </form></div>
+  <h2>📚 Các bộ từ</h2>
   <div class="decklist" id="deckList"></div>
   <h2>📥 Nhập từ vựng</h2>
   <div class="srs imp">

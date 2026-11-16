@@ -404,3 +404,14 @@ input,select,textarea{accent-color:var(--accent)}
 .wotd{margin-top:12px;display:grid;gap:10px;border-left:4px solid var(--yellow)}
 .wotd small{color:var(--muted);font-size:12.5px;font-weight:700}.wotd .ww{font-size:20px;margin-top:2px}.wotd .ww b{color:var(--accent-ink)}
 .wotd .wm{font-weight:700}.wotd .ex{color:var(--muted);font-size:14px}.wotd .btn{justify-self:start}
+.note-btn .e{background:var(--yellow-soft)}
+.note{border-left:4px solid var(--yellow)}
+.note .nrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.note label{display:grid;gap:4px;min-width:0}.note label.nfull{grid-column:1/-1}
+.note label>span{font-size:13px;font-weight:700;color:var(--muted)}.note label small{font-weight:600}
+.note input,.note select{width:100%;min-width:0;font:inherit;font-size:15px;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--card2);color:var(--ink)}
+.note input:focus,.note select:focus{outline:none;border-color:var(--accent)}
+.nterm{display:flex;gap:8px}.nterm input{flex:1}.nterm .btn{padding:8px 12px}
+#noteHint{display:block;margin:-4px 0 10px;color:var(--accent-ink)}#noteHint:empty{display:none}
+.deck-items .m small.syn{display:block;color:var(--muted);font-size:12.5px}
+@media (max-width:420px){.note .nrow{grid-template-columns:1fr}}
